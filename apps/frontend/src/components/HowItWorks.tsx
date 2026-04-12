@@ -10,7 +10,7 @@ const steps = [
     ring: "ring-[#f7931a]/30",
     step: "01",
     title: "Advertisers Create Campaigns",
-    desc: "Set your budget, targeting, and creative assets. Campaign parameters are written to the Stacks blockchain — immutable and verifiable.",
+    desc: "Set your budget, targeting, and creative assets. Campaign parameters are written to Solana — immutable and verifiable.",
   },
   {
     icon: <Code1 size={28} variant="Bold" color="#a855f7" />,
@@ -37,7 +37,7 @@ const steps = [
     ring: "ring-[#4ade80]/30",
     step: "04",
     title: "Revenue Is Shared Transparently",
-    desc: "STX flows directly to publisher wallets in real time. No intermediaries, no delays, no hidden cuts.",
+    desc: "SOL flows directly to publisher wallets in real time. No intermediaries, no delays, no hidden cuts.",
   },
 ];
 

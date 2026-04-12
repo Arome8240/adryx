@@ -72,7 +72,7 @@ export const campaigns: Campaign[] = [
   },
   {
     id: "c4",
-    name: "StackAds Publisher Drive",
+    name: "Adryx Publisher Drive",
     status: "Completed",
     budget: 4500,
     spent: 4500,
@@ -144,7 +144,7 @@ export const transactions: Transaction[] = [
     type: "Spend",
     amount: -430,
     date: "2026-03-19",
-    description: "StackAds Publisher Drive — final spend",
+    description: "Adryx Publisher Drive — final spend",
     txHash: "0x3d5f...8b2e",
   },
 ];

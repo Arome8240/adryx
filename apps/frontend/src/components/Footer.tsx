@@ -24,13 +24,13 @@ export default function Footer() {
           >
             <div className="flex items-center gap-2.5 mb-4">
               <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[#f7931a] to-[#a855f7] flex items-center justify-center">
-                <span className="text-white font-bold text-sm">S</span>
+                <span className="text-white font-bold text-sm">A</span>
               </div>
-              <span className="font-bold text-lg">StackAds</span>
+              <span className="font-bold text-lg">Adryx</span>
             </div>
             <p className="text-sm text-white/40 leading-relaxed max-w-xs">
               The decentralized advertising network for Web2 and Web3.
-              Transparent, instant, and built on Stacks.
+              Transparent, instant, and built on Solana.
             </p>
             <div className="flex items-center gap-3 mt-5">
               <a
@@ -87,7 +87,7 @@ export default function Footer() {
 
         <div className="border-t border-white/8 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-white/30">
-            &copy; {new Date().getFullYear()} StackAds. All rights reserved.
+            &copy; {new Date().getFullYear()} Adryx. All rights reserved.
           </p>
           <div className="flex items-center gap-4 text-xs text-white/30">
             <a href="#" className="hover:text-white/60 transition-colors">

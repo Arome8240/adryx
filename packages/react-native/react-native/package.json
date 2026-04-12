@@ -1,7 +1,7 @@
 {
-  "name": "@stackads/react-native",
+  "name": "@adryx/react-native",
   "version": "0.0.2",
-  "description": "StackAds React Native SDK",
+  "description": "Adryx React Native SDK",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",

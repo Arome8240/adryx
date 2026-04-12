@@ -1,7 +1,7 @@
 {
-  "name": "@stackads/core",
+  "name": "@adryx/core",
   "version": "0.0.2",
-  "description": "StackAds Core SDK",
+  "description": "Adryx Core SDK",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",

@@ -1,3 +1,3 @@
 export const AdBanner = () => {
-  return <div>StackAds React SDK</div>;
+  return <div>Adryx React SDK</div>;
 };

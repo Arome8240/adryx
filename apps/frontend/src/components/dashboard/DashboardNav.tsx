@@ -99,9 +99,9 @@ export default function DashboardNav() {
             <div className="px-6 py-5 border-b border-white/8 flex items-center justify-between">
               <Link href="/" className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[#f7931a] to-[#a855f7] flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">S</span>
+                  <span className="text-white font-bold text-sm">A</span>
                 </div>
-                <span className="font-bold text-base">StackAds</span>
+                <span className="font-bold text-base">Adryx</span>
               </Link>
               <button onClick={() => setMobileOpen(false)}>
                 <CloseCircle size={22} color="#f87171" />

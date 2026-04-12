@@ -1,5 +1,5 @@
-import { Text } from 'react-native';
+import { Text } from "react-native";
 
 export const AdBanner = () => {
-  return <Text>StackAds React Native SDK</Text>;
+  return <Text>Adryx React Native SDK</Text>;
 };

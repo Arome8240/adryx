@@ -5,13 +5,9 @@ import "./globals.css";
 const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
 
 export const metadata: Metadata = {
-  title: "StackAds — Decentralized Ad Network for Web2 & Web3",
+  title: "Adryx — Decentralized Ad Network on Solana",
   description:
-    "Monetize your app without limits. The decentralized advertising network powered by the Stacks blockchain.",
-  other: {
-    "talentapp:project_verification":
-      "b3b5ea82262cfd106706ad6fa43988b8b6ef1d9d3f5e887bc0ddfe7add91a133e03219c2cca4aecb436f971c41221585a7e81aa853095806982620d85988d6f8",
-  },
+    "Monetize your app without limits. The decentralized advertising network powered by Solana.",
 };
 
 export default function RootLayout({

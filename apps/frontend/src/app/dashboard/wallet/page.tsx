@@ -113,8 +113,8 @@ export default function WalletPage() {
           </div>
 
           <p className="text-xs text-white/30 mt-3">
-            Funds are settled on-chain via the Stacks network. Tx hash provided
-            on confirmation.
+            Funds are settled on-chain via the Solana network. Tx signature
+            provided on confirmation.
           </p>
         </div>
       </motion.div>

@@ -1,1 +1,1 @@
-export const hello = () => 'Hello from StackAds Core';
+export const hello = () => "Hello from Adryx Core";

@@ -63,7 +63,7 @@ export default function CreateCampaignPage() {
       >
         <h2 className="text-xl font-bold text-white mb-1">Create Campaign</h2>
         <p className="text-sm text-white/40 mb-6">
-          Launch a new on-chain ad campaign on StackAds.
+          Launch a new on-chain ad campaign on Adryx.
         </p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">

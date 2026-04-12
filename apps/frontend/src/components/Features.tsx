@@ -9,7 +9,7 @@ const features = [
     bg: "bg-[#f7931a]/10",
     border: "border-[#f7931a]/20",
     title: "On-Chain Ad Campaigns",
-    desc: "Create and manage campaigns directly on the Stacks blockchain. Every spend, every impression — fully auditable.",
+    desc: "Create and manage campaigns directly on Solana. Every spend, every impression — fully auditable.",
   },
   {
     icon: <Flash size={24} variant="Bold" color="#a855f7" />,
@@ -17,7 +17,7 @@ const features = [
     bg: "bg-[#a855f7]/10",
     border: "border-[#a855f7]/20",
     title: "Instant Payouts",
-    desc: "Revenue flows directly to your wallet in STX. No waiting 30 days. No minimum thresholds. Just instant settlement.",
+    desc: "Revenue flows directly to your wallet in SOL. No waiting 30 days. No minimum thresholds. Just instant settlement.",
   },
   {
     icon: <Code size={24} variant="Bold" color="#22d3ee" />,

@@ -26,8 +26,8 @@ export default function CTA() {
             Start Monetizing <span className="gradient-text">Today</span>
           </h2>
           <p className="text-white/50 text-lg max-w-xl mx-auto mb-10">
-            Join thousands of developers already earning with StackAds. Set up
-            in minutes, earn forever.
+            Join thousands of developers already earning with Adryx. Set up in
+            minutes, earn forever.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

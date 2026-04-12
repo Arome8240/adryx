@@ -21,7 +21,7 @@ export default function Hero() {
         <motion.div {...fadeUp(0)}>
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass text-xs font-medium text-white/70 border border-white/10">
             <span className="w-1.5 h-1.5 rounded-full bg-[#f7931a] animate-pulse" />
-            Powered by Stacks Blockchain
+            Powered by Solana
           </span>
         </motion.div>
 
@@ -94,21 +94,21 @@ export default function Hero() {
               <div className="w-3 h-3 rounded-full bg-yellow-500/70" />
               <div className="w-3 h-3 rounded-full bg-green-500/70" />
               <span className="ml-2 text-xs text-white/30 font-mono">
-                stackads-sdk.js
+                adryx-sdk.js
               </span>
             </div>
             <pre className="text-left text-sm font-mono text-white/60 overflow-x-auto">
-              <code>{`import { StackAds } from '@stackads/sdk'
+              <code>{`import { Adryx } from '@adryx/sdk'
 
-const ads = new StackAds({
+const ads = new Adryx({
   publisherId: 'pub_xxxxxxxx',
-  network: 'stacks-mainnet',
+  network: 'solana-mainnet',
 })
 
 // Render an ad unit
 ads.display('#ad-container', {
   format: 'banner',
-  onRevenue: (stx) => console.log(\`Earned: \${stx} STX\`)
+  onRevenue: (sol) => console.log(\`Earned: \${sol} SOL\`)
 })`}</code>
             </pre>
           </div>
@@ -121,7 +121,7 @@ ads.display('#ad-container', {
             <div className="text-xs text-white/50 mb-0.5">
               Today&apos;s Revenue
             </div>
-            <div className="text-lg font-bold text-[#f7931a]">+0.42 STX</div>
+            <div className="text-lg font-bold text-[#f7931a]">+0.42 SOL</div>
           </motion.div>
           {/* Floating on-chain badge */}
           <motion.div

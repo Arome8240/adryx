@@ -11,8 +11,8 @@ const audiences = [
     glow: "hover:shadow-[0_0_40px_rgba(247,147,26,0.12)]",
     title: "Developers",
     subtitle: "Web2 & Web3",
-    desc: "Whether you're building a SaaS product, a mobile app, or a dApp on Stacks — StackAds gives you a revenue stream that's transparent, instant, and fully in your control.",
-    perks: ["Drop-in SDK", "Real-time STX payouts", "Works with any stack"],
+    desc: "Whether you're building a SaaS product, a mobile app, or a dApp on Solana — Adryx gives you a revenue stream that's transparent, instant, and fully in your control.",
+    perks: ["Drop-in SDK", "Real-time SOL payouts", "Works with any stack"],
     cta: "Start Earning",
   },
   {
@@ -39,7 +39,7 @@ const audiences = [
     glow: "hover:shadow-[0_0_40px_rgba(74,222,128,0.12)]",
     title: "Users",
     subtitle: "Earn for Engagement",
-    desc: "Opt in to earn rewards for engaging with ads. Your attention has value — StackAds lets you capture a share of it, paid directly to your wallet.",
+    desc: "Opt in to earn rewards for engaging with ads. Your attention has value — Adryx lets you capture a share of it, paid directly to your wallet.",
     perks: ["Opt-in rewards", "Privacy preserved", "Direct wallet payouts"],
     cta: "Learn More",
   },
@@ -64,7 +64,7 @@ export default function ForWho() {
             <span className="gradient-text">entire ecosystem</span>
           </h2>
           <p className="mt-4 text-white/50 max-w-xl mx-auto">
-            StackAds aligns incentives for developers, advertisers, and users —
+            Adryx aligns incentives for developers, advertisers, and users —
             everyone wins.
           </p>
         </motion.div>

@@ -1,7 +1,7 @@
 {
-  "name": "@stackads/react",
+  "name": "@adryx/react",
   "version": "0.0.2",
-  "description": "StackAds React SDK",
+  "description": "Adryx React SDK",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",

@@ -1,6 +1,6 @@
-# @stackads/react-native
+# @adryx/react-native
 
-> React Native components for [StackAds](https://github.com/stackads/stackads-sdk) — decentralized advertising powered by the Stacks blockchain.
+> React Native components for [Adryx](https://github.com/adryx/adryx-sdk) — decentralized advertising powered by Solana.
 
 ## Requirements
 
@@ -10,17 +10,17 @@
 ## Install
 
 ```bash
-npm install @stackads/react-native
+npm install @adryx/react-native
 # or
-pnpm add @stackads/react-native
+pnpm add @adryx/react-native
 # or
-yarn add @stackads/react-native
+yarn add @adryx/react-native
 ```
 
 ## Usage
 
 ```tsx
-import { AdBanner } from '@stackads/react-native';
+import { AdBanner } from "@adryx/react-native";
 
 export default function App() {
   return <AdBanner />;
@@ -31,11 +31,11 @@ export default function App() {
 
 ### `<AdBanner />`
 
-Renders a StackAds ad unit using native `<Text>`. Currently outputs a placeholder — full ad rendering with blockchain integration is coming in the next release.
+Renders an Adryx ad unit using native `<Text>`. Currently outputs a placeholder — full ad rendering with Solana integration is coming in the next release.
 
 ## Coming Soon
 
-- `<StackAdsProvider config={...}>` — context provider for SDK config
+- `<AdryxProvider config={...}>` — context provider for SDK config
 - `<AdBanner slotId="..." />` — targeted ad slot rendering
 - `useAd(slotId)` — hook for custom ad rendering
 

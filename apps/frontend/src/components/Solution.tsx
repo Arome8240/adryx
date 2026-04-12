@@ -9,7 +9,7 @@ const pillars = [
     bg: "bg-[#f7931a]/10",
     text: "text-[#f7931a]",
     title: "Decentralized",
-    desc: "No single point of control. Campaigns, payouts, and metrics live on the Stacks blockchain — immutable and auditable by anyone.",
+    desc: "No single point of control. Campaigns, payouts, and metrics live on the Solana blockchain — immutable and auditable by anyone.",
   },
   {
     icon: <Global size={28} variant="Bold" color="#a855f7" />,
@@ -45,7 +45,7 @@ export default function Solution() {
             The Solution
           </span>
           <h2 className="mt-3 text-4xl md:text-5xl font-bold tracking-tight">
-            Introducing <span className="gradient-text">StackAds</span>
+            Introducing <span className="gradient-text">Adryx</span>
           </h2>
           <p className="mt-4 text-white/50 max-w-xl mx-auto">
             A new kind of ad network — built on trust, powered by blockchain,

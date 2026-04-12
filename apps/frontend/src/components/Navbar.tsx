@@ -33,9 +33,9 @@ export default function Navbar() {
         {/* Logo */}
         <a href="#" className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[#f7931a] to-[#a855f7] flex items-center justify-center">
-            <span className="text-white font-bold text-sm">S</span>
+            <span className="text-white font-bold text-sm">A</span>
           </div>
-          <span className="font-bold text-lg tracking-tight">StackAds</span>
+          <span className="font-bold text-lg tracking-tight">Adryx</span>
         </a>
 
         {/* Desktop links */}
