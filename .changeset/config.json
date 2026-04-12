@@ -1,0 +1,9 @@
+{
+  "changelog": "@changesets/cli/changelog",
+  "commit": false,
+  "linked": [["@stackads/core", "@stackads/react", "@stackads/react-native"]],
+  "access": "public",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": []
+}

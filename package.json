@@ -1,0 +1,19 @@
+{
+  "name": "stackads",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@10.30.1",
+  "scripts": {
+    "dev:frontend": "pnpm --filter stackads-frontend dev",
+    "dev:backend": "pnpm --filter stackads-backend start:dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint",
+    "release": "pnpm build && changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.1",
+    "prettier": "^3.2.5",
+    "typescript": "^5.4.2"
+  }
+}
