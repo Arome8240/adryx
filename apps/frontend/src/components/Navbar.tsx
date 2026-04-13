@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { HambergerMenu, CloseCircle } from "iconsax-react";
 
@@ -31,12 +32,12 @@ export default function Navbar() {
     >
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         {/* Logo */}
-        <a href="#" className="flex items-center gap-2.5">
+        <Link href="/" className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[#f7931a] to-[#a855f7] flex items-center justify-center">
             <span className="text-white font-bold text-sm">A</span>
           </div>
           <span className="font-bold text-lg tracking-tight">Adryx</span>
-        </a>
+        </Link>
 
         {/* Desktop links */}
         <div className="hidden md:flex items-center gap-8 text-sm text-white/60">
@@ -53,18 +54,18 @@ export default function Navbar() {
 
         {/* Desktop CTA */}
         <div className="hidden md:flex items-center gap-3">
-          <a
-            href="#"
+          <Link
+            href="/publishers"
             className="text-sm text-white/60 hover:text-white transition-colors"
           >
-            Sign In
-          </a>
-          <a
-            href="#"
+            Publishers
+          </Link>
+          <Link
+            href="/dashboard"
             className="text-sm font-semibold px-5 py-2 rounded-full bg-linear-to-r from-[#f7931a] to-[#e8820a] text-black hover:opacity-90 transition-opacity"
           >
-            Get Started
-          </a>
+            Advertisers
+          </Link>
         </div>
 
         {/* Mobile menu toggle */}
@@ -98,12 +99,22 @@ export default function Navbar() {
               {l.label}
             </a>
           ))}
-          <a
-            href="#"
-            className="text-sm font-semibold px-5 py-2.5 rounded-full bg-linear-to-r from-[#f7931a] to-[#e8820a] text-black text-center"
-          >
-            Get Started
-          </a>
+          <div className="flex flex-col gap-2 pt-2 border-t border-white/10">
+            <Link
+              href="/publishers"
+              className="text-sm font-medium px-5 py-2.5 rounded-full bg-white/5 text-white text-center hover:bg-white/10 transition-colors"
+              onClick={() => setMenuOpen(false)}
+            >
+              For Publishers
+            </Link>
+            <Link
+              href="/dashboard"
+              className="text-sm font-semibold px-5 py-2.5 rounded-full bg-linear-to-r from-[#f7931a] to-[#e8820a] text-black text-center"
+              onClick={() => setMenuOpen(false)}
+            >
+              For Advertisers
+            </Link>
+          </div>
         </motion.div>
       )}
     </motion.nav>

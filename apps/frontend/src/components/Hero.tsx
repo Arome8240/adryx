@@ -49,14 +49,14 @@ export default function Hero() {
           className="flex flex-col sm:flex-row gap-4"
         >
           <a
-            href="#"
+            href="/publishers"
             className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-linear-to-r from-[#f7931a] to-[#e8820a] text-black font-semibold hover:opacity-90 transition-opacity orange-glow"
           >
             Start Earning
             <ArrowRight size={18} color="#000000" />
           </a>
           <a
-            href="#"
+            href="/dashboard"
             className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full glass text-white font-semibold hover:bg-white/10 transition-colors"
           >
             <Play size={18} variant="Bold" color="#f0f0f5" />

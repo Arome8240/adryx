@@ -32,7 +32,7 @@ export default function CTA() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <motion.a
-              href="#"
+              href="/publishers"
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-linear-to-r from-[#f7931a] to-[#e8820a] text-black font-bold text-base hover:opacity-90 transition-opacity"
@@ -41,13 +41,13 @@ export default function CTA() {
               <ArrowRight size={20} color="#000000" />
             </motion.a>
             <motion.a
-              href="#"
+              href="/dashboard"
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full glass text-white font-semibold text-base hover:bg-white/10 transition-colors border border-white/10"
             >
               <DocumentText size={20} color="#f0f0f5" />
-              View Docs
+              Launch Campaign
             </motion.a>
           </div>
 
