@@ -170,6 +170,18 @@ anchor test
 - **`Cargo.toml`** - Rust workspace config
 - **`.changeset/config.json`** - Changesets for versioning
 
+### Docker
+
+- **`docker-compose.yml`** - Production Docker Compose configuration
+- **`docker-compose.dev.yml`** - Development Docker Compose configuration
+- **`apps/backend/Dockerfile`** - Backend production Docker image
+- **`apps/backend/Dockerfile.dev`** - Backend development Docker image
+- **`apps/frontend/Dockerfile`** - Frontend production Docker image
+- **`.dockerignore`** - Files to exclude from Docker builds
+- **`DOCKER.md`** - Comprehensive Docker documentation
+- **`QUICKSTART.md`** - Quick start guide for Docker and local development
+- **`scripts/docker-start.sh`** - Helper script to start Docker services
+
 ### Scripts (Root)
 
 ```bash
@@ -208,28 +220,61 @@ pnpm release           # Build and publish with changesets
 ### Prerequisites
 - Node.js 20+
 - pnpm 10+
-- Rust + Solana CLI + Anchor CLI 0.30+
+- Rust + Solana CLI + Anchor CLI 0.30+ (for Solana programs)
 
-### Quick Start
+**OR** use Docker (recommended):
+- Docker 20.10+
+- Docker Compose 2.0+
+
+### Quick Start with Docker
+
+```bash
+# Start all services (frontend, backend, database)
+./scripts/docker-start.sh
+
+# Or manually
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+```
+
+Services available at:
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:3001
+- API Docs: http://localhost:3001/api/docs
+- Database: localhost:5432
+
+See [DOCKER.md](./DOCKER.md) and [QUICKSTART.md](./QUICKSTART.md) for details.
+
+### Quick Start (Local Development)
 
 1. **Install dependencies**:
    ```bash
    pnpm install
    ```
 
-2. **Run frontend**:
+2. **Start database** (Docker):
+   ```bash
+   docker-compose up postgres -d
+   ```
+
+3. **Run frontend**:
    ```bash
    pnpm dev:frontend
    # → http://localhost:3000
    ```
 
-3. **Run backend**:
+4. **Run backend**:
    ```bash
    pnpm dev:backend
-   # → http://localhost:3000 (note: same port, run separately)
+   # → http://localhost:3001
    ```
 
-4. **Build Solana program**:
+5. **Build Solana program**:
    ```bash
    anchor build
    anchor test

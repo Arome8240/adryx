@@ -85,6 +85,38 @@ adryx/
 - [Solana CLI](https://docs.solana.com/cli/install-solana-cli-tools)
 - [Anchor CLI](https://www.anchor-lang.com/docs/installation) 0.30+
 
+**OR** use Docker (recommended for quick start):
+
+- [Docker](https://docs.docker.com/get-docker/) 20.10+
+- [Docker Compose](https://docs.docker.com/compose/install/) 2.0+
+
+### Quick Start with Docker
+
+The fastest way to run Adryx:
+
+```bash
+# Start all services (frontend, backend, database)
+./scripts/docker-start.sh
+
+# Or manually with docker-compose
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+```
+
+Access the application:
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:3001
+- **API Docs**: http://localhost:3001/api/docs
+
+See [DOCKER.md](./DOCKER.md) for detailed Docker instructions.
+
+### Local Development (without Docker)
+
 ### Install dependencies
 
 ```bash
@@ -102,7 +134,7 @@ pnpm dev:frontend
 
 ```bash
 pnpm dev:backend
-# → http://localhost:3000
+# → http://localhost:3001
 ```
 
 ### Build the Solana program
