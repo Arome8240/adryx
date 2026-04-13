@@ -1,5 +1,16 @@
 .PHONY: help docker-up docker-down docker-logs docker-clean dev-up dev-down install build test
 
+# Detect docker compose command (v2 uses 'docker compose', v1 uses 'docker-compose')
+DOCKER_COMPOSE := $(shell if docker compose version >/dev/null 2>&1; then echo "docker compose"; else echo "docker-compose"; fi)
+
+# Check if Docker is running
+define check_docker
+	@if ! docker info >/dev/null 2>&1; then \
+		echo "❌ Docker is not running. Please start Docker Desktop or Docker daemon."; \
+		exit 1; \
+	fi
+endef
+
 # Default target
 help:
 	@echo "Adryx - Available Commands"
@@ -23,36 +34,44 @@ help:
 	@echo "  make backend        - Start backend dev server"
 	@echo "  make db             - Start database only"
 	@echo ""
+	@echo "Using: $(DOCKER_COMPOSE)"
+	@echo ""
 
 # Docker commands
 docker-up:
+	$(check_docker)
 	@echo "🚀 Starting Adryx with Docker..."
-	docker-compose up -d
+	$(DOCKER_COMPOSE) up -d
 	@echo "✅ Services started!"
 	@echo "   Frontend: http://localhost:3000"
 	@echo "   Backend:  http://localhost:3001"
 	@echo "   API Docs: http://localhost:3001/api/docs"
 
 docker-down:
+	$(check_docker)
 	@echo "🛑 Stopping Docker services..."
-	docker-compose down
+	$(DOCKER_COMPOSE) down
 
 docker-logs:
-	docker-compose logs -f
+	$(check_docker)
+	$(DOCKER_COMPOSE) logs -f
 
 docker-clean:
+	$(check_docker)
 	@echo "🧹 Cleaning up Docker..."
-	docker-compose down -v --rmi local
+	$(DOCKER_COMPOSE) down -v --rmi local
 	@echo "✅ Cleanup complete"
 
 docker-rebuild:
+	$(check_docker)
 	@echo "🔨 Rebuilding Docker services..."
-	docker-compose up -d --build
+	$(DOCKER_COMPOSE) up -d --build
 
 # Development commands
 dev-up:
+	$(check_docker)
 	@echo "🔧 Starting development environment..."
-	docker-compose -f docker-compose.dev.yml up -d
+	$(DOCKER_COMPOSE) -f docker-compose.dev.yml up -d
 	@echo "✅ Development environment started!"
 	@echo "   Backend:  http://localhost:3001"
 	@echo "   Database: localhost:5432"
@@ -61,7 +80,8 @@ dev-up:
 	@echo "   cd apps/frontend && pnpm dev"
 
 dev-down:
-	docker-compose -f docker-compose.dev.yml down
+	$(check_docker)
+	$(DOCKER_COMPOSE) -f docker-compose.dev.yml down
 
 install:
 	@echo "📦 Installing dependencies..."
@@ -86,21 +106,21 @@ backend:
 
 db:
 	@echo "🗄️  Starting database..."
-	docker-compose up postgres -d
+	$(DOCKER_COMPOSE) up postgres -d
 	@echo "✅ Database started on localhost:5432"
 
 # Utility commands
 ps:
-	docker-compose ps
+	$(DOCKER_COMPOSE) ps
 
 shell-backend:
-	docker-compose exec backend sh
+	$(DOCKER_COMPOSE) exec backend sh
 
 shell-frontend:
-	docker-compose exec frontend sh
+	$(DOCKER_COMPOSE) exec frontend sh
 
 shell-db:
-	docker-compose exec postgres psql -U adryx -d adryx
+	$(DOCKER_COMPOSE) exec postgres psql -U adryx -d adryx
 
 backup-db:
 	@echo "💾 Backing up database..."

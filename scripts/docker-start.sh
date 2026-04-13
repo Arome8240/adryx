@@ -24,7 +24,7 @@ fi
 
 # Function to use docker compose (v2) or docker-compose (v1)
 docker_compose() {
-    if docker compose version &> /dev/null; then
+    if docker compose version &> /dev/null 2>&1; then
         docker compose "$@"
     else
         docker-compose "$@"
