@@ -11,8 +11,8 @@ WORKDIR /app
 # Copy package files
 COPY apps/backend/package.json apps/backend/pnpm-lock.yaml ./
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
+# Install dependencies (allow lockfile updates for new dependencies)
+RUN pnpm install --no-frozen-lockfile
 
 # Builder stage
 FROM base AS builder
