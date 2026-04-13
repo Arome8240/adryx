@@ -25,6 +25,7 @@ help:
 	@echo "  make install        - Install all dependencies"
 	@echo "  make build          - Build all packages"
 	@echo "  make test           - Run all tests"
+	@echo "  make test-db        - Test database connection"
 	@echo ""
 	@echo "Individual Services:"
 	@echo "  make frontend       - Start frontend dev server"
@@ -109,6 +110,17 @@ db:
 # Utility commands
 ps:
 	$(DOCKER_COMPOSE) ps
+
+test-db:
+	@echo "🧪 Testing database connection..."
+	@if command -v node >/dev/null 2>&1; then \
+		node scripts/test-db-connection.js; \
+	else \
+		bash scripts/test-db.sh; \
+	fi
+
+test-and-rebuild:
+	@bash scripts/test-and-rebuild.sh
 
 shell-backend:
 	$(DOCKER_COMPOSE) exec backend sh
