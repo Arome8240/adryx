@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: adryx
       POSTGRES_PASSWORD: adryx_password
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data_dev:/var/lib/postgresql/data
     healthcheck:
@@ -18,7 +18,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # Backend API (Development)
+  # Backend API (Development with hot-reload)
   backend:
     build:
       context: .
@@ -30,11 +30,11 @@ services:
     environment:
       NODE_ENV: development
       PORT: 3000
-      DATABASE_HOST: postgres
-      DATABASE_PORT: 5432
-      DATABASE_NAME: adryx
-      DATABASE_USER: adryx
-      DATABASE_PASSWORD: adryx_password
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: adryx
+      DB_USERNAME: adryx
+      DB_PASSWORD: adryx_password
     volumes:
       - ./apps/backend/src:/app/src
       - ./apps/backend/package.json:/app/package.json
