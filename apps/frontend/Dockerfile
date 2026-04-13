@@ -12,8 +12,8 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/frontend/package.json ./apps/frontend/
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
+# Install dependencies (allow lockfile updates)
+RUN pnpm install --no-frozen-lockfile
 
 # Builder stage
 FROM base AS builder
