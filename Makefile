@@ -27,6 +27,12 @@ help:
 	@echo "  make test           - Run all tests"
 	@echo "  make test-db        - Test database connection"
 	@echo ""
+	@echo "Database Migrations:"
+	@echo "  make migration-generate - Generate a new migration"
+	@echo "  make migration-run      - Run pending migrations"
+	@echo "  make migration-revert   - Revert last migration"
+	@echo "  make migration-docker   - Run migrations in Docker"
+	@echo ""
 	@echo "Individual Services:"
 	@echo "  make frontend       - Start frontend dev server"
 	@echo "  make backend        - Start backend dev server"
@@ -113,14 +119,28 @@ ps:
 
 test-db:
 	@echo "🧪 Testing database connection..."
-	@if command -v node >/dev/null 2>&1; then \
-		node scripts/test-db-connection.js; \
-	else \
-		bash scripts/test-db.sh; \
-	fi
+	@(cd apps/backend && node test-db-connection.js)
 
 test-and-rebuild:
 	@bash scripts/test-and-rebuild.sh
+
+# Database migrations
+migration-generate:
+	@echo "📝 Generating migration..."
+	@read -p "Migration name: " name; \
+	cd apps/backend && pnpm migration:generate src/migrations/$$name
+
+migration-run:
+	@echo "🚀 Running migrations..."
+	@cd apps/backend && pnpm migration:run
+
+migration-revert:
+	@echo "⏪ Reverting last migration..."
+	@cd apps/backend && pnpm migration:revert
+
+migration-docker:
+	@echo "🐳 Running migrations in Docker..."
+	docker exec adryx-backend pnpm migration:run
 
 shell-backend:
 	$(DOCKER_COMPOSE) exec backend sh
