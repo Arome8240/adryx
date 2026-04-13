@@ -5,10 +5,7 @@ DOCKER_COMPOSE := $(shell if docker compose version >/dev/null 2>&1; then echo "
 
 # Check if Docker is running
 define check_docker
-	@if ! docker info >/dev/null 2>&1; then \
-		echo "❌ Docker is not running. Please start Docker Desktop or Docker daemon."; \
-		exit 1; \
-	fi
+	@docker info >/dev/null 2>&1 || (echo "❌ Docker is not running. Please start Docker Desktop or Docker daemon." && exit 1)
 endef
 
 # Default target
