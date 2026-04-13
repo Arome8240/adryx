@@ -9,11 +9,10 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
-import type { AnalyticsPoint } from "@/lib/mock-data";
 
-interface Props {
-  data: AnalyticsPoint[];
-  lines: { key: keyof AnalyticsPoint; color: string; label: string }[];
+interface Props<T extends Record<string, any>> {
+  data: T[];
+  lines: { key: keyof T; color: string; label: string }[];
   height?: number;
 }
 
@@ -31,7 +30,7 @@ function CustomTooltip({ active, payload, label }: any) {
   );
 }
 
-export default function PerformanceChart({ data, lines, height = 280 }: Props) {
+export default function PerformanceChart<T extends Record<string, any>>({ data, lines, height = 280 }: Props<T>) {
   return (
     <ResponsiveContainer width="100%" height={height}>
       <LineChart

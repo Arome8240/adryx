@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: adryx
       POSTGRES_PASSWORD: adryx_password
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -30,11 +30,11 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
-      DATABASE_HOST: postgres
-      DATABASE_PORT: 5432
-      DATABASE_NAME: adryx
-      DATABASE_USER: adryx
-      DATABASE_PASSWORD: adryx_password
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: adryx
+      DB_USERNAME: adryx
+      DB_PASSWORD: adryx_password
     depends_on:
       postgres:
         condition: service_healthy
