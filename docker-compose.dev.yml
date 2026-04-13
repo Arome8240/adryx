@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: adryx-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: adryx
+      POSTGRES_USER: adryx
+      POSTGRES_PASSWORD: adryx_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U adryx"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API (Development)
+  backend:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile.dev
+    container_name: adryx-backend-dev
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: adryx
+      DATABASE_USER: adryx
+      DATABASE_PASSWORD: adryx_password
+    volumes:
+      - ./apps/backend/src:/app/src
+      - ./apps/backend/package.json:/app/package.json
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: pnpm start:dev
+
+volumes:
+  postgres_data_dev:
+    driver: local
+
+networks:
+  default:
+    name: adryx-network-dev
