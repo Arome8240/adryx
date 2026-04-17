@@ -1,31 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { useCampaigns, useCampaignStats } from '@/hooks/useCampaigns';
-import { useAuth } from '@/hooks/useAuth';
 
 export default function CampaignsPage() {
   const router = useRouter();
   const { publicKey } = useWallet();
-  const { isAuthenticated } = useAuth();
   const { campaigns, isLoading, fundCampaign, pauseCampaign, resumeCampaign, deleteCampaign } = useCampaigns();
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
   const [fundingAmount, setFundingAmount] = useState('');
   const [isFunding, setIsFunding] = useState(false);
   const { stats } = useCampaignStats(selectedCampaign);
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/login');
-    }
-  }, [isAuthenticated, router]);
-
-  if (!isAuthenticated) {
-    return null;
-  }
 
   const handleFund = async (campaignId: string) => {
     if (!publicKey) {
