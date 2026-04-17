@@ -1,60 +1,79 @@
 use anchor_lang::prelude::*;
 
+pub mod instructions;
+pub mod state;
+pub mod errors;
+pub mod constants;
+
+use instructions::*;
+
 declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
 
 #[program]
 pub mod adryx {
     use super::*;
 
-    /// Register a new ad campaign on-chain.
+    /// Initialize the Adryx platform
+    pub fn initialize(ctx: Context<Initialize>, fee_percentage: u16) -> Result<()> {
+        instructions::initialize::handler(ctx, fee_percentage)
+    }
+
+    /// Create a new campaign
     pub fn create_campaign(
-        _ctx: Context<CreateCampaign>,
-        _campaign_id: String,
-        _budget_lamports: u64,
+        ctx: Context<CreateCampaign>,
+        name: String,
+        budget: u64,
+        cpc_rate: u64, // Cost per click in lamports
+        start_time: i64,
+        end_time: i64,
     ) -> Result<()> {
-        // TODO: implement campaign creation logic
-        Ok(())
+        instructions::create_campaign::handler(ctx, name, budget, cpc_rate, start_time, end_time)
     }
 
-    /// Record an ad interaction (impression or click).
-    pub fn record_interaction(
-        _ctx: Context<RecordInteraction>,
-        _campaign_id: String,
-        _interaction_type: u8, // 0 = impression, 1 = click
-    ) -> Result<()> {
-        // TODO: implement interaction tracking logic
-        Ok(())
+    /// Fund a campaign
+    pub fn fund_campaign(ctx: Context<FundCampaign>, amount: u64) -> Result<()> {
+        instructions::fund_campaign::handler(ctx, amount)
     }
 
-    /// Distribute micro-rewards to a user for engagement.
-    pub fn distribute_reward(
-        _ctx: Context<DistributeReward>,
-        _campaign_id: String,
-        _amount_lamports: u64,
+    /// Register a publisher site
+    pub fn register_site(
+        ctx: Context<RegisterSite>,
+        name: String,
+        url: String,
     ) -> Result<()> {
-        // TODO: implement reward distribution logic
-        Ok(())
+        instructions::register_site::handler(ctx, name, url)
     }
-}
 
-// ─── Account Contexts (scaffolded) ───────────────────────────────────────────
+    /// Record an ad impression
+    pub fn record_impression(
+        ctx: Context<RecordImpression>,
+        campaign_id: Pubkey,
+        site_id: Pubkey,
+    ) -> Result<()> {
+        instructions::record_impression::handler(ctx, campaign_id, site_id)
+    }
 
-#[derive(Accounts)]
-pub struct CreateCampaign<'info> {
-    #[account(mut)]
-    pub advertiser: Signer<'info>,
-    pub system_program: Program<'info, System>,
-}
+    /// Record an ad click and pay publisher
+    pub fn record_click(
+        ctx: Context<RecordClick>,
+        campaign_id: Pubkey,
+        site_id: Pubkey,
+    ) -> Result<()> {
+        instructions::record_click::handler(ctx, campaign_id, site_id)
+    }
 
-#[derive(Accounts)]
-pub struct RecordInteraction<'info> {
-    #[account(mut)]
-    pub authority: Signer<'info>,
-}
+    /// Withdraw campaign funds (advertiser)
+    pub fn withdraw_campaign(ctx: Context<WithdrawCampaign>, amount: u64) -> Result<()> {
+        instructions::withdraw_campaign::handler(ctx, amount)
+    }
 
-#[derive(Accounts)]
-pub struct DistributeReward<'info> {
-    #[account(mut)]
-    pub authority: Signer<'info>,
-    pub system_program: Program<'info, System>,
+    /// Claim publisher earnings
+    pub fn claim_earnings(ctx: Context<ClaimEarnings>) -> Result<()> {
+        instructions::claim_earnings::handler(ctx)
+    }
+
+    /// Pause/unpause a campaign
+    pub fn toggle_campaign(ctx: Context<ToggleCampaign>) -> Result<()> {
+        instructions::toggle_campaign::handler(ctx)
+    }
 }
