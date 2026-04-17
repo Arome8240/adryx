@@ -1,123 +1,358 @@
-# 🐳 Starting Docker
+# Start Adryx with Docker 🚀
 
-Before running Adryx with Docker, you need to start the Docker daemon.
+## Prerequisites
 
-## For Docker Desktop Users
+1. **Install Docker Desktop**
+   - Download from: https://www.docker.com/products/docker-desktop
+   - Install and start Docker Desktop
+   - Verify: `docker --version`
 
-### Linux
-```bash
-# Start Docker Desktop from your applications menu
-# Or use systemctl if installed as a service
-sudo systemctl start docker
-```
+2. **Start Docker**
+   - Open Docker Desktop application
+   - Wait for Docker to start (whale icon in system tray)
+   - Verify: `docker info`
 
-### macOS
-1. Open Docker Desktop from Applications
-2. Wait for Docker to start (whale icon in menu bar)
-
-### Windows
-1. Open Docker Desktop from Start menu
-2. Wait for Docker to start (whale icon in system tray)
-
-## For Docker Engine Users (Linux)
+## Quick Start (3 Commands)
 
 ```bash
-# Start Docker daemon
-sudo systemctl start docker
+# 1. Start Docker Desktop (if not running)
+# Open Docker Desktop app
 
-# Enable Docker to start on boot
-sudo systemctl enable docker
-
-# Check Docker status
-sudo systemctl status docker
-```
-
-## Verify Docker is Running
-
-```bash
-# Check Docker info
-docker info
-
-# Check Docker version
-docker version
-
-# Check Docker Compose
-docker compose version
-```
-
-## Then Run Adryx
-
-Once Docker is running:
-
-```bash
-# Option 1: Using Makefile
+# 2. Build and start all services
 make docker-up
 
-# Option 2: Using Docker Compose directly
-docker compose up -d
-
-# Option 3: Using helper script
-./scripts/docker-start.sh
+# 3. Open your browser
+# Frontend: http://localhost:3000
+# Backend:  http://localhost:3001/api/docs
 ```
 
-## Troubleshooting
+## What Gets Started
 
-### "Cannot connect to the Docker daemon"
+When you run `make docker-up`, Docker will:
 
-This means Docker is not running. Start Docker Desktop or the Docker daemon:
+1. **Pull/Build Images** (~5-10 minutes first time)
+   - MongoDB 7 image
+   - Build backend (Node.js + NestJS)
+   - Build frontend (Next.js)
+
+2. **Start Services**
+   - MongoDB on port 27017
+   - Backend API on port 3001
+   - Frontend on port 3000
+
+3. **Create Network**
+   - Services can communicate internally
+   - Exposed ports for external access
+
+## Step-by-Step Instructions
+
+### 1. Verify Docker is Running
 
 ```bash
-# Linux
-sudo systemctl start docker
-
-# Check if running
 docker info
 ```
 
-### Permission Denied
+If you see an error, start Docker Desktop first.
 
-If you get permission errors on Linux:
-
-```bash
-# Add your user to docker group
-sudo usermod -aG docker $USER
-
-# Log out and log back in, then verify
-docker info
-```
-
-### Docker Desktop Not Starting
-
-1. Check system requirements
-2. Restart your computer
-3. Reinstall Docker Desktop if needed
-4. Check Docker Desktop logs for errors
-
-## Alternative: Run Without Docker
-
-If you prefer not to use Docker:
+### 2. Build and Start Services
 
 ```bash
-# Install PostgreSQL locally
-sudo apt install postgresql  # Ubuntu/Debian
-brew install postgresql      # macOS
+# Option 1: Using Makefile (recommended)
+make docker-up
 
-# Start PostgreSQL
-sudo systemctl start postgresql  # Linux
-brew services start postgresql   # macOS
-
-# Create database
-createdb adryx
-
-# Run backend
-cd apps/backend
-pnpm install
-pnpm start:dev
-
-# Run frontend (in another terminal)
-cd apps/frontend
-pnpm install
-pnpm dev
+# Option 2: Using docker compose directly
+docker compose up -d --build
 ```
 
-See [QUICKSTART.md](./QUICKSTART.md) for more details.
+**First time build takes 5-10 minutes**. Subsequent starts are much faster.
+
+### 3. Check Services are Running
+
+```bash
+# View all containers
+docker compose ps
+
+# Should show:
+# adryx-mongodb   running
+# adryx-backend   running
+# adryx-frontend  running
+```
+
+### 4. View Logs (Optional)
+
+```bash
+# All services
+make docker-logs
+
+# Specific service
+docker compose logs -f backend
+docker compose logs -f frontend
+docker compose logs -f mongodb
+```
+
+### 5. Access the Application
+
+Open your browser:
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:3001/api/v1
+- **API Docs**: http://localhost:3001/api/docs
+
+## Testing the Setup
+
+### 1. Test Backend Health
+
+```bash
+curl http://localhost:3001/api/v1/health
+```
+
+Expected response:
+```json
+{
+  "status": "ok",
+  "timestamp": "2024-01-01T00:00:00.000Z",
+  "uptime": 123.456
+}
+```
+
+### 2. Test Frontend
+
+Open http://localhost:3000 in your browser. You should see the Adryx homepage.
+
+### 3. Test Database
+
+```bash
+docker compose exec mongodb mongosh -u adryx -p adryx_password --authenticationDatabase admin
+```
+
+## Using the Application
+
+### 1. Connect Wallet
+
+1. Install Phantom wallet extension
+2. Switch to Devnet:
+   - Settings → Developer Settings
+   - Enable "Testnet Mode"
+   - Select "Devnet"
+3. Get devnet SOL:
+   ```bash
+   solana airdrop 2 YOUR_WALLET_ADDRESS --url devnet
+   ```
+
+### 2. Create Campaign
+
+1. Go to http://localhost:3000/dashboard
+2. Click "Connect Wallet"
+3. Click "Create Campaign"
+4. Fill in campaign details
+5. Submit
+
+### 3. Fund Campaign
+
+1. Go to Campaigns page
+2. Find your draft campaign
+3. Click "Fund Campaign"
+4. Enter SOL amount
+5. Approve transaction in Phantom
+
+## Common Issues & Solutions
+
+### Issue: "Docker is not running"
+
+**Solution:**
+```bash
+# Start Docker Desktop application
+# Wait for it to fully start
+# Try again: make docker-up
+```
+
+### Issue: "Port already in use"
+
+**Solution:**
+```bash
+# Check what's using the port
+lsof -i :3000  # Frontend
+lsof -i :3001  # Backend
+lsof -i :27017 # MongoDB
+
+# Stop the conflicting service or change ports in docker-compose.yml
+```
+
+### Issue: "Build failed"
+
+**Solution:**
+```bash
+# Clean everything and rebuild
+make docker-clean
+make docker-up
+```
+
+### Issue: "Backend can't connect to MongoDB"
+
+**Solution:**
+```bash
+# Check MongoDB is healthy
+docker compose ps
+
+# Restart backend
+docker compose restart backend
+
+# View backend logs
+docker compose logs backend
+```
+
+### Issue: "Frontend shows connection error"
+
+**Solution:**
+```bash
+# Check backend is running
+curl http://localhost:3001/api/v1/health
+
+# Check environment variables
+docker compose exec frontend env | grep NEXT_PUBLIC
+
+# Restart frontend
+docker compose restart frontend
+```
+
+## Stopping the Application
+
+### Keep Data (Recommended)
+```bash
+make docker-down
+```
+
+This stops containers but keeps:
+- MongoDB data
+- Docker images
+
+### Remove Everything
+```bash
+make docker-clean
+```
+
+This removes:
+- Containers
+- Volumes (MongoDB data)
+- Images
+
+## Development Workflow
+
+### Making Changes
+
+1. **Edit code** in your editor
+2. **Rebuild** the changed service:
+   ```bash
+   # Backend changes
+   docker compose up -d --build backend
+   
+   # Frontend changes
+   docker compose up -d --build frontend
+   
+   # Both
+   make docker-rebuild
+   ```
+
+### Viewing Logs
+
+```bash
+# Follow all logs
+make docker-logs
+
+# Follow specific service
+docker compose logs -f backend
+```
+
+### Accessing Containers
+
+```bash
+# Backend shell
+docker compose exec backend sh
+
+# Frontend shell
+docker compose exec frontend sh
+
+# MongoDB shell
+docker compose exec mongodb mongosh -u adryx -p adryx_password --authenticationDatabase admin
+```
+
+## Useful Commands
+
+```bash
+# Start services
+make docker-up
+
+# Stop services
+make docker-down
+
+# View logs
+make docker-logs
+
+# Rebuild services
+make docker-rebuild
+
+# Clean everything
+make docker-clean
+
+# Check status
+docker compose ps
+
+# View resource usage
+docker stats
+```
+
+## Environment Variables
+
+### Backend (.env)
+```env
+NODE_ENV=production
+PORT=3001
+MONGODB_URI=mongodb://adryx:adryx_password@mongodb:27017/adryx?authSource=admin
+JWT_SECRET=your-secret-key-change-in-production
+SOLANA_RPC_URL=https://api.devnet.solana.com
+SOLANA_PROGRAM_ID=Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS
+```
+
+### Frontend (.env.local)
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1
+NEXT_PUBLIC_SOLANA_NETWORK=devnet
+NEXT_PUBLIC_SOLANA_RPC_URL=https://api.devnet.solana.com
+```
+
+## Next Steps
+
+1. ✅ Start Docker Desktop
+2. ✅ Run `make docker-up`
+3. ✅ Wait for build to complete
+4. ✅ Open http://localhost:3000
+5. ✅ Connect Phantom wallet (devnet)
+6. ✅ Create and fund a campaign
+
+## Support
+
+If you encounter issues:
+
+1. Check logs: `make docker-logs`
+2. Verify Docker is running: `docker info`
+3. Check service status: `docker compose ps`
+4. Try rebuilding: `make docker-rebuild`
+5. Clean start: `make docker-clean && make docker-up`
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────┐
+│           Docker Network (adryx-network)     │
+│                                              │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  │
+│  │ Frontend │  │ Backend  │  │ MongoDB  │  │
+│  │  :3000   │→ │  :3001   │→ │  :27017  │  │
+│  └──────────┘  └──────────┘  └──────────┘  │
+│       ↓              ↓              ↓        │
+└───────┼──────────────┼──────────────┼────────┘
+        │              │              │
+        ↓              ↓              ↓
+   localhost:3000  localhost:3001  localhost:27017
+```
+
+Enjoy building with Adryx! 🚀
