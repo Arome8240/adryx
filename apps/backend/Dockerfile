@@ -1,49 +1,42 @@
-# Backend Dockerfile
-FROM node:20-alpine AS base
+# Build stage
+FROM node:20-alpine AS builder
 
 # Install pnpm
-RUN corepack enable && corepack prepare pnpm@10.30.1 --activate
+RUN npm install -g pnpm
 
-# Dependencies stage
-FROM base AS deps
 WORKDIR /app
 
 # Copy package files
-COPY apps/backend/package.json apps/backend/pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml ./
 
-# Install dependencies (allow lockfile updates for new dependencies)
-RUN pnpm install --no-frozen-lockfile
-
-# Builder stage
-FROM base AS builder
-WORKDIR /app
-
-# Copy dependencies
-COPY --from=deps /app/node_modules ./node_modules
+# Install dependencies
+RUN pnpm install --frozen-lockfile
 
 # Copy source code
-COPY apps/backend ./
+COPY . .
 
 # Build the application
 RUN pnpm build
 
-# Runner stage
-FROM base AS runner
+# Production stage
+FROM node:20-alpine AS runner
+
+# Install pnpm and wget for healthcheck
+RUN npm install -g pnpm && apk add --no-cache wget
+
 WORKDIR /app
 
-ENV NODE_ENV=production
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
 
-# Create non-root user
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nestjs
+# Install production dependencies only
+RUN pnpm install --prod --frozen-lockfile
 
-# Copy built application and dependencies
+# Copy built application from builder
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
 
-USER nestjs
+# Expose port
+EXPOSE 3001
 
-EXPOSE 3000
-
-CMD ["node", "dist/main"]
+# Start the application
+CMD ["node", "dist/main.js"]
