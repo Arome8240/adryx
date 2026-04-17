@@ -7,10 +7,10 @@ RUN npm install -g pnpm
 WORKDIR /app
 
 # Copy package files
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml* ./
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
+# Install dependencies (regenerate lockfile if needed)
+RUN pnpm install
 
 # Copy source code
 COPY . .
@@ -21,16 +21,17 @@ RUN pnpm build
 # Production stage
 FROM node:20-alpine AS runner
 
-# Install pnpm and wget for healthcheck
-RUN npm install -g pnpm && apk add --no-cache wget
+# Install pnpm, wget, and build dependencies for native modules
+RUN npm install -g pnpm && \
+    apk add --no-cache wget python3 make g++
 
 WORKDIR /app
 
 # Copy package files
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml* ./
 
-# Install production dependencies only
-RUN pnpm install --prod --frozen-lockfile
+# Install production dependencies and rebuild native modules
+RUN pnpm install --prod && pnpm rebuild bcrypt
 
 # Copy built application from builder
 COPY --from=builder /app/dist ./dist
