@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { TickCircle } from 'iconsax-react';
 
 export default function PricingPage() {
   return (
@@ -20,10 +21,22 @@ export default function PricingPage() {
               <div className="text-4xl font-bold mb-4">5%</div>
               <p className="text-white/60 mb-6">Platform fee on ad spend</p>
               <ul className="space-y-3 text-sm text-white/60">
-                <li>✓ Unlimited campaigns</li>
-                <li>✓ Real-time analytics</li>
-                <li>✓ On-chain escrow</li>
-                <li>✓ Automated payments</li>
+                <li className="flex items-center gap-2">
+                  <TickCircle size={16} color="#4ade80" variant="Bold" />
+                  Unlimited campaigns
+                </li>
+                <li className="flex items-center gap-2">
+                  <TickCircle size={16} color="#4ade80" variant="Bold" />
+                  Real-time analytics
+                </li>
+                <li className="flex items-center gap-2">
+                  <TickCircle size={16} color="#4ade80" variant="Bold" />
+                  On-chain escrow
+                </li>
+                <li className="flex items-center gap-2">
+                  <TickCircle size={16} color="#4ade80" variant="Bold" />
+                  Automated payments
+                </li>
               </ul>
             </div>
 
@@ -35,10 +48,22 @@ export default function PricingPage() {
               <div className="text-4xl font-bold mb-4">10%</div>
               <p className="text-white/60 mb-6">Platform fee on earnings</p>
               <ul className="space-y-3 text-sm text-white/60">
-                <li>✓ Unlimited sites</li>
-                <li>✓ Instant payouts</li>
-                <li>✓ Multiple ad formats</li>
-                <li>✓ Detailed reporting</li>
+                <li className="flex items-center gap-2">
+                  <TickCircle size={16} color="#4ade80" variant="Bold" />
+                  Unlimited sites
+                </li>
+                <li className="flex items-center gap-2">
+                  <TickCircle size={16} color="#4ade80" variant="Bold" />
+                  Instant payouts
+                </li>
+                <li className="flex items-center gap-2">
+                  <TickCircle size={16} color="#4ade80" variant="Bold" />
+                  Multiple ad formats
+                </li>
+                <li className="flex items-center gap-2">
+                  <TickCircle size={16} color="#4ade80" variant="Bold" />
+                  Detailed reporting
+                </li>
               </ul>
             </div>
 
@@ -47,10 +72,22 @@ export default function PricingPage() {
               <div className="text-4xl font-bold mb-4">Custom</div>
               <p className="text-white/60 mb-6">Tailored solutions</p>
               <ul className="space-y-3 text-sm text-white/60">
-                <li>✓ Volume discounts</li>
-                <li>✓ Dedicated support</li>
-                <li>✓ Custom integrations</li>
-                <li>✓ SLA guarantees</li>
+                <li className="flex items-center gap-2">
+                  <TickCircle size={16} color="#4ade80" variant="Bold" />
+                  Volume discounts
+                </li>
+                <li className="flex items-center gap-2">
+                  <TickCircle size={16} color="#4ade80" variant="Bold" />
+                  Dedicated support
+                </li>
+                <li className="flex items-center gap-2">
+                  <TickCircle size={16} color="#4ade80" variant="Bold" />
+                  Custom integrations
+                </li>
+                <li className="flex items-center gap-2">
+                  <TickCircle size={16} color="#4ade80" variant="Bold" />
+                  SLA guarantees
+                </li>
               </ul>
             </div>
           </div>

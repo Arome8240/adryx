@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Link from "next/link";
+import { Send, Box, Link2, Code } from 'iconsax-react';
 
 export default function DocsPage() {
   return (
@@ -15,28 +16,40 @@ export default function DocsPage() {
 
           <div className="grid md:grid-cols-2 gap-8">
             <Link href="/docs/quickstart" className="glass p-8 rounded-2xl border border-white/10 hover:border-orange-500/50 transition-colors">
-              <h2 className="text-2xl font-bold mb-4">🚀 Quick Start</h2>
+              <div className="flex items-center gap-3 mb-4">
+                <Send size={32} color="#f97316" variant="Bold" />
+                <h2 className="text-2xl font-bold">Quick Start</h2>
+              </div>
               <p className="text-white/60">
                 Get up and running in 5 minutes with our quick start guide.
               </p>
             </Link>
 
             <Link href="/docs/sdk" className="glass p-8 rounded-2xl border border-white/10 hover:border-orange-500/50 transition-colors">
-              <h2 className="text-2xl font-bold mb-4">📦 SDK Reference</h2>
+              <div className="flex items-center gap-3 mb-4">
+                <Box size={32} color="#f97316" variant="Bold" />
+                <h2 className="text-2xl font-bold">SDK Reference</h2>
+              </div>
               <p className="text-white/60">
                 Complete API reference for JavaScript, TypeScript, and Rust SDKs.
               </p>
             </Link>
 
             <Link href="/docs/smart-contracts" className="glass p-8 rounded-2xl border border-white/10 hover:border-orange-500/50 transition-colors">
-              <h2 className="text-2xl font-bold mb-4">⛓️ Smart Contracts</h2>
+              <div className="flex items-center gap-3 mb-4">
+                <Link2 size={32} color="#f97316" variant="Bold" />
+                <h2 className="text-2xl font-bold">Smart Contracts</h2>
+              </div>
               <p className="text-white/60">
                 Learn about our Solana smart contracts and on-chain architecture.
               </p>
             </Link>
 
             <a href="https://github.com/adryx" target="_blank" rel="noopener noreferrer" className="glass p-8 rounded-2xl border border-white/10 hover:border-orange-500/50 transition-colors">
-              <h2 className="text-2xl font-bold mb-4">💻 GitHub</h2>
+              <div className="flex items-center gap-3 mb-4">
+                <Code size={32} color="#f97316" variant="Bold" />
+                <h2 className="text-2xl font-bold">GitHub</h2>
+              </div>
               <p className="text-white/60">
                 View our open-source code and contribute to the project.
               </p>

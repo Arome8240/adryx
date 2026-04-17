@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { useCampaigns, useCampaignStats } from '@/hooks/useCampaigns';
+import { Notification } from 'iconsax-react';
 
 export default function CampaignsPage() {
   const router = useRouter();
@@ -117,7 +118,9 @@ export default function CampaignsPage() {
         </div>
       ) : campaigns.length === 0 ? (
         <div className="bg-white rounded-lg shadow p-12 text-center">
-          <div className="text-6xl mb-4">📢</div>
+          <div className="flex justify-center mb-4">
+            <Notification size={64} color="#f97316" variant="Bold" />
+          </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">No campaigns yet</h2>
           <p className="text-gray-600 mb-6">Create your first campaign to start advertising</p>
           <button

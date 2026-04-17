@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { Sms, Messages2 } from 'iconsax-react';
 
 export default function ContactPage() {
   return (
@@ -14,7 +15,10 @@ export default function ContactPage() {
 
           <div className="grid md:grid-cols-2 gap-8 mb-12">
             <div className="glass p-8 rounded-2xl border border-white/10">
-              <h2 className="text-2xl font-bold mb-4">📧 Email</h2>
+              <div className="flex items-center gap-3 mb-4">
+                <Sms size={32} color="#f97316" variant="Bold" />
+                <h2 className="text-2xl font-bold">Email</h2>
+              </div>
               <p className="text-white/60 mb-2">General inquiries</p>
               <a href="mailto:hello@adryx.io" className="text-orange-500 hover:text-orange-400">
                 hello@adryx.io
@@ -26,7 +30,10 @@ export default function ContactPage() {
             </div>
 
             <div className="glass p-8 rounded-2xl border border-white/10">
-              <h2 className="text-2xl font-bold mb-4">💬 Community</h2>
+              <div className="flex items-center gap-3 mb-4">
+                <Messages2 size={32} color="#f97316" variant="Bold" />
+                <h2 className="text-2xl font-bold">Community</h2>
+              </div>
               <p className="text-white/60 mb-2">Discord</p>
               <a href="#" className="text-orange-500 hover:text-orange-400 block mb-4">
                 Join our Discord

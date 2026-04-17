@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdvertiserDashboard } from '@/hooks/useAnalytics';
 import { useCampaigns } from '@/hooks/useCampaigns';
+import { Chart, TrendUp, Add } from 'iconsax-react';
 
 export default function AdvertiserDashboard() {
   const router = useRouter();
@@ -88,7 +88,9 @@ export default function AdvertiserDashboard() {
             className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-colors"
           >
             <div className="text-center">
-              <div className="text-3xl mb-2">+</div>
+              <div className="flex justify-center mb-2">
+                <Add size={32} color="#f97316" variant="Bold" />
+              </div>
               <p className="font-semibold text-gray-900">Create Campaign</p>
               <p className="text-sm text-gray-600">Start a new ad campaign</p>
             </div>
@@ -99,7 +101,9 @@ export default function AdvertiserDashboard() {
             className="p-4 border-2 border-gray-200 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-colors"
           >
             <div className="text-center">
-              <div className="text-3xl mb-2">📊</div>
+              <div className="flex justify-center mb-2">
+                <Chart size={32} color="#f97316" variant="Bold" />
+              </div>
               <p className="font-semibold text-gray-900">View Campaigns</p>
               <p className="text-sm text-gray-600">Manage your campaigns</p>
             </div>
@@ -110,7 +114,9 @@ export default function AdvertiserDashboard() {
             className="p-4 border-2 border-gray-200 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-colors"
           >
             <div className="text-center">
-              <div className="text-3xl mb-2">📈</div>
+              <div className="flex justify-center mb-2">
+                <TrendUp size={32} color="#f97316" variant="Bold" />
+              </div>
               <p className="font-semibold text-gray-900">Analytics</p>
               <p className="text-sm text-gray-600">View detailed reports</p>
             </div>

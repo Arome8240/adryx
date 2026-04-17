@@ -7,6 +7,7 @@ import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { useAuth } from '@/hooks/useAuth';
 import { sign } from 'tweetnacl';
 import bs58 from 'bs58';
+import { TickCircle } from 'iconsax-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -264,8 +265,9 @@ export default function LoginPage() {
               </div>
               {publicKey && (
                 <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
-                  <p className="text-green-400 text-sm">
-                    ✓ Wallet will be linked: {publicKey.toString().slice(0, 8)}...
+                  <p className="text-green-400 text-sm flex items-center gap-2">
+                    <TickCircle size={16} color="#4ade80" variant="Bold" />
+                    Wallet will be linked: {publicKey.toString().slice(0, 8)}...
                   </p>
                 </div>
               )}
