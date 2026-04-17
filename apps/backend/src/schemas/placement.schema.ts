@@ -21,8 +21,12 @@ export class Placement {
   @Prop({ type: Types.ObjectId, ref: 'Site', required: true })
   siteId: Types.ObjectId;
 
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  publisherId: Types.ObjectId;
+
   // Virtual fields for relations
   site: Types.ObjectId;
+  publisher: Types.ObjectId;
   interactions: Types.ObjectId[];
 }
 
@@ -32,6 +36,13 @@ export const PlacementSchema = SchemaFactory.createForClass(Placement);
 PlacementSchema.virtual('site', {
   ref: 'Site',
   localField: 'siteId',
+  foreignField: '_id',
+  justOne: true,
+});
+
+PlacementSchema.virtual('publisher', {
+  ref: 'User',
+  localField: 'publisherId',
   foreignField: '_id',
   justOne: true,
 });
