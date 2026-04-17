@@ -1,211 +1,214 @@
-"use client";
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { DocumentUpload, Send } from "iconsax-react";
-import Toast from "@/components/dashboard/Toast";
-import type { ToastType } from "@/components/dashboard/Toast";
+'use client';
 
-const formats = ["Banner", "Native", "Video"];
-const audiences = [
-  "Web3 / DeFi Users",
-  "NFT Collectors",
-  "Crypto Traders",
-  "General Web2",
-  "Mobile App Users",
-  "Developer Community",
-];
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useCampaigns } from '@/hooks/useCampaigns';
 
 export default function CreateCampaignPage() {
-  const [form, setForm] = useState({
-    name: "",
-    budget: "",
-    audience: "",
-    format: "Banner",
-    creative: null as File | null,
+  const router = useRouter();
+  const { createCampaign } = useCampaigns();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    format: 'banner',
+    budget: '',
+    startDate: '',
+    endDate: '',
+    targetUrl: '',
+    creativeUrl: '',
   });
-  const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState<{
-    message: string;
-    type: ToastType;
-  } | null>(null);
 
-  const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name || !form.budget || !form.audience) {
-      setToast({
-        message: "Please fill in all required fields.",
-        type: "error",
+    setIsSubmitting(true);
+
+    try {
+      const campaign = await createCampaign({
+        ...formData,
+        budget: parseFloat(formData.budget),
       });
-      return;
+      alert('Campaign created successfully!');
+      router.push('/dashboard/campaigns');
+    } catch (error: any) {
+      alert(`Failed to create campaign: ${error.message}`);
+    } finally {
+      setIsSubmitting(false);
     }
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setToast({ message: "Campaign launched successfully!", type: "success" });
-      setForm({
-        name: "",
-        budget: "",
-        audience: "",
-        format: "Banner",
-        creative: null,
-      });
-    }, 1500);
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <h2 className="text-xl font-bold text-white mb-1">Create Campaign</h2>
-        <p className="text-sm text-white/40 mb-6">
-          Launch a new on-chain ad campaign on Adryx.
-        </p>
+    <div className="max-w-3xl mx-auto">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Create Campaign</h1>
+        <p className="text-gray-600 mt-1">Set up a new advertising campaign</p>
+      </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-          {/* Campaign Name */}
-          <div className="glass rounded-2xl p-6 border border-white/8 flex flex-col gap-5">
-            <h3 className="text-sm font-semibold text-white/60 uppercase tracking-widest">
-              Campaign Details
-            </h3>
+      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-8 space-y-6">
+        {/* Campaign Name */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Campaign Name *
+          </label>
+          <input
+            type="text"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            required
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            placeholder="Summer Sale 2024"
+          />
+        </div>
 
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-white/70">
-                Campaign Name <span className="text-[#f7931a]">*</span>
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. Stacks DeFi Launch Q2"
-                value={form.name}
-                onChange={(e) => set("name", e.target.value)}
-                className="px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-white/25 focus:outline-none focus:border-[#f7931a]/60 transition-colors"
-              />
-            </div>
+        {/* Description */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Description
+          </label>
+          <textarea
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            rows={3}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            placeholder="Describe your campaign..."
+          />
+        </div>
 
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-white/70">
-                Budget (USD) <span className="text-[#f7931a]">*</span>
-              </label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 text-sm">
-                  $
-                </span>
-                <input
-                  type="number"
-                  placeholder="1000"
-                  min="50"
-                  value={form.budget}
-                  onChange={(e) => set("budget", e.target.value)}
-                  className="w-full pl-8 pr-4 py-3 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-white/25 focus:outline-none focus:border-[#f7931a]/60 transition-colors"
-                />
-              </div>
-              <p className="text-xs text-white/30">Minimum budget: $50</p>
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-white/70">
-                Target Audience <span className="text-[#f7931a]">*</span>
-              </label>
-              <select
-                value={form.audience}
-                onChange={(e) => set("audience", e.target.value)}
-                className="px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-sm text-white focus:outline-none focus:border-[#f7931a]/60 transition-colors appearance-none"
-              >
-                <option value="" disabled className="bg-[#0d0d1a]">
-                  Select audience...
-                </option>
-                {audiences.map((a) => (
-                  <option key={a} value={a} className="bg-[#0d0d1a]">
-                    {a}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Ad Format */}
-          <div className="glass rounded-2xl p-6 border border-white/8 flex flex-col gap-4">
-            <h3 className="text-sm font-semibold text-white/60 uppercase tracking-widest">
-              Ad Format
-            </h3>
-            <div className="grid grid-cols-3 gap-3">
-              {formats.map((f) => (
-                <button
-                  key={f}
-                  type="button"
-                  onClick={() => set("format", f)}
-                  className={`py-3 rounded-xl text-sm font-medium border transition-all ${
-                    form.format === f
-                      ? "bg-[#f7931a]/15 border-[#f7931a]/40 text-[#f7931a]"
-                      : "bg-white/5 border-white/10 text-white/50 hover:text-white hover:border-white/20"
-                  }`}
-                >
-                  {f}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Creative Upload */}
-          <div className="glass rounded-2xl p-6 border border-white/8 flex flex-col gap-4">
-            <h3 className="text-sm font-semibold text-white/60 uppercase tracking-widest">
-              Creative Asset
-            </h3>
-            <label className="flex flex-col items-center justify-center gap-3 py-10 rounded-xl border-2 border-dashed border-white/10 hover:border-[#f7931a]/30 cursor-pointer transition-colors bg-white/2">
-              <DocumentUpload size={32} color="#f7931a" variant="Bold" />
-              <div className="text-center">
-                <p className="text-sm font-medium text-white/60">
-                  {form.creative
-                    ? form.creative.name
-                    : "Click to upload or drag & drop"}
-                </p>
-                <p className="text-xs text-white/30 mt-1">
-                  PNG, JPG, GIF, MP4 up to 10MB
-                </p>
-              </div>
-              <input
-                type="file"
-                accept="image/*,video/*"
-                className="hidden"
-                onChange={(e) =>
-                  setForm((f) => ({
-                    ...f,
-                    creative: e.target.files?.[0] ?? null,
-                  }))
-                }
-              />
-            </label>
-          </div>
-
-          {/* Submit */}
-          <motion.button
-            type="submit"
-            disabled={loading}
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.98 }}
-            className="flex items-center justify-center gap-2 w-full py-4 rounded-xl bg-linear-to-r from-[#f7931a] to-[#e8820a] text-black font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-60"
+        {/* Ad Format */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Ad Format *
+          </label>
+          <select
+            name="format"
+            value={formData.format}
+            onChange={handleChange}
+            required
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
           >
-            {loading ? (
-              <span className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-            ) : (
-              <Send size={18} color="#000" variant="Bold" />
-            )}
-            {loading ? "Launching..." : "Launch Campaign"}
-          </motion.button>
-        </form>
-      </motion.div>
+            <option value="banner">Banner</option>
+            <option value="video">Video</option>
+            <option value="native">Native</option>
+            <option value="interstitial">Interstitial</option>
+          </select>
+        </div>
 
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
+        {/* Budget */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Budget (SOL) *
+          </label>
+          <input
+            type="number"
+            name="budget"
+            value={formData.budget}
+            onChange={handleChange}
+            required
+            step="0.01"
+            min="0"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            placeholder="10.00"
+          />
+          <p className="text-sm text-gray-600 mt-1">
+            Initial budget (you can fund the campaign later)
+          </p>
+        </div>
+
+        {/* Date Range */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Start Date *
+            </label>
+            <input
+              type="date"
+              name="startDate"
+              value={formData.startDate}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              End Date *
+            </label>
+            <input
+              type="date"
+              name="endDate"
+              value={formData.endDate}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            />
+          </div>
+        </div>
+
+        {/* Target URL */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Target URL *
+          </label>
+          <input
+            type="url"
+            name="targetUrl"
+            value={formData.targetUrl}
+            onChange={handleChange}
+            required
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            placeholder="https://example.com/landing-page"
+          />
+          <p className="text-sm text-gray-600 mt-1">
+            Where users will be directed when they click your ad
+          </p>
+        </div>
+
+        {/* Creative URL */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Creative URL
+          </label>
+          <input
+            type="url"
+            name="creativeUrl"
+            value={formData.creativeUrl}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            placeholder="https://example.com/banner.jpg"
+          />
+          <p className="text-sm text-gray-600 mt-1">
+            URL to your ad creative (image or video)
+          </p>
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-4 pt-4">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+            disabled={isSubmitting}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="flex-1 px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? 'Creating...' : 'Create Campaign'}
+          </button>
+        </div>
+      </form>
     </div>
   );
 }
