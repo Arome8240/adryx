@@ -1,143 +1,186 @@
-"use client";
-import { motion } from "framer-motion";
-import { DollarCircle, Eye, MouseCircle, ChartCircle } from "iconsax-react";
-import MetricCard from "@/components/dashboard/MetricCard";
-import StatusBadge from "@/components/dashboard/StatusBadge";
-import PerformanceChart from "@/components/dashboard/PerformanceChart";
-import { overviewMetrics, campaigns, analyticsData } from "@/lib/mock-data";
-import Link from "next/link";
+'use client';
 
-const metrics = [
-  {
-    title: "Total Spend",
-    value: `$${overviewMetrics.totalSpend.toLocaleString()}`,
-    change: "+12.4%",
-    positive: true,
-    icon: <DollarCircle size={20} color="#f7931a" variant="Bold" />,
-    iconBg: "bg-[#f7931a]/10",
-  },
-  {
-    title: "Impressions",
-    value: "1.2M",
-    change: "+8.1%",
-    positive: true,
-    icon: <Eye size={20} color="#a855f7" variant="Bold" />,
-    iconBg: "bg-[#a855f7]/10",
-  },
-  {
-    title: "Clicks",
-    value: "45K",
-    change: "+5.3%",
-    positive: true,
-    icon: <MouseCircle size={20} color="#22d3ee" variant="Bold" />,
-    iconBg: "bg-[#22d3ee]/10",
-  },
-  {
-    title: "CTR",
-    value: `${overviewMetrics.ctr}%`,
-    change: "-0.2%",
-    positive: false,
-    icon: <ChartCircle size={20} color="#4ade80" variant="Bold" />,
-    iconBg: "bg-[#4ade80]/10",
-  },
-];
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useWallet } from '@solana/wallet-adapter-react';
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import { useAuth } from '@/hooks/useAuth';
+import { useAdvertiserDashboard } from '@/hooks/useAnalytics';
+import { useCampaigns } from '@/hooks/useCampaigns';
 
-export default function DashboardPage() {
+export default function AdvertiserDashboard() {
+  const router = useRouter();
+  const { publicKey } = useWallet();
+  const { isAuthenticated, user } = useAuth();
+  const { dashboard, isLoading: dashboardLoading } = useAdvertiserDashboard();
+  const { campaigns, isLoading: campaignsLoading } = useCampaigns();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push('/');
+    }
+  }, [isAuthenticated, router]);
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  const activeCampaigns = campaigns.filter((c) => c.status === 'active');
+  const draftCampaigns = campaigns.filter((c) => c.status === 'draft');
+
   return (
-    <div className="flex flex-col gap-6 max-w-7xl mx-auto">
-      {/* Metric cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {metrics.map((m, i) => (
-          <MetricCard key={m.title} {...m} delay={i * 0.08} />
-        ))}
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-600 mt-1">Welcome back, {user?.name}</p>
+        </div>
+        <WalletMultiButton />
       </div>
 
-      {/* Chart */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.3 }}
-        className="glass rounded-2xl p-6 border border-white/8"
-      >
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-base font-semibold text-white">
-              Performance Overview
-            </h2>
-            <p className="text-xs text-white/40 mt-0.5">Last 30 days</p>
+      {/* Stats Grid */}
+      {dashboardLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="bg-white rounded-lg shadow p-6 animate-pulse">
+              <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
+              <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+            </div>
+          ))}
+        </div>
+      ) : dashboard ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="bg-white rounded-lg shadow p-6">
+            <p className="text-sm text-gray-600 mb-2">Total Campaigns</p>
+            <p className="text-3xl font-bold text-gray-900">{dashboard.totalCampaigns}</p>
+            <p className="text-sm text-green-600 mt-2">
+              {dashboard.activeCampaigns} active
+            </p>
           </div>
-          <span className="text-xs text-white/30 px-3 py-1.5 rounded-lg bg-white/5">
-            Mar 1 – Apr 3
-          </span>
-        </div>
-        <PerformanceChart
-          data={analyticsData}
-          lines={[
-            { key: "impressions", color: "#a855f7", label: "Impressions" },
-            { key: "clicks", color: "#f7931a", label: "Clicks" },
-          ]}
-        />
-      </motion.div>
 
-      {/* Recent campaigns */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.4 }}
-        className="glass rounded-2xl border border-white/8 overflow-hidden"
-      >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/8">
-          <h2 className="text-base font-semibold text-white">
-            Recent Campaigns
-          </h2>
-          <Link
-            href="/dashboard/campaigns"
-            className="text-xs text-[#f7931a] hover:underline"
+          <div className="bg-white rounded-lg shadow p-6">
+            <p className="text-sm text-gray-600 mb-2">Total Budget</p>
+            <p className="text-3xl font-bold text-gray-900">
+              {dashboard.totalBudget.toFixed(2)} SOL
+            </p>
+            <p className="text-sm text-gray-600 mt-2">
+              {dashboard.totalSpent.toFixed(2)} spent
+            </p>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <p className="text-sm text-gray-600 mb-2">Impressions</p>
+            <p className="text-3xl font-bold text-gray-900">
+              {dashboard.impressions.toLocaleString()}
+            </p>
+            <p className="text-sm text-gray-600 mt-2">
+              {dashboard.clicks.toLocaleString()} clicks
+            </p>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <p className="text-sm text-gray-600 mb-2">CTR</p>
+            <p className="text-3xl font-bold text-gray-900">{dashboard.ctr}%</p>
+            <p className="text-sm text-gray-600 mt-2">
+              Avg CPC: {dashboard.avgCpc} SOL
+            </p>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Quick Actions */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <button
+            onClick={() => router.push('/dashboard/create')}
+            className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-colors"
           >
-            View all →
-          </Link>
+            <div className="text-center">
+              <div className="text-3xl mb-2">+</div>
+              <p className="font-semibold text-gray-900">Create Campaign</p>
+              <p className="text-sm text-gray-600">Start a new ad campaign</p>
+            </div>
+          </button>
+
+          <button
+            onClick={() => router.push('/dashboard/campaigns')}
+            className="p-4 border-2 border-gray-200 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-colors"
+          >
+            <div className="text-center">
+              <div className="text-3xl mb-2">📊</div>
+              <p className="font-semibold text-gray-900">View Campaigns</p>
+              <p className="text-sm text-gray-600">Manage your campaigns</p>
+            </div>
+          </button>
+
+          <button
+            onClick={() => router.push('/dashboard/analytics')}
+            className="p-4 border-2 border-gray-200 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-colors"
+          >
+            <div className="text-center">
+              <div className="text-3xl mb-2">📈</div>
+              <p className="font-semibold text-gray-900">Analytics</p>
+              <p className="text-sm text-gray-600">View detailed reports</p>
+            </div>
+          </button>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-white/5">
-                {["Campaign", "Status", "Budget", "Impressions", "CTR"].map(
-                  (h) => (
-                    <th
-                      key={h}
-                      className="px-6 py-3 text-left text-xs font-medium text-white/30 uppercase tracking-wider"
-                    >
-                      {h}
-                    </th>
-                  ),
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {campaigns.slice(0, 4).map((c, i) => (
-                <tr
-                  key={c.id}
-                  className={`border-b border-white/5 hover:bg-white/3 transition-colors ${i % 2 === 0 ? "" : "bg-white/1"}`}
-                >
-                  <td className="px-6 py-4 font-medium text-white">{c.name}</td>
-                  <td className="px-6 py-4">
-                    <StatusBadge status={c.status} />
-                  </td>
-                  <td className="px-6 py-4 text-white/60">
-                    ${c.budget.toLocaleString()}
-                  </td>
-                  <td className="px-6 py-4 text-white/60">
-                    {(c.impressions / 1000).toFixed(0)}K
-                  </td>
-                  <td className="px-6 py-4 text-[#4ade80] font-medium">
-                    {c.ctr}%
-                  </td>
-                </tr>
+      </div>
+
+      {/* Recent Campaigns */}
+      <div className="bg-white rounded-lg shadow">
+        <div className="p-6 border-b border-gray-200">
+          <h2 className="text-xl font-bold text-gray-900">Recent Campaigns</h2>
+        </div>
+        <div className="p-6">
+          {campaignsLoading ? (
+            <div className="space-y-4">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="h-4 bg-gray-200 rounded w-1/4 mb-2"></div>
+                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                </div>
               ))}
-            </tbody>
-          </table>
+            </div>
+          ) : campaigns.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-600 mb-4">No campaigns yet</p>
+              <button
+                onClick={() => router.push('/dashboard/create')}
+                className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+              >
+                Create Your First Campaign
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {campaigns.slice(0, 5).map((campaign) => (
+                <div
+                  key={campaign._id}
+                  className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-orange-500 cursor-pointer"
+                  onClick={() => router.push(`/dashboard/campaigns`)}
+                >
+                  <div>
+                    <h3 className="font-semibold text-gray-900">{campaign.name}</h3>
+                    <p className="text-sm text-gray-600">
+                      {campaign.format} • {campaign.status}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-gray-900">
+                      {campaign.budget.toFixed(2)} SOL
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {campaign.spent.toFixed(2)} spent
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }
