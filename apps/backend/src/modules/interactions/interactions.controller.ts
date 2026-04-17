@@ -5,9 +5,8 @@ import {
   Body,
   Param,
   Query,
-  Req,
 } from '@nestjs/common';
-import { Request } from 'express';
+import type { Request } from 'express';
 import { InteractionsService } from './interactions.service';
 import { InteractionType } from '../../common/enums';
 
@@ -17,14 +16,13 @@ export class InteractionsController {
 
   @Post('impression')
   async recordImpression(
-    @Body() body: { campaignId: string; placementId: string },
-    @Req() req: Request,
+    @Body() body: { campaignId: string; placementId: string; userIp?: string; userAgent?: string },
   ) {
     return await this.interactionsService.recordImpression(
       body.campaignId,
       body.placementId,
-      req.ip || '',
-      req.headers['user-agent'] || '',
+      body.userIp || '',
+      body.userAgent || '',
     );
   }
 
@@ -35,15 +33,16 @@ export class InteractionsController {
       campaignId: string;
       placementId: string;
       publisherWallet: string;
+      userIp?: string;
+      userAgent?: string;
     },
-    @Req() req: Request,
   ) {
     return await this.interactionsService.recordClick(
       body.campaignId,
       body.placementId,
       body.publisherWallet,
-      req.ip || '',
-      req.headers['user-agent'] || '',
+      body.userIp || '',
+      body.userAgent || '',
     );
   }
 

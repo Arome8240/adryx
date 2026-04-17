@@ -178,7 +178,7 @@ export class AuthService {
     try {
       const publicKey = new PublicKey(walletAddress);
       const messageBytes = new TextEncoder().encode(message);
-      const signatureBytes = bs58.decode(signature);
+      const signatureBytes = bs58.default.decode(signature);
 
       return nacl.sign.detached.verify(
         messageBytes,
