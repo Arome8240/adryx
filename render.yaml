@@ -1,0 +1,73 @@
+# Render Blueprint for Adryx Platform
+# This file defines all services needed to deploy Adryx on Render
+# See: https://render.com/docs/blueprint-spec
+
+services:
+  # Backend API Service
+  - type: web
+    name: adryx-backend
+    runtime: docker
+    dockerfilePath: ./apps/backend/Dockerfile
+    dockerContext: ./apps/backend
+    plan: free  # Change to 'starter' or higher for production
+    region: oregon  # Change to your preferred region
+    branch: main
+    healthCheckPath: /api/v1/solana/info
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: MONGODB_URI
+        sync: false  # Set this in Render dashboard
+      - key: JWT_SECRET
+        generateValue: true  # Render will generate a secure random value
+      - key: JWT_EXPIRES_IN
+        value: 1h
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 7d
+      - key: SOLANA_NETWORK
+        value: devnet
+      - key: SOLANA_RPC_URL
+        value: https://api.devnet.solana.com
+      - key: SOLANA_PROGRAM_ID
+        value: Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS
+      - key: SOLANA_PRIVATE_KEY
+        sync: false  # Set this in Render dashboard
+      - key: CORS_ORIGIN
+        fromService:
+          type: web
+          name: adryx-frontend
+          property: host
+          envVarKey: RENDER_EXTERNAL_URL
+
+  # Frontend Service
+  - type: web
+    name: adryx-frontend
+    runtime: docker
+    dockerfilePath: ./apps/frontend/Dockerfile
+    dockerContext: ./apps/frontend
+    plan: free  # Change to 'starter' or higher for production
+    region: oregon  # Change to your preferred region
+    branch: main
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          type: web
+          name: adryx-backend
+          property: host
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: NEXT_PUBLIC_SOLANA_NETWORK
+        value: devnet
+      - key: NEXT_PUBLIC_SOLANA_RPC_URL
+        value: https://api.devnet.solana.com
+      - key: NEXT_PUBLIC_SOLANA_PROGRAM_ID
+        value: Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS
+
+# Note: MongoDB is not included in this blueprint
+# You need to either:
+# 1. Use MongoDB Atlas (recommended) - https://www.mongodb.com/cloud/atlas
+# 2. Create a separate MongoDB service in Render dashboard
+# Then set the MONGODB_URI environment variable in the backend service

@@ -5,6 +5,11 @@ build/
 *.tsbuildinfo
 .env
 .env.local
+.env.production
 *.log
 .DS_Store
 .cache/
+
+# Render deployment secrets
+.render-secrets
+render-secrets.txt
