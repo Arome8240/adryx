@@ -1,11 +1,27 @@
 "use client";
 import { motion } from "framer-motion";
 import { DocumentText, Code, Global } from "iconsax-react";
+import Link from "next/link";
 
 const links = {
-  Product: ["Features", "How It Works", "Pricing", "Changelog"],
-  Developers: ["Documentation", "SDK Reference", "GitHub", "Status"],
-  Company: ["About", "Blog", "Careers", "Contact"],
+  Product: [
+    { name: "Features", href: "/features" },
+    { name: "How It Works", href: "/#how-it-works" },
+    { name: "Pricing", href: "/pricing" },
+    { name: "Changelog", href: "https://github.com/adryx/adryx/releases" },
+  ],
+  Developers: [
+    { name: "Documentation", href: "/docs" },
+    { name: "SDK Reference", href: "/docs#sdk" },
+    { name: "GitHub", href: "https://github.com/adryx/adryx" },
+    { name: "Status", href: "https://status.adryx.io" },
+  ],
+  Company: [
+    { name: "About", href: "/about" },
+    { name: "Blog", href: "https://blog.adryx.io" },
+    { name: "Careers", href: "/contact" },
+    { name: "Contact", href: "/contact" },
+  ],
 };
 
 export default function Footer() {
@@ -33,22 +49,26 @@ export default function Footer() {
               Transparent, instant, and built on Solana.
             </p>
             <div className="flex items-center gap-3 mt-5">
-              <a
-                href="#"
+              <Link
+                href="/docs"
                 aria-label="Documentation"
                 className="w-9 h-9 rounded-lg glass border border-white/10 flex items-center justify-center text-white/50 hover:text-white transition-colors"
               >
                 <DocumentText size={16} color="#f7931a" />
-              </a>
+              </Link>
               <a
-                href="#"
+                href="https://github.com/adryx/adryx"
+                target="_blank"
+                rel="noopener noreferrer"
                 aria-label="GitHub"
                 className="w-9 h-9 rounded-lg glass border border-white/10 flex items-center justify-center text-white/50 hover:text-white transition-colors"
               >
                 <Code size={16} color="#a855f7" />
               </a>
               <a
-                href="#"
+                href="https://twitter.com/adryx_io"
+                target="_blank"
+                rel="noopener noreferrer"
                 aria-label="Twitter"
                 className="w-9 h-9 rounded-lg glass border border-white/10 flex items-center justify-center text-white/50 hover:text-white transition-colors"
               >
@@ -71,13 +91,24 @@ export default function Footer() {
               </h4>
               <ul className="flex flex-col gap-2.5">
                 {items.map((item) => (
-                  <li key={item}>
-                    <a
-                      href="#"
-                      className="text-sm text-white/50 hover:text-white transition-colors"
-                    >
-                      {item}
-                    </a>
+                  <li key={item.name}>
+                    {item.href.startsWith('http') ? (
+                      <a
+                        href={item.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-white/50 hover:text-white transition-colors"
+                      >
+                        {item.name}
+                      </a>
+                    ) : (
+                      <Link
+                        href={item.href}
+                        className="text-sm text-white/50 hover:text-white transition-colors"
+                      >
+                        {item.name}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -90,12 +121,12 @@ export default function Footer() {
             &copy; {new Date().getFullYear()} Adryx. All rights reserved.
           </p>
           <div className="flex items-center gap-4 text-xs text-white/30">
-            <a href="#" className="hover:text-white/60 transition-colors">
+            <Link href="/privacy" className="hover:text-white/60 transition-colors">
               Privacy Policy
-            </a>
-            <a href="#" className="hover:text-white/60 transition-colors">
+            </Link>
+            <Link href="/terms" className="hover:text-white/60 transition-colors">
               Terms of Service
-            </a>
+            </Link>
           </div>
         </div>
       </div>
