@@ -11,19 +11,9 @@ import { useCampaigns } from '@/hooks/useCampaigns';
 export default function AdvertiserDashboard() {
   const router = useRouter();
   const { publicKey } = useWallet();
-  const { isAuthenticated, user } = useAuth();
+  const { user } = useAuth();
   const { dashboard, isLoading: dashboardLoading } = useAdvertiserDashboard();
   const { campaigns, isLoading: campaignsLoading } = useCampaigns();
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/');
-    }
-  }, [isAuthenticated, router]);
-
-  if (!isAuthenticated) {
-    return null;
-  }
 
   const activeCampaigns = campaigns.filter((c) => c.status === 'active');
   const draftCampaigns = campaigns.filter((c) => c.status === 'draft');

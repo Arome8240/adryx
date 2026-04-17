@@ -7,10 +7,10 @@ export type UserDocument = User & Document;
 
 @Schema({ timestamps: true, collection: 'users' })
 export class User {
-  @Prop({ required: true, unique: true })
+  @Prop({ unique: true, sparse: true })
   email: string;
 
-  @Prop({ required: true })
+  @Prop()
   @Exclude()
   password: string;
 
