@@ -99,6 +99,10 @@ export class SitesService {
       )
       .exec();
 
+    if (!updatedSite) {
+      throw new NotFoundException(`Site with ID ${id} not found`);
+    }
+
     return updatedSite;
   }
 

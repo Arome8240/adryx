@@ -18,61 +18,39 @@ pub mod adryx {
         instructions::initialize::handler(ctx, fee_percentage)
     }
 
-    /// Create a new campaign
-    pub fn create_campaign(
-        ctx: Context<CreateCampaign>,
-        name: String,
-        budget: u64,
-        cpc_rate: u64, // Cost per click in lamports
-        start_time: i64,
-        end_time: i64,
+    /// Create campaign escrow and fund it
+    pub fn create_campaign_escrow(
+        ctx: Context<CreateCampaignEscrow>,
+        campaign_id: String,
+        initial_amount: u64,
     ) -> Result<()> {
-        instructions::create_campaign::handler(ctx, name, budget, cpc_rate, start_time, end_time)
+        instructions::create_campaign_escrow::handler(ctx, campaign_id, initial_amount)
     }
 
-    /// Fund a campaign
+    /// Add funds to existing campaign escrow
     pub fn fund_campaign(ctx: Context<FundCampaign>, amount: u64) -> Result<()> {
         instructions::fund_campaign::handler(ctx, amount)
     }
 
-    /// Register a publisher site
-    pub fn register_site(
-        ctx: Context<RegisterSite>,
-        name: String,
-        url: String,
+    /// Pay publisher for verified clicks (called by backend)
+    pub fn pay_publisher(
+        ctx: Context<PayPublisher>,
+        amount: u64,
     ) -> Result<()> {
-        instructions::register_site::handler(ctx, name, url)
+        instructions::pay_publisher::handler(ctx, amount)
     }
 
-    /// Record an ad impression
-    pub fn record_impression(
-        ctx: Context<RecordImpression>,
-        campaign_id: Pubkey,
-        site_id: Pubkey,
-    ) -> Result<()> {
-        instructions::record_impression::handler(ctx, campaign_id, site_id)
-    }
-
-    /// Record an ad click and pay publisher
-    pub fn record_click(
-        ctx: Context<RecordClick>,
-        campaign_id: Pubkey,
-        site_id: Pubkey,
-    ) -> Result<()> {
-        instructions::record_click::handler(ctx, campaign_id, site_id)
-    }
-
-    /// Withdraw campaign funds (advertiser)
+    /// Withdraw unused campaign funds
     pub fn withdraw_campaign(ctx: Context<WithdrawCampaign>, amount: u64) -> Result<()> {
         instructions::withdraw_campaign::handler(ctx, amount)
     }
 
-    /// Claim publisher earnings
+    /// Publisher claims accumulated earnings
     pub fn claim_earnings(ctx: Context<ClaimEarnings>) -> Result<()> {
         instructions::claim_earnings::handler(ctx)
     }
 
-    /// Pause/unpause a campaign
+    /// Pause/unpause campaign escrow
     pub fn toggle_campaign(ctx: Context<ToggleCampaign>) -> Result<()> {
         instructions::toggle_campaign::handler(ctx)
     }

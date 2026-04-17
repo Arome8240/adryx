@@ -10,6 +10,7 @@ import { PlacementsModule } from './modules/placements/placements.module';
 import { CampaignsModule } from './modules/campaigns/campaigns.module';
 import { InteractionsModule } from './modules/interactions/interactions.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { SolanaModule } from './modules/solana/solana.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
     CampaignsModule,
     InteractionsModule,
     AnalyticsModule,
+    SolanaModule,
   ],
   controllers: [AppController],
   providers: [AppService],
