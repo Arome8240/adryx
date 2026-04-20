@@ -30,6 +30,15 @@ select option {
   color: #f0f0f5;
 }
 
+/* Wallet adapter modal — ensure it always renders above everything */
+.wallet-adapter-modal-wrapper {
+  z-index: 9999 !important;
+}
+
+.wallet-adapter-modal {
+  z-index: 9999 !important;
+}
+
 .gradient-text {
   background: linear-gradient(135deg, #f7931a, #a855f7);
   -webkit-background-clip: text;
