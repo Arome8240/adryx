@@ -134,6 +134,9 @@ export default function DashboardNav() {
           >
             <SearchNormal1 size={16} color="#a855f7" />
           </button>
+          <kbd className="hidden lg:flex items-center gap-1 px-2 py-1 rounded-lg border border-white/10 text-[10px] text-white/25 font-mono select-none">
+            ⌘K
+          </kbd>
 
           {/* Notifications */}
           <div className="relative" ref={notifRef}>
