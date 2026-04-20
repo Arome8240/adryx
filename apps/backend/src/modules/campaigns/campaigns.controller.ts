@@ -72,13 +72,15 @@ export class CampaignsController {
   async fundCampaign(
     @Param('id') id: string,
     @Request() req,
-    @Body() body: { advertiserWallet: string; amountSol: number },
+    @Body()
+    body: { advertiserWallet: string; amountSol: number; txSignature?: string },
   ) {
     return await this.campaignsService.fundCampaign(
       id,
       req.user.userId,
       body.advertiserWallet,
       body.amountSol,
+      body.txSignature,
     );
   }
 
