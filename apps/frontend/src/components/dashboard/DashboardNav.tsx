@@ -86,6 +86,18 @@ export default function DashboardNav() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
+  // ⌘K / Ctrl+K to open search
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    }
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, []);
+
   function handleLogout() {
     logout();
     router.push("/login");
