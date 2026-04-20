@@ -1,264 +1,349 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useWallet } from '@solana/wallet-adapter-react';
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
-import { useCampaigns, useCampaignStats } from '@/hooks/useCampaigns';
-import { Notification } from 'iconsax-react';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { useCampaigns } from "@/hooks/useCampaigns";
+import {
+  AddCircle,
+  Chart,
+  Pause,
+  Play,
+  Trash,
+  TrendUp,
+  EmptyWallet,
+  CloseCircle,
+} from "iconsax-react";
+
+const STATUS_STYLES: Record<string, { label: string; classes: string }> = {
+  active: {
+    label: "Active",
+    classes: "bg-emerald-400/10 text-emerald-400 border border-emerald-400/20",
+  },
+  paused: {
+    label: "Paused",
+    classes: "bg-yellow-400/10 text-yellow-400 border border-yellow-400/20",
+  },
+  draft: {
+    label: "Draft",
+    classes: "bg-white/5 text-white/40 border border-white/10",
+  },
+  completed: {
+    label: "Completed",
+    classes: "bg-[#a855f7]/10 text-[#a855f7] border border-[#a855f7]/20",
+  },
+};
+
+function BudgetBar({ budget, spent }: { budget: number; spent: number }) {
+  const pct = budget > 0 ? Math.min((spent / budget) * 100, 100) : 0;
+  const color = pct >= 85 ? "#f87171" : pct >= 60 ? "#f7931a" : "#4ade80";
+  return (
+    <div className="w-full h-1.5 rounded-full bg-white/5 overflow-hidden">
+      <div
+        className="h-full rounded-full transition-all"
+        style={{ width: `${pct}%`, backgroundColor: color }}
+      />
+    </div>
+  );
+}
 
 export default function CampaignsPage() {
   const router = useRouter();
   const { publicKey } = useWallet();
-  const { campaigns, isLoading, fundCampaign, pauseCampaign, resumeCampaign, deleteCampaign } = useCampaigns();
-  const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
-  const [fundingAmount, setFundingAmount] = useState('');
+  const {
+    campaigns,
+    isLoading,
+    fundCampaign,
+    pauseCampaign,
+    resumeCampaign,
+    deleteCampaign,
+  } = useCampaigns();
+  const [fundingId, setFundingId] = useState<string | null>(null);
+  const [fundingAmount, setFundingAmount] = useState("");
   const [isFunding, setIsFunding] = useState(false);
-  const { stats } = useCampaignStats(selectedCampaign);
+  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
 
-  const handleFund = async (campaignId: string) => {
-    if (!publicKey) {
-      alert('Please connect your wallet first');
-      return;
-    }
+  function showToast(msg: string, ok = true) {
+    setToast({ msg, ok });
+    setTimeout(() => setToast(null), 3000);
+  }
 
+  async function handleFund() {
+    if (!publicKey) return showToast("Connect your wallet first", false);
     const amount = parseFloat(fundingAmount);
-    if (isNaN(amount) || amount <= 0) {
-      alert('Please enter a valid amount');
-      return;
-    }
-
+    if (!fundingId || isNaN(amount) || amount <= 0)
+      return showToast("Enter a valid amount", false);
     setIsFunding(true);
     try {
-      const result = await fundCampaign(campaignId, publicKey.toString(), amount);
-      alert(`Campaign funded successfully! Transaction: ${result.signature}`);
-      setFundingAmount('');
-      setSelectedCampaign(null);
-    } catch (error: any) {
-      alert(`Failed to fund campaign: ${error.message}`);
+      const res = await fundCampaign(fundingId, publicKey.toString(), amount);
+      showToast(`Funded! Tx: ${res.signature.slice(0, 12)}…`);
+      setFundingId(null);
+      setFundingAmount("");
+    } catch (e: any) {
+      showToast(e.message, false);
     } finally {
       setIsFunding(false);
     }
-  };
+  }
 
-  const handlePause = async (campaignId: string) => {
-    if (confirm('Are you sure you want to pause this campaign?')) {
-      try {
-        await pauseCampaign(campaignId);
-        alert('Campaign paused successfully');
-      } catch (error: any) {
-        alert(`Failed to pause campaign: ${error.message}`);
-      }
-    }
-  };
-
-  const handleResume = async (campaignId: string) => {
+  async function handlePause(id: string) {
     try {
-      await resumeCampaign(campaignId);
-      alert('Campaign resumed successfully');
-    } catch (error: any) {
-      alert(`Failed to resume campaign: ${error.message}`);
+      await pauseCampaign(id);
+      showToast("Campaign paused");
+    } catch (e: any) {
+      showToast(e.message, false);
     }
-  };
+  }
 
-  const handleDelete = async (campaignId: string) => {
-    if (confirm('Are you sure you want to delete this campaign? This action cannot be undone.')) {
-      try {
-        await deleteCampaign(campaignId);
-        alert('Campaign deleted successfully');
-      } catch (error: any) {
-        alert(`Failed to delete campaign: ${error.message}`);
-      }
+  async function handleResume(id: string) {
+    try {
+      await resumeCampaign(id);
+      showToast("Campaign resumed");
+    } catch (e: any) {
+      showToast(e.message, false);
     }
-  };
+  }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'bg-green-100 text-green-800';
-      case 'paused':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'draft':
-        return 'bg-gray-100 text-gray-800';
-      case 'completed':
-        return 'bg-blue-100 text-blue-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+  async function handleDelete(id: string) {
+    try {
+      await deleteCampaign(id);
+      showToast("Campaign deleted");
+    } catch (e: any) {
+      showToast(e.message, false);
     }
-  };
+  }
 
   return (
     <div className="space-y-6">
+      {/* Toast */}
+      {toast && (
+        <div
+          className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl text-sm font-medium transition-all ${
+            toast.ok
+              ? "bg-emerald-400/10 border-emerald-400/20 text-emerald-400"
+              : "bg-[#f87171]/10 border-[#f87171]/20 text-[#f87171]"
+          }`}
+        >
+          {toast.ok ? (
+            <TrendUp size={16} color="currentColor" />
+          ) : (
+            <CloseCircle size={16} color="currentColor" />
+          )}
+          {toast.msg}
+        </div>
+      )}
+
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Campaigns</h1>
-          <p className="text-gray-600 mt-1">Manage your advertising campaigns</p>
+          <h1 className="text-xl font-bold text-white">Campaigns</h1>
+          <p className="text-sm text-white/40 mt-0.5">
+            Manage your advertising campaigns
+          </p>
         </div>
-        <div className="flex gap-4">
-          <WalletMultiButton />
-          <button
-            onClick={() => router.push('/dashboard/create')}
-            className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
-          >
-            Create Campaign
-          </button>
-        </div>
+        <button
+          onClick={() => router.push("/dashboard/create")}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#f7931a] hover:bg-[#f7931a]/90 text-white text-sm font-semibold transition-colors"
+        >
+          <AddCircle size={16} color="white" />
+          New Campaign
+        </button>
       </div>
 
-      {/* Campaigns List */}
+      {/* Content */}
       {isLoading ? (
-        <div className="grid grid-cols-1 gap-6">
+        <div className="space-y-3">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="bg-white rounded-lg shadow p-6 animate-pulse">
-              <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+            <div
+              key={i}
+              className="rounded-2xl bg-white/3 border border-white/8 p-5 animate-pulse"
+            >
+              <div className="h-4 bg-white/10 rounded w-1/3 mb-3" />
+              <div className="h-3 bg-white/5 rounded w-1/2" />
             </div>
           ))}
         </div>
       ) : campaigns.length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-12 text-center">
-          <div className="flex justify-center mb-4">
-            <Notification size={64} color="#f97316" variant="Bold" />
+        <div className="flex flex-col items-center justify-center py-24 rounded-2xl border border-dashed border-white/10">
+          <div className="w-14 h-14 rounded-2xl bg-[#f7931a]/10 flex items-center justify-center mb-4">
+            <Chart size={28} color="#f7931a" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">No campaigns yet</h2>
-          <p className="text-gray-600 mb-6">Create your first campaign to start advertising</p>
+          <p className="text-white font-semibold mb-1">No campaigns yet</p>
+          <p className="text-sm text-white/40 mb-6">
+            Create your first campaign to start advertising
+          </p>
           <button
-            onClick={() => router.push('/dashboard/create')}
-            className="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+            onClick={() => router.push("/dashboard/create")}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#f7931a] hover:bg-[#f7931a]/90 text-white text-sm font-semibold transition-colors"
           >
-            Create Your First Campaign
+            <AddCircle size={16} color="white" />
+            Create Campaign
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-6">
-          {campaigns.map((campaign) => (
-            <div key={campaign._id} className="bg-white rounded-lg shadow overflow-hidden">
-              <div className="p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-900">{campaign.name}</h3>
-                    <p className="text-gray-600 mt-1">{campaign.description}</p>
+        <div className="space-y-3">
+          {campaigns.map((c) => {
+            const status = STATUS_STYLES[c.status] ?? STATUS_STYLES.draft;
+            const remaining = (c.budget - c.spent).toFixed(2);
+            return (
+              <div
+                key={c._id}
+                className="rounded-2xl bg-[#0d0d1a] border border-white/8 p-5 hover:border-white/15 transition-colors"
+              >
+                <div className="flex items-start justify-between gap-4 mb-4">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2.5 flex-wrap">
+                      <h3 className="text-sm font-semibold text-white truncate">
+                        {c.name}
+                      </h3>
+                      <span
+                        className={`text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize ${status.classes}`}
+                      >
+                        {status.label}
+                      </span>
+                      <span className="text-[10px] text-white/30 capitalize px-2 py-0.5 rounded-full bg-white/5">
+                        {c.format}
+                      </span>
+                    </div>
+                    {c.description && (
+                      <p className="text-xs text-white/40 mt-1 truncate">
+                        {c.description}
+                      </p>
+                    )}
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(campaign.status)}`}>
-                    {campaign.status}
-                  </span>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                {/* Budget row */}
+                <div className="grid grid-cols-3 gap-4 mb-3">
                   <div>
-                    <p className="text-sm text-gray-600">Format</p>
-                    <p className="font-semibold text-gray-900">{campaign.format}</p>
+                    <p className="text-[10px] text-white/30 mb-0.5">Budget</p>
+                    <p className="text-sm font-semibold text-white">
+                      {c.budget.toFixed(2)} SOL
+                    </p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Budget</p>
-                    <p className="font-semibold text-gray-900">{campaign.budget.toFixed(2)} SOL</p>
+                    <p className="text-[10px] text-white/30 mb-0.5">Spent</p>
+                    <p className="text-sm font-semibold text-[#f7931a]">
+                      {c.spent.toFixed(2)} SOL
+                    </p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Spent</p>
-                    <p className="font-semibold text-gray-900">{campaign.spent.toFixed(2)} SOL</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Remaining</p>
-                    <p className="font-semibold text-gray-900">
-                      {(campaign.budget - campaign.spent).toFixed(2)} SOL
+                    <p className="text-[10px] text-white/30 mb-0.5">
+                      Remaining
+                    </p>
+                    <p className="text-sm font-semibold text-white/70">
+                      {remaining} SOL
                     </p>
                   </div>
                 </div>
 
-                <div className="flex gap-2">
-                  {campaign.status === 'draft' && (
+                <BudgetBar budget={c.budget} spent={c.spent} />
+
+                {/* Actions */}
+                <div className="flex items-center gap-2 mt-4">
+                  {c.status === "draft" && (
                     <button
-                      onClick={() => setSelectedCampaign(campaign._id)}
-                      className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+                      onClick={() => setFundingId(c._id)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#f7931a]/15 hover:bg-[#f7931a]/25 text-[#f7931a] text-xs font-semibold transition-colors"
                     >
-                      Fund Campaign
+                      <EmptyWallet size={13} color="currentColor" />
+                      Fund
                     </button>
                   )}
-                  {campaign.status === 'active' && (
+                  {c.status === "active" && (
                     <button
-                      onClick={() => handlePause(campaign._id)}
-                      className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
+                      onClick={() => handlePause(c._id)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-yellow-400/10 hover:bg-yellow-400/20 text-yellow-400 text-xs font-semibold transition-colors"
                     >
+                      <Pause size={13} color="currentColor" />
                       Pause
                     </button>
                   )}
-                  {campaign.status === 'paused' && (
+                  {c.status === "paused" && (
                     <button
-                      onClick={() => handleResume(campaign._id)}
-                      className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                      onClick={() => handleResume(c._id)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-400/10 hover:bg-emerald-400/20 text-emerald-400 text-xs font-semibold transition-colors"
                     >
+                      <Play size={13} color="currentColor" />
                       Resume
                     </button>
                   )}
                   <button
-                    onClick={() => router.push(`/dashboard/analytics?campaign=${campaign._id}`)}
-                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                    onClick={() =>
+                      router.push(`/dashboard/analytics?campaign=${c._id}`)
+                    }
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#3b82f6]/10 hover:bg-[#3b82f6]/20 text-[#3b82f6] text-xs font-semibold transition-colors"
                   >
-                    View Stats
+                    <TrendUp size={13} color="currentColor" />
+                    Stats
                   </button>
-                  {campaign.status === 'draft' && (
+                  {c.status === "draft" && (
                     <button
-                      onClick={() => handleDelete(campaign._id)}
-                      className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                      onClick={() => handleDelete(c._id)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#f87171]/10 hover:bg-[#f87171]/20 text-[#f87171] text-xs font-semibold transition-colors ml-auto"
                     >
+                      <Trash size={13} color="currentColor" />
                       Delete
                     </button>
                   )}
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
-      {/* Funding Modal */}
-      {selectedCampaign && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-8 max-w-md w-full">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Fund Campaign</h2>
-            <p className="text-gray-600 mb-6">
-              Enter the amount of SOL you want to fund this campaign with. This will create an escrow on Solana devnet.
+      {/* Fund Modal */}
+      {fundingId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setFundingId(null)}
+          />
+          <div className="relative w-full max-w-sm rounded-2xl bg-[#13131f] border border-white/10 shadow-2xl p-6">
+            <h2 className="text-base font-bold text-white mb-1">
+              Fund Campaign
+            </h2>
+            <p className="text-xs text-white/40 mb-5">
+              Funds are held in escrow on Solana devnet until the campaign runs.
             </p>
-            
+
             {!publicKey && (
-              <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <p className="text-yellow-800">Please connect your wallet first</p>
+              <div className="mb-4 px-3 py-2.5 rounded-xl bg-yellow-400/10 border border-yellow-400/20 text-yellow-400 text-xs">
+                Connect your wallet to fund this campaign.
               </div>
             )}
 
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Amount (SOL)
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                value={fundingAmount}
-                onChange={(e) => setFundingAmount(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                placeholder="0.00"
-              />
-            </div>
+            <label className="block text-xs font-medium text-white/50 mb-1.5">
+              Amount (SOL)
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              value={fundingAmount}
+              onChange={(e) => setFundingAmount(e.target.value)}
+              placeholder="0.00"
+              className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-white/20 outline-none focus:border-[#f7931a]/50 transition-colors mb-5"
+            />
 
-            <div className="flex gap-4">
+            <div className="flex gap-3">
               <button
                 onClick={() => {
-                  setSelectedCampaign(null);
-                  setFundingAmount('');
+                  setFundingId(null);
+                  setFundingAmount("");
                 }}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
                 disabled={isFunding}
+                className="flex-1 px-4 py-2.5 rounded-xl border border-white/10 text-white/60 text-sm hover:bg-white/5 transition-colors"
               >
                 Cancel
               </button>
               <button
-                onClick={() => handleFund(selectedCampaign)}
+                onClick={handleFund}
                 disabled={isFunding || !publicKey}
-                className="flex-1 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2.5 rounded-xl bg-[#f7931a] hover:bg-[#f7931a]/90 text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
-                {isFunding ? 'Funding...' : 'Fund Campaign'}
+                {isFunding ? "Funding…" : "Fund Campaign"}
               </button>
             </div>
           </div>
