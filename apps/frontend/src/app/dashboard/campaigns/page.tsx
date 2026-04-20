@@ -3,12 +3,13 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
+import { PublicKey, Transaction } from "@solana/web3.js";
 import {
-  PublicKey,
-  SystemProgram,
-  Transaction,
-  LAMPORTS_PER_SOL,
-} from "@solana/web3.js";
+  getAssociatedTokenAddress,
+  createTransferInstruction,
+  USDC_MINT_DEVNET,
+  usdcToRaw,
+} from "@/lib/usdc";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import { apiClient } from "@/lib/api-client";
 import WalletButton from "@/components/dashboard/WalletButton";
@@ -147,26 +148,48 @@ export default function CampaignsPage() {
     try {
       const solanaInfo = await apiClient.getSolanaInfo();
       const programId = new PublicKey(solanaInfo.programId);
+
+      // Derive escrow PDA
       const [escrowPda] = PublicKey.findProgramAddressSync(
         [Buffer.from("campaign"), publicKey.toBuffer(), Buffer.from(fundingId)],
         programId,
       );
-      const lamports = Math.round(amount * LAMPORTS_PER_SOL);
-      const tx = new Transaction().add(
-        SystemProgram.transfer({
-          fromPubkey: publicKey,
-          toPubkey: escrowPda,
-          lamports,
-        }),
+
+      // Get advertiser's USDC associated token account
+      const senderAta = await getAssociatedTokenAddress(
+        USDC_MINT_DEVNET,
+        publicKey,
       );
+
+      // Get (or derive) escrow's USDC associated token account
+      const escrowAta = await getAssociatedTokenAddress(
+        USDC_MINT_DEVNET,
+        escrowPda,
+        true,
+      );
+
+      // Build SPL token transfer instruction
+      const rawAmount = usdcToRaw(amount);
+      const transferIx = createTransferInstruction(
+        senderAta,
+        escrowAta,
+        publicKey,
+        rawAmount,
+      );
+
+      const tx = new Transaction().add(transferIx);
       const { blockhash } = await connection.getLatestBlockhash();
       tx.recentBlockhash = blockhash;
       tx.feePayer = publicKey;
+
       showToast("Approve the transaction in your wallet…", true);
       const signature = await sendTransaction(tx, connection);
       await connection.confirmTransaction(signature, "confirmed");
+
       await fundCampaign(fundingId, publicKey.toString(), amount, signature);
-      showToast(`Funded! Tx: ${signature.slice(0, 12)}…`);
+      showToast(
+        `Funded $${amount.toFixed(2)} USDC! Tx: ${signature.slice(0, 12)}…`,
+      );
       setFundingId(null);
       setFundingAmount("");
     } catch (e: any) {
@@ -512,13 +535,13 @@ export default function CampaignsPage() {
                   <div>
                     <p className="text-[10px] text-white/30 mb-0.5">Budget</p>
                     <p className="text-sm font-semibold text-white">
-                      {c.budget.toFixed(2)} SOL
+                      {c.budget.toFixed(2)} USDC
                     </p>
                   </div>
                   <div>
                     <p className="text-[10px] text-white/30 mb-0.5">Spent</p>
                     <p className="text-sm font-semibold text-[#f7931a]">
-                      {c.spent.toFixed(2)} SOL
+                      {c.spent.toFixed(2)} USDC
                     </p>
                   </div>
                   <div>
@@ -526,7 +549,7 @@ export default function CampaignsPage() {
                       Remaining
                     </p>
                     <p className="text-sm font-semibold text-white/70">
-                      {remaining} SOL
+                      {remaining} USDC
                     </p>
                   </div>
                 </div>
@@ -613,7 +636,7 @@ export default function CampaignsPage() {
               Fund Campaign
             </h2>
             <p className="text-xs text-white/40 mb-5">
-              SOL will be transferred from your wallet to an escrow PDA on
+              USDC will be transferred from your wallet to an escrow PDA on
               Solana devnet.
             </p>
             {!publicKey && (
@@ -622,7 +645,7 @@ export default function CampaignsPage() {
               </div>
             )}
             <label className="block text-xs font-medium text-white/50 mb-1.5">
-              Amount (SOL)
+              Amount (USDC)
             </label>
             <input
               type="number"
@@ -777,17 +800,17 @@ export default function CampaignsPage() {
                   {[
                     {
                       label: "Total",
-                      value: `${detailCampaign.budget.toFixed(2)} SOL`,
+                      value: `${detailCampaign.budget.toFixed(2)} USDC`,
                       color: "text-white",
                     },
                     {
                       label: "Spent",
-                      value: `${detailCampaign.spent.toFixed(2)} SOL`,
+                      value: `${detailCampaign.spent.toFixed(2)} USDC`,
                       color: "text-[#f7931a]",
                     },
                     {
                       label: "Left",
-                      value: `${(detailCampaign.budget - detailCampaign.spent).toFixed(2)} SOL`,
+                      value: `${(detailCampaign.budget - detailCampaign.spent).toFixed(2)} USDC`,
                       color: "text-emerald-400",
                     },
                   ].map((s) => (

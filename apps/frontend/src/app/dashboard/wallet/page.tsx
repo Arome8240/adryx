@@ -19,6 +19,7 @@ import Toast from "@/components/dashboard/Toast";
 import type { ToastType } from "@/components/dashboard/Toast";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import { useAdvertiserDashboard } from "@/hooks/useAnalytics";
+import { getUsdcBalance, formatUsdc } from "@/lib/usdc";
 
 const AUTO_RELOAD_KEY = "adryx_auto_reload_threshold";
 

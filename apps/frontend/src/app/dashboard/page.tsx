@@ -150,8 +150,8 @@ export default function OverviewPage() {
           />
           <StatCard
             label="Total Budget"
-            value={`${dashboard.totalBudget.toFixed(2)} SOL`}
-            sub={`${dashboard.totalSpent.toFixed(2)} SOL spent`}
+            value={`${dashboard.totalBudget.toFixed(2)} USDC`}
+            sub={`${dashboard.totalSpent.toFixed(2)} USDC spent`}
             icon={<EmptyWallet size={16} color="#f7931a" />}
             accent="#f7931a"
           />
@@ -165,7 +165,7 @@ export default function OverviewPage() {
           <StatCard
             label="CTR"
             value={`${dashboard.ctr}%`}
-            sub={`Avg CPC: ${dashboard.avgCpc} SOL`}
+            sub={`Avg CPC: ${dashboard.avgCpc} USDC`}
             icon={<PercentageCircle size={16} color="#4ade80" />}
             accent="#4ade80"
           />
@@ -231,7 +231,7 @@ export default function OverviewPage() {
               <p className="text-sm font-semibold text-white">
                 Daily Burn Rate
               </p>
-              <span className="text-xs text-white/30 ml-auto">SOL / day</span>
+              <span className="text-xs text-white/30 ml-auto">USDC / day</span>
             </div>
             {velocityData.length === 0 ? (
               <p className="text-xs text-white/30 text-center py-8">
@@ -241,7 +241,7 @@ export default function OverviewPage() {
               <PerformanceChart
                 data={velocityData}
                 lines={[
-                  { key: "dailyBurn", color: "#f7931a", label: "SOL/day" },
+                  { key: "dailyBurn", color: "#f7931a", label: "USDC/day" },
                 ]}
                 height={160}
               />
@@ -413,7 +413,7 @@ export default function OverviewPage() {
                         <span className="text-white/40"> — {ac.label}</span>
                       </p>
                       <p className="text-xs text-white/30 mt-0.5">
-                        {item.budget.toFixed(2)} SOL budget ·{" "}
+                        {item.budget.toFixed(2)} USDC budget ·{" "}
                         {timeAgo(item.updatedAt)}
                       </p>
                     </div>

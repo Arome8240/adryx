@@ -19,25 +19,25 @@ const AD_FORMATS = [
     value: "banner",
     label: "Banner",
     desc: "Static or animated image ad",
-    budgetHint: "0.5–5 SOL/day typical",
+    budgetHint: "$50–$500/day typical",
   },
   {
     value: "video",
     label: "Video",
     desc: "Short-form video ad",
-    budgetHint: "1–10 SOL/day typical",
+    budgetHint: "$100–$1,000/day typical",
   },
   {
     value: "native",
     label: "Native",
     desc: "Blends with site content",
-    budgetHint: "0.3–3 SOL/day typical",
+    budgetHint: "$30–$300/day typical",
   },
   {
     value: "interstitial",
     label: "Interstitial",
     desc: "Full-screen overlay ad",
-    budgetHint: "2–15 SOL/day typical",
+    budgetHint: "$200–$1,500/day typical",
   },
 ];
 
@@ -270,8 +270,8 @@ export default function CreateCampaignPage() {
           </p>
 
           <Field
-            label="Budget (SOL)"
-            hint="Initial budget — you can fund the campaign later"
+            label="Budget (USDC)"
+            hint="Initial budget in USDC — you can fund the campaign later"
           >
             <div className="relative">
               <input
@@ -283,10 +283,10 @@ export default function CreateCampaignPage() {
                 onChange={handleChange}
                 required
                 placeholder="0.00"
-                className={`${inputCls} pr-12`}
+                className={`${inputCls} pr-16`}
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-white/30 font-mono">
-                SOL
+                USDC
               </span>
             </div>
             {/* T14 — Budget hint */}

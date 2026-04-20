@@ -144,7 +144,7 @@ export default function AnalyticsPage() {
       },
       {
         title: "Total Spend",
-        value: `${dashboard.totalSpent.toFixed(2)} SOL`,
+        value: `${dashboard.totalSpent.toFixed(2)} USDC`,
         change: "",
         positive: true,
         icon: <DollarCircle size={20} color="#f7931a" variant="Bold" />,
@@ -420,7 +420,7 @@ export default function AnalyticsPage() {
             <PerformanceChart
               data={chartData}
               lines={[
-                { key: "spend", color: "#f7931a", label: "Spend (SOL)" },
+                { key: "spend", color: "#f7931a", label: "Spend (USDC)" },
                 { key: "clicks", color: "#4ade80", label: "Clicks" },
               ]}
               height={240}
@@ -656,7 +656,7 @@ export default function AnalyticsPage() {
                       {c.ctr.toFixed(2)}%
                     </td>
                     <td className="px-5 py-3.5 text-[#f7931a] tabular-nums">
-                      {c.spent.toFixed(4)} SOL
+                      {c.spent.toFixed(2)} USDC
                     </td>
                   </tr>
                 ))}
