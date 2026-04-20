@@ -1,4 +1,5 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
 
 class ApiClient {
   private baseUrl: string;
@@ -7,36 +8,36 @@ class ApiClient {
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
     // Load token from localStorage if available
-    if (typeof window !== 'undefined') {
-      this.token = localStorage.getItem('auth_token');
+    if (typeof window !== "undefined") {
+      this.token = localStorage.getItem("auth_token");
     }
   }
 
   setToken(token: string) {
     this.token = token;
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('auth_token', token);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("auth_token", token);
     }
   }
 
   clearToken() {
     this.token = null;
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('auth_token');
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("auth_token");
     }
   }
 
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
   ): Promise<T> {
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      ...(options.headers as Record<string, string> || {}),
+      "Content-Type": "application/json",
+      ...((options.headers as Record<string, string>) || {}),
     };
 
     if (this.token) {
-      headers['Authorization'] = `Bearer ${this.token}`;
+      headers["Authorization"] = `Bearer ${this.token}`;
     }
 
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
@@ -45,7 +46,9 @@ class ApiClient {
     });
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Request failed' }));
+      const error = await response
+        .json()
+        .catch(() => ({ message: "Request failed" }));
       throw new Error(error.message || `HTTP ${response.status}`);
     }
 
@@ -57,45 +60,48 @@ class ApiClient {
     email: string;
     password: string;
     name: string;
-    role: 'advertiser' | 'publisher';
+    role: "advertiser" | "publisher";
     walletAddress?: string;
   }) {
-    return this.request<{ user: any; accessToken: string; refreshToken: string }>(
-      '/auth/register',
-      {
-        method: 'POST',
-        body: JSON.stringify(data),
-      }
-    );
+    return this.request<{
+      user: any;
+      accessToken: string;
+      refreshToken: string;
+    }>("/auth/register", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
   }
 
   async login(email: string, password: string) {
-    return this.request<{ user: any; accessToken: string; refreshToken: string }>(
-      '/auth/login',
-      {
-        method: 'POST',
-        body: JSON.stringify({ email, password }),
-      }
-    );
+    return this.request<{
+      user: any;
+      accessToken: string;
+      refreshToken: string;
+    }>("/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    });
   }
 
   async walletLogin(walletAddress: string, signature: string, message: string) {
-    return this.request<{ user: any; accessToken: string; refreshToken: string }>(
-      '/auth/wallet-login',
-      {
-        method: 'POST',
-        body: JSON.stringify({ walletAddress, signature, message }),
-      }
-    );
+    return this.request<{
+      user: any;
+      accessToken: string;
+      refreshToken: string;
+    }>("/auth/wallet-login", {
+      method: "POST",
+      body: JSON.stringify({ walletAddress, signature, message }),
+    });
   }
 
   async getProfile() {
-    return this.request<any>('/auth/me');
+    return this.request<any>("/auth/me");
   }
 
   // Campaigns
   async getCampaigns() {
-    return this.request<any[]>('/campaigns');
+    return this.request<any[]>("/campaigns");
   }
 
   async getCampaign(id: string) {
@@ -112,46 +118,51 @@ class ApiClient {
     targetUrl: string;
     creativeUrl?: string;
   }) {
-    return this.request<any>('/campaigns', {
-      method: 'POST',
+    return this.request<any>("/campaigns", {
+      method: "POST",
       body: JSON.stringify(data),
     });
   }
 
   async updateCampaign(id: string, data: any) {
     return this.request<any>(`/campaigns/${id}`, {
-      method: 'PUT',
+      method: "PUT",
       body: JSON.stringify(data),
     });
   }
 
   async deleteCampaign(id: string) {
     return this.request<void>(`/campaigns/${id}`, {
-      method: 'DELETE',
+      method: "DELETE",
     });
   }
 
-  async fundCampaign(id: string, advertiserWallet: string, amountSol: number) {
+  async fundCampaign(
+    id: string,
+    advertiserWallet: string,
+    amountSol: number,
+    txSignature?: string,
+  ) {
     return this.request<{
       campaignId: string;
       signature: string;
       escrowPda: string;
       status: string;
     }>(`/campaigns/${id}/fund`, {
-      method: 'POST',
-      body: JSON.stringify({ advertiserWallet, amountSol }),
+      method: "POST",
+      body: JSON.stringify({ advertiserWallet, amountSol, txSignature }),
     });
   }
 
   async pauseCampaign(id: string) {
     return this.request<any>(`/campaigns/${id}/pause`, {
-      method: 'POST',
+      method: "POST",
     });
   }
 
   async resumeCampaign(id: string) {
     return this.request<any>(`/campaigns/${id}/resume`, {
-      method: 'POST',
+      method: "POST",
     });
   }
 
@@ -192,7 +203,7 @@ class ApiClient {
       clicks: number;
       ctr: string;
       avgCpc: string;
-    }>('/analytics/advertiser/dashboard');
+    }>("/analytics/advertiser/dashboard");
   }
 
   async getCampaignAnalytics(id: string, days: number = 30) {
@@ -210,7 +221,7 @@ class ApiClient {
       programId: string;
       platformPda: string;
       treasuryPda: string;
-    }>('/solana/info');
+    }>("/solana/info");
   }
 }
 

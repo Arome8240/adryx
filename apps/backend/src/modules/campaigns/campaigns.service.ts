@@ -76,7 +76,10 @@ export class CampaignsService {
   }
 
   async remove(id: string, advertiserId: string): Promise<void> {
-    const campaign = await this.campaignModel.findOne({ _id: id, advertiserId });
+    const campaign = await this.campaignModel.findOne({
+      _id: id,
+      advertiserId,
+    });
 
     if (!campaign) {
       throw new NotFoundException(`Campaign with ID ${id} not found`);
@@ -96,8 +99,12 @@ export class CampaignsService {
     advertiserId: string,
     advertiserWallet: string,
     amountSol: number,
+    txSignature?: string,
   ) {
-    const campaign = await this.campaignModel.findOne({ _id: id, advertiserId });
+    const campaign = await this.campaignModel.findOne({
+      _id: id,
+      advertiserId,
+    });
 
     if (!campaign) {
       throw new NotFoundException(`Campaign with ID ${id} not found`);
@@ -107,15 +114,28 @@ export class CampaignsService {
       throw new BadRequestException('Campaign is already funded');
     }
 
-    // Create escrow on-chain
-    const { signature, escrowPda } =
-      await this.paymentService.createCampaignEscrow(
+    let signature: string;
+    let escrowPda: string;
+
+    if (txSignature) {
+      // Real on-chain transfer was done by the frontend wallet — just record it
+      signature = txSignature;
+      const { PublicKey } = await import('@solana/web3.js');
+      const advertiserPubkey = new PublicKey(advertiserWallet);
+      escrowPda = this.paymentService['solanaService']
+        .deriveCampaignEscrowPda(advertiserPubkey, id)
+        .toString();
+    } else {
+      // Fallback: simulated (dev only)
+      const result = await this.paymentService.createCampaignEscrow(
         id,
         advertiserWallet,
         amountSol,
       );
+      signature = result.signature;
+      escrowPda = result.escrowPda;
+    }
 
-    // Update campaign
     await this.campaignModel.findByIdAndUpdate(id, {
       status: CampaignStatus.ACTIVE,
       budget: amountSol,
@@ -131,7 +151,10 @@ export class CampaignsService {
   }
 
   async pauseCampaign(id: string, advertiserId: string): Promise<Campaign> {
-    const campaign = await this.campaignModel.findOne({ _id: id, advertiserId });
+    const campaign = await this.campaignModel.findOne({
+      _id: id,
+      advertiserId,
+    });
 
     if (!campaign) {
       throw new NotFoundException(`Campaign with ID ${id} not found`);
@@ -148,7 +171,10 @@ export class CampaignsService {
   }
 
   async resumeCampaign(id: string, advertiserId: string): Promise<Campaign> {
-    const campaign = await this.campaignModel.findOne({ _id: id, advertiserId });
+    const campaign = await this.campaignModel.findOne({
+      _id: id,
+      advertiserId,
+    });
 
     if (!campaign) {
       throw new NotFoundException(`Campaign with ID ${id} not found`);

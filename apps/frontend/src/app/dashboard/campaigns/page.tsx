@@ -2,8 +2,16 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useWallet, useConnection } from "@solana/wallet-adapter-react";
+import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import {
+  PublicKey,
+  SystemProgram,
+  Transaction,
+  LAMPORTS_PER_SOL,
+} from "@solana/web3.js";
 import { useCampaigns } from "@/hooks/useCampaigns";
+import { apiClient } from "@/lib/api-client";
 import {
   AddCircle,
   Chart,
@@ -13,6 +21,7 @@ import {
   TrendUp,
   EmptyWallet,
   CloseCircle,
+  Link21,
 } from "iconsax-react";
 
 const STATUS_STYLES: Record<string, { label: string; classes: string }> = {

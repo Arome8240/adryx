@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { apiClient } from '@/lib/api-client';
+import { useState, useEffect } from "react";
+import { apiClient } from "@/lib/api-client";
 
 export function useCampaigns() {
   const [campaigns, setCampaigns] = useState<any[]>([]);
@@ -42,8 +42,18 @@ export function useCampaigns() {
     await fetchCampaigns();
   };
 
-  const fundCampaign = async (id: string, walletAddress: string, amount: number) => {
-    const result = await apiClient.fundCampaign(id, walletAddress, amount);
+  const fundCampaign = async (
+    id: string,
+    walletAddress: string,
+    amount: number,
+    txSignature?: string,
+  ) => {
+    const result = await apiClient.fundCampaign(
+      id,
+      walletAddress,
+      amount,
+      txSignature,
+    );
     await fetchCampaigns();
     return result;
   };
