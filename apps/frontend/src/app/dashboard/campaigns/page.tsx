@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import {
   PublicKey,
   SystemProgram,
@@ -12,6 +11,7 @@ import {
 } from "@solana/web3.js";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import { apiClient } from "@/lib/api-client";
+import WalletButton from "@/components/dashboard/WalletButton";
 import {
   AddCircle,
   Chart,
@@ -21,7 +21,6 @@ import {
   TrendUp,
   EmptyWallet,
   CloseCircle,
-  Link21,
 } from "iconsax-react";
 
 const STATUS_STYLES: Record<string, { label: string; classes: string }> = {
@@ -58,7 +57,8 @@ function BudgetBar({ budget, spent }: { budget: number; spent: number }) {
 
 export default function CampaignsPage() {
   const router = useRouter();
-  const { publicKey } = useWallet();
+  const { publicKey, sendTransaction } = useWallet();
+  const { connection } = useConnection();
   const {
     campaigns,
     isLoading,
@@ -74,7 +74,7 @@ export default function CampaignsPage() {
 
   function showToast(msg: string, ok = true) {
     setToast({ msg, ok });
-    setTimeout(() => setToast(null), 3000);
+    setTimeout(() => setToast(null), 4000);
   }
 
   async function handleFund() {
@@ -82,14 +82,51 @@ export default function CampaignsPage() {
     const amount = parseFloat(fundingAmount);
     if (!fundingId || isNaN(amount) || amount <= 0)
       return showToast("Enter a valid amount", false);
+
     setIsFunding(true);
     try {
-      const res = await fundCampaign(fundingId, publicKey.toString(), amount);
-      showToast(`Funded! Tx: ${res.signature.slice(0, 12)}…`);
+      // 1. Fetch the escrow PDA from backend
+      const solanaInfo = await apiClient.getSolanaInfo();
+      const programId = new PublicKey(solanaInfo.programId);
+
+      const [escrowPda] = PublicKey.findProgramAddressSync(
+        [Buffer.from("campaign"), publicKey.toBuffer(), Buffer.from(fundingId)],
+        programId,
+      );
+
+      // 2. Build a SOL transfer from user wallet → escrow PDA
+      const lamports = Math.round(amount * LAMPORTS_PER_SOL);
+      const tx = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: publicKey,
+          toPubkey: escrowPda,
+          lamports,
+        }),
+      );
+
+      const { blockhash } = await connection.getLatestBlockhash();
+      tx.recentBlockhash = blockhash;
+      tx.feePayer = publicKey;
+
+      // 3. User signs & sends via wallet adapter
+      showToast("Approve the transaction in your wallet…", true);
+      const signature = await sendTransaction(tx, connection);
+
+      // 4. Wait for confirmation
+      await connection.confirmTransaction(signature, "confirmed");
+
+      // 5. Tell backend to activate the campaign with the confirmed tx
+      await fundCampaign(fundingId, publicKey.toString(), amount, signature);
+      showToast(`Funded! Tx: ${signature.slice(0, 12)}…`);
       setFundingId(null);
       setFundingAmount("");
     } catch (e: any) {
-      showToast(e.message, false);
+      // User rejected or tx failed
+      if (e.message?.includes("User rejected")) {
+        showToast("Transaction cancelled", false);
+      } else {
+        showToast(e.message ?? "Transaction failed", false);
+      }
     } finally {
       setIsFunding(false);
     }
@@ -150,13 +187,16 @@ export default function CampaignsPage() {
             Manage your advertising campaigns
           </p>
         </div>
-        <button
-          onClick={() => router.push("/dashboard/create")}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#f7931a] hover:bg-[#f7931a]/90 text-white text-sm font-semibold transition-colors"
-        >
-          <AddCircle size={16} color="white" />
-          New Campaign
-        </button>
+        <div className="flex items-center gap-3">
+          <WalletButton />
+          <button
+            onClick={() => router.push("/dashboard/create")}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#f7931a] hover:bg-[#f7931a]/90 text-white text-sm font-semibold transition-colors"
+          >
+            <AddCircle size={16} color="white" />
+            New Campaign
+          </button>
+        </div>
       </div>
 
       {/* Content */}
@@ -314,7 +354,8 @@ export default function CampaignsPage() {
               Fund Campaign
             </h2>
             <p className="text-xs text-white/40 mb-5">
-              Funds are held in escrow on Solana devnet until the campaign runs.
+              SOL will be transferred from your wallet to an escrow PDA on
+              Solana devnet.
             </p>
 
             {!publicKey && (
