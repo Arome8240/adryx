@@ -2,6 +2,7 @@ import {
   Injectable,
   UnauthorizedException,
   ConflictException,
+  BadRequestException,
   Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -15,6 +16,8 @@ import { User, UserDocument } from '../../schemas/user.schema';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { WalletLoginDto } from './dto/wallet-login.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -146,6 +149,38 @@ export class AuthService {
   async refreshToken(userId: string) {
     const user = await this.validateUser(userId);
     return this.generateTokens(user);
+  }
+
+  async updateProfile(userId: string, dto: UpdateProfileDto) {
+    if (dto.email) {
+      const existing = await this.userModel.findOne({
+        email: dto.email,
+        _id: { $ne: userId },
+      });
+      if (existing) throw new ConflictException('Email already in use');
+    }
+    const user = await this.userModel.findByIdAndUpdate(
+      userId,
+      { $set: dto },
+      { new: true },
+    );
+    if (!user) throw new UnauthorizedException('User not found');
+    return this.sanitizeUser(user);
+  }
+
+  async changePassword(userId: string, dto: ChangePasswordDto) {
+    const user = await this.userModel.findById(userId);
+    if (!user) throw new UnauthorizedException('User not found');
+    if (!user.password)
+      throw new BadRequestException(
+        'Account uses wallet login — no password set',
+      );
+    const valid = await bcrypt.compare(dto.currentPassword, user.password);
+    if (!valid)
+      throw new UnauthorizedException('Current password is incorrect');
+    user.password = await bcrypt.hash(dto.newPassword, 10);
+    await user.save();
+    return { message: 'Password updated successfully' };
   }
 
   private async generateTokens(user: UserDocument) {

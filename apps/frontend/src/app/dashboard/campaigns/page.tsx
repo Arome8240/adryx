@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import {
@@ -21,6 +21,10 @@ import {
   TrendUp,
   EmptyWallet,
   CloseCircle,
+  Edit2,
+  Copy,
+  SearchNormal1,
+  ArrowDown2,
 } from "iconsax-react";
 
 const STATUS_STYLES: Record<string, { label: string; classes: string }> = {
@@ -42,6 +46,8 @@ const STATUS_STYLES: Record<string, { label: string; classes: string }> = {
   },
 };
 
+const AD_FORMATS = ["banner", "video", "native", "interstitial"];
+
 function BudgetBar({ budget, spent }: { budget: number; spent: number }) {
   const pct = budget > 0 ? Math.min((spent / budget) * 100, 100) : 0;
   const color = pct >= 85 ? "#f87171" : pct >= 60 ? "#f7931a" : "#4ade80";
@@ -55,6 +61,14 @@ function BudgetBar({ budget, spent }: { budget: number; spent: number }) {
   );
 }
 
+function daysLeft(endDate: string) {
+  const diff = Math.ceil((new Date(endDate).getTime() - Date.now()) / 86400000);
+  return diff;
+}
+
+const inputCls =
+  "w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-white/20 outline-none focus:border-[#f7931a]/50 transition-colors";
+
 export default function CampaignsPage() {
   const router = useRouter();
   const { publicKey, sendTransaction } = useWallet();
@@ -66,10 +80,22 @@ export default function CampaignsPage() {
     pauseCampaign,
     resumeCampaign,
     deleteCampaign,
+    updateCampaign,
+    refetch,
   } = useCampaigns();
+
   const [fundingId, setFundingId] = useState<string | null>(null);
   const [fundingAmount, setFundingAmount] = useState("");
   const [isFunding, setIsFunding] = useState(false);
+
+  const [editingCampaign, setEditingCampaign] = useState<any | null>(null);
+  const [editForm, setEditForm] = useState<any>({});
+  const [isSaving, setIsSaving] = useState(false);
+
+  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<string>("newest");
+  const [search, setSearch] = useState("");
+
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
 
   function showToast(msg: string, ok = true) {
@@ -77,24 +103,48 @@ export default function CampaignsPage() {
     setTimeout(() => setToast(null), 4000);
   }
 
+  // Filter + sort
+  const filtered = useMemo(() => {
+    let list = [...campaigns];
+    if (filterStatus !== "all")
+      list = list.filter((c) => c.status === filterStatus);
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      list = list.filter(
+        (c) =>
+          c.name?.toLowerCase().includes(q) ||
+          c.description?.toLowerCase().includes(q),
+      );
+    }
+    if (sortBy === "newest")
+      list.sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
+    if (sortBy === "oldest")
+      list.sort(
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      );
+    if (sortBy === "budget-high") list.sort((a, b) => b.budget - a.budget);
+    if (sortBy === "budget-low") list.sort((a, b) => a.budget - b.budget);
+    return list;
+  }, [campaigns, filterStatus, sortBy, search]);
+
+  // Fund
   async function handleFund() {
     if (!publicKey) return showToast("Connect your wallet first", false);
     const amount = parseFloat(fundingAmount);
     if (!fundingId || isNaN(amount) || amount <= 0)
       return showToast("Enter a valid amount", false);
-
     setIsFunding(true);
     try {
-      // 1. Fetch the escrow PDA from backend
       const solanaInfo = await apiClient.getSolanaInfo();
       const programId = new PublicKey(solanaInfo.programId);
-
       const [escrowPda] = PublicKey.findProgramAddressSync(
         [Buffer.from("campaign"), publicKey.toBuffer(), Buffer.from(fundingId)],
         programId,
       );
-
-      // 2. Build a SOL transfer from user wallet → escrow PDA
       const lamports = Math.round(amount * LAMPORTS_PER_SOL);
       const tx = new Transaction().add(
         SystemProgram.transfer({
@@ -103,32 +153,64 @@ export default function CampaignsPage() {
           lamports,
         }),
       );
-
       const { blockhash } = await connection.getLatestBlockhash();
       tx.recentBlockhash = blockhash;
       tx.feePayer = publicKey;
-
-      // 3. User signs & sends via wallet adapter
       showToast("Approve the transaction in your wallet…", true);
       const signature = await sendTransaction(tx, connection);
-
-      // 4. Wait for confirmation
       await connection.confirmTransaction(signature, "confirmed");
-
-      // 5. Tell backend to activate the campaign with the confirmed tx
       await fundCampaign(fundingId, publicKey.toString(), amount, signature);
       showToast(`Funded! Tx: ${signature.slice(0, 12)}…`);
       setFundingId(null);
       setFundingAmount("");
     } catch (e: any) {
-      // User rejected or tx failed
-      if (e.message?.includes("User rejected")) {
-        showToast("Transaction cancelled", false);
-      } else {
-        showToast(e.message ?? "Transaction failed", false);
-      }
+      showToast(
+        e.message?.includes("User rejected")
+          ? "Transaction cancelled"
+          : (e.message ?? "Transaction failed"),
+        false,
+      );
     } finally {
       setIsFunding(false);
+    }
+  }
+
+  // Edit
+  function openEdit(c: any) {
+    setEditingCampaign(c);
+    setEditForm({
+      name: c.name,
+      description: c.description ?? "",
+      format: c.format,
+      targetUrl: c.targetUrl ?? "",
+      creativeUrl: c.creativeUrl ?? "",
+      startDate: c.startDate?.slice(0, 10) ?? "",
+      endDate: c.endDate?.slice(0, 10) ?? "",
+    });
+  }
+
+  async function handleSaveEdit() {
+    if (!editingCampaign) return;
+    setIsSaving(true);
+    try {
+      await updateCampaign(editingCampaign._id, editForm);
+      showToast("Campaign updated");
+      setEditingCampaign(null);
+    } catch (e: any) {
+      showToast(e.message, false);
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  // Duplicate
+  async function handleDuplicate(id: string) {
+    try {
+      await apiClient.duplicateCampaign(id);
+      await refetch();
+      showToast("Campaign duplicated");
+    } catch (e: any) {
+      showToast(e.message, false);
     }
   }
 
@@ -160,11 +242,11 @@ export default function CampaignsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Toast */}
       {toast && (
         <div
-          className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl text-sm font-medium transition-all ${
+          className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl text-sm font-medium ${
             toast.ok
               ? "bg-emerald-400/10 border-emerald-400/20 text-emerald-400"
               : "bg-[#f87171]/10 border-[#f87171]/20 text-[#f87171]"
@@ -184,7 +266,7 @@ export default function CampaignsPage() {
         <div>
           <h1 className="text-xl font-bold text-white">Campaigns</h1>
           <p className="text-sm text-white/40 mt-0.5">
-            Manage your advertising campaigns
+            {campaigns.length} total
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -199,7 +281,61 @@ export default function CampaignsPage() {
         </div>
       </div>
 
-      {/* Content */}
+      {/* Filters */}
+      <div className="flex flex-wrap items-center gap-2">
+        {/* Search */}
+        <div className="relative flex-1 min-w-[180px] max-w-xs">
+          <SearchNormal1
+            size={14}
+            color="#ffffff40"
+            className="absolute left-3 top-1/2 -translate-y-1/2"
+          />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search campaigns…"
+            className="w-full pl-8 pr-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-white/25 outline-none focus:border-white/20 transition-colors"
+          />
+        </div>
+
+        {/* Status filter */}
+        <div className="flex items-center gap-1 p-1 rounded-xl bg-white/5 border border-white/8">
+          {["all", "active", "paused", "draft", "completed"].map((s) => (
+            <button
+              key={s}
+              onClick={() => setFilterStatus(s)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-all ${
+                filterStatus === s
+                  ? "bg-[#f7931a]/20 text-[#f7931a]"
+                  : "text-white/40 hover:text-white"
+              }`}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+
+        {/* Sort */}
+        <div className="relative">
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="appearance-none pl-3 pr-8 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white/60 outline-none cursor-pointer"
+          >
+            <option value="newest">Newest</option>
+            <option value="oldest">Oldest</option>
+            <option value="budget-high">Budget ↓</option>
+            <option value="budget-low">Budget ↑</option>
+          </select>
+          <ArrowDown2
+            size={12}
+            color="#ffffff40"
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
+          />
+        </div>
+      </div>
+
+      {/* List */}
       {isLoading ? (
         <div className="space-y-3">
           {[...Array(3)].map((_, i) => (
@@ -212,28 +348,33 @@ export default function CampaignsPage() {
             </div>
           ))}
         </div>
-      ) : campaigns.length === 0 ? (
+      ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 rounded-2xl border border-dashed border-white/10">
-          <div className="w-14 h-14 rounded-2xl bg-[#f7931a]/10 flex items-center justify-center mb-4">
-            <Chart size={28} color="#f7931a" />
-          </div>
-          <p className="text-white font-semibold mb-1">No campaigns yet</p>
-          <p className="text-sm text-white/40 mb-6">
-            Create your first campaign to start advertising
+          <Chart size={28} color="#f7931a" />
+          <p className="text-white font-semibold mt-4 mb-1">
+            No campaigns found
           </p>
-          <button
-            onClick={() => router.push("/dashboard/create")}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#f7931a] hover:bg-[#f7931a]/90 text-white text-sm font-semibold transition-colors"
-          >
-            <AddCircle size={16} color="white" />
-            Create Campaign
-          </button>
+          <p className="text-sm text-white/40 mb-6">
+            {search || filterStatus !== "all"
+              ? "Try adjusting your filters"
+              : "Create your first campaign to start advertising"}
+          </p>
+          {!search && filterStatus === "all" && (
+            <button
+              onClick={() => router.push("/dashboard/create")}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#f7931a] hover:bg-[#f7931a]/90 text-white text-sm font-semibold transition-colors"
+            >
+              <AddCircle size={16} color="white" />
+              Create Campaign
+            </button>
+          )}
         </div>
       ) : (
         <div className="space-y-3">
-          {campaigns.map((c) => {
+          {filtered.map((c) => {
             const status = STATUS_STYLES[c.status] ?? STATUS_STYLES.draft;
             const remaining = (c.budget - c.spent).toFixed(2);
+            const dl = c.endDate ? daysLeft(c.endDate) : null;
             return (
               <div
                 key={c._id}
@@ -253,6 +394,15 @@ export default function CampaignsPage() {
                       <span className="text-[10px] text-white/30 capitalize px-2 py-0.5 rounded-full bg-white/5">
                         {c.format}
                       </span>
+                      {/* End date countdown */}
+                      {c.status === "active" &&
+                        dl !== null &&
+                        dl <= 7 &&
+                        dl >= 0 && (
+                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#f87171]/10 text-[#f87171] border border-[#f87171]/20">
+                            {dl === 0 ? "Ends today" : `${dl}d left`}
+                          </span>
+                        )}
                     </div>
                     {c.description && (
                       <p className="text-xs text-white/40 mt-1 truncate">
@@ -262,7 +412,6 @@ export default function CampaignsPage() {
                   </div>
                 </div>
 
-                {/* Budget row */}
                 <div className="grid grid-cols-3 gap-4 mb-3">
                   <div>
                     <p className="text-[10px] text-white/30 mb-0.5">Budget</p>
@@ -288,15 +437,13 @@ export default function CampaignsPage() {
 
                 <BudgetBar budget={c.budget} spent={c.spent} />
 
-                {/* Actions */}
-                <div className="flex items-center gap-2 mt-4">
+                <div className="flex items-center gap-2 mt-4 flex-wrap">
                   {c.status === "draft" && (
                     <button
                       onClick={() => setFundingId(c._id)}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#f7931a]/15 hover:bg-[#f7931a]/25 text-[#f7931a] text-xs font-semibold transition-colors"
                     >
-                      <EmptyWallet size={13} color="currentColor" />
-                      Fund
+                      <EmptyWallet size={13} color="currentColor" /> Fund
                     </button>
                   )}
                   {c.status === "active" && (
@@ -304,8 +451,7 @@ export default function CampaignsPage() {
                       onClick={() => handlePause(c._id)}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-yellow-400/10 hover:bg-yellow-400/20 text-yellow-400 text-xs font-semibold transition-colors"
                     >
-                      <Pause size={13} color="currentColor" />
-                      Pause
+                      <Pause size={13} color="currentColor" /> Pause
                     </button>
                   )}
                   {c.status === "paused" && (
@@ -313,8 +459,7 @@ export default function CampaignsPage() {
                       onClick={() => handleResume(c._id)}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-400/10 hover:bg-emerald-400/20 text-emerald-400 text-xs font-semibold transition-colors"
                     >
-                      <Play size={13} color="currentColor" />
-                      Resume
+                      <Play size={13} color="currentColor" /> Resume
                     </button>
                   )}
                   <button
@@ -323,16 +468,28 @@ export default function CampaignsPage() {
                     }
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#3b82f6]/10 hover:bg-[#3b82f6]/20 text-[#3b82f6] text-xs font-semibold transition-colors"
                   >
-                    <TrendUp size={13} color="currentColor" />
-                    Stats
+                    <TrendUp size={13} color="currentColor" /> Stats
+                  </button>
+                  {c.status === "draft" && (
+                    <button
+                      onClick={() => openEdit(c)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/50 hover:text-white text-xs font-semibold transition-colors"
+                    >
+                      <Edit2 size={13} color="currentColor" /> Edit
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleDuplicate(c._id)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/50 hover:text-white text-xs font-semibold transition-colors"
+                  >
+                    <Copy size={13} color="currentColor" /> Duplicate
                   </button>
                   {c.status === "draft" && (
                     <button
                       onClick={() => handleDelete(c._id)}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#f87171]/10 hover:bg-[#f87171]/20 text-[#f87171] text-xs font-semibold transition-colors ml-auto"
                     >
-                      <Trash size={13} color="currentColor" />
-                      Delete
+                      <Trash size={13} color="currentColor" /> Delete
                     </button>
                   )}
                 </div>
@@ -357,13 +514,11 @@ export default function CampaignsPage() {
               SOL will be transferred from your wallet to an escrow PDA on
               Solana devnet.
             </p>
-
             {!publicKey && (
               <div className="mb-4 px-3 py-2.5 rounded-xl bg-yellow-400/10 border border-yellow-400/20 text-yellow-400 text-xs">
                 Connect your wallet to fund this campaign.
               </div>
             )}
-
             <label className="block text-xs font-medium text-white/50 mb-1.5">
               Amount (SOL)
             </label>
@@ -374,9 +529,8 @@ export default function CampaignsPage() {
               value={fundingAmount}
               onChange={(e) => setFundingAmount(e.target.value)}
               placeholder="0.00"
-              className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-white/20 outline-none focus:border-[#f7931a]/50 transition-colors mb-5"
+              className={`${inputCls} mb-5`}
             />
-
             <div className="flex gap-3">
               <button
                 onClick={() => {
@@ -394,6 +548,84 @@ export default function CampaignsPage() {
                 className="flex-1 px-4 py-2.5 rounded-xl bg-[#f7931a] hover:bg-[#f7931a]/90 text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 {isFunding ? "Funding…" : "Fund Campaign"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {editingCampaign && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setEditingCampaign(null)}
+          />
+          <div className="relative w-full max-w-lg rounded-2xl bg-[#13131f] border border-white/10 shadow-2xl p-6 max-h-[90vh] overflow-y-auto">
+            <h2 className="text-base font-bold text-white mb-5">
+              Edit Campaign
+            </h2>
+            <div className="space-y-4">
+              {[
+                { label: "Name", key: "name", type: "text" },
+                { label: "Description", key: "description", type: "text" },
+                { label: "Target URL", key: "targetUrl", type: "url" },
+                { label: "Creative URL", key: "creativeUrl", type: "url" },
+                { label: "Start Date", key: "startDate", type: "date" },
+                { label: "End Date", key: "endDate", type: "date" },
+              ].map(({ label, key, type }) => (
+                <div key={key}>
+                  <label className="block text-xs font-semibold text-white/40 uppercase tracking-wider mb-1.5">
+                    {label}
+                  </label>
+                  <input
+                    type={type}
+                    value={editForm[key] ?? ""}
+                    onChange={(e) =>
+                      setEditForm((p: any) => ({ ...p, [key]: e.target.value }))
+                    }
+                    className={inputCls}
+                  />
+                </div>
+              ))}
+              <div>
+                <label className="block text-xs font-semibold text-white/40 uppercase tracking-wider mb-1.5">
+                  Format
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {AD_FORMATS.map((f) => (
+                    <button
+                      key={f}
+                      type="button"
+                      onClick={() =>
+                        setEditForm((p: any) => ({ ...p, format: f }))
+                      }
+                      className={`px-3 py-2 rounded-xl border text-sm capitalize transition-all ${
+                        editForm.format === f
+                          ? "border-[#f7931a]/50 bg-[#f7931a]/8 text-[#f7931a]"
+                          : "border-white/8 text-white/50 hover:border-white/15"
+                      }`}
+                    >
+                      {f}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setEditingCampaign(null)}
+                disabled={isSaving}
+                className="flex-1 px-4 py-2.5 rounded-xl border border-white/10 text-white/60 text-sm hover:bg-white/5 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveEdit}
+                disabled={isSaving}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-[#f7931a] hover:bg-[#f7931a]/90 text-white text-sm font-semibold disabled:opacity-40 transition-colors"
+              >
+                {isSaving ? "Saving…" : "Save Changes"}
               </button>
             </div>
           </div>

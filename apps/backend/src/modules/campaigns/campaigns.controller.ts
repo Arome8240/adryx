@@ -67,6 +67,12 @@ export class CampaignsController {
     await this.campaignsService.remove(id, req.user.userId);
   }
 
+  @Post(':id/duplicate')
+  @Roles(UserRole.ADVERTISER)
+  async duplicateCampaign(@Param('id') id: string, @Request() req) {
+    return await this.campaignsService.duplicateCampaign(id, req.user.userId);
+  }
+
   @Post(':id/fund')
   @Roles(UserRole.ADVERTISER)
   async fundCampaign(

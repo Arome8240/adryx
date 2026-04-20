@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Campaign, CampaignDocument } from '../../schemas/campaign.schema';
-import { Interaction, InteractionDocument } from '../../schemas/interaction.schema';
+import {
+  Interaction,
+  InteractionDocument,
+} from '../../schemas/interaction.schema';
 import { Placement, PlacementDocument } from '../../schemas/placement.schema';
 import { Site, SiteDocument } from '../../schemas/site.schema';
 
@@ -16,6 +19,54 @@ export class AnalyticsService {
     private placementModel: Model<PlacementDocument>,
     @InjectModel(Site.name) private siteModel: Model<SiteDocument>,
   ) {}
+
+  async getAdvertiserActivity(advertiserId: string, limit = 10) {
+    const campaigns = await this.campaignModel
+      .find({ advertiserId })
+      .sort({ updatedAt: -1 })
+      .limit(limit)
+      .select('name status budget spent solanaTxHash updatedAt createdAt')
+      .lean();
+
+    return campaigns.map((c: any) => ({
+      campaignId: c._id,
+      name: c.name,
+      status: c.status,
+      budget: c.budget,
+      spent: c.spent,
+      hasTx: !!c.solanaTxHash,
+      updatedAt: c.updatedAt,
+    }));
+  }
+
+  async getAdvertiserTopCampaigns(advertiserId: string, limit = 10) {
+    const campaigns = await this.campaignModel.find({ advertiserId });
+
+    const stats = await Promise.all(
+      campaigns.map(async (campaign) => {
+        const impressions = await this.interactionModel.countDocuments({
+          campaignId: campaign._id,
+          type: 'impression',
+        });
+        const clicks = await this.interactionModel.countDocuments({
+          campaignId: campaign._id,
+          type: 'click',
+        });
+        const ctr = impressions > 0 ? (clicks / impressions) * 100 : 0;
+        return {
+          campaignId: campaign._id,
+          name: campaign.name,
+          status: campaign.status,
+          impressions,
+          clicks,
+          ctr: parseFloat(ctr.toFixed(2)),
+          spent: campaign.spent,
+        };
+      }),
+    );
+
+    return stats.sort((a, b) => b.ctr - a.ctr).slice(0, limit);
+  }
 
   async getAdvertiserDashboard(advertiserId: string) {
     const campaigns = await this.campaignModel.find({ advertiserId });

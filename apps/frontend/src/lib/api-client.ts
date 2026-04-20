@@ -99,6 +99,38 @@ class ApiClient {
     return this.request<any>("/auth/me");
   }
 
+  async updateProfile(data: {
+    name?: string;
+    email?: string;
+    timezone?: string;
+  }) {
+    return this.request<any>("/auth/profile", {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async changePassword(currentPassword: string, newPassword: string) {
+    return this.request<{ message: string }>("/auth/password", {
+      method: "PATCH",
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+  }
+
+  async duplicateCampaign(id: string) {
+    return this.request<any>(`/campaigns/${id}/duplicate`, { method: "POST" });
+  }
+
+  async getAdvertiserActivity(limit = 10) {
+    return this.request<any[]>(`/analytics/advertiser/activity?limit=${limit}`);
+  }
+
+  async getAdvertiserTopCampaigns(limit = 10) {
+    return this.request<any[]>(
+      `/analytics/advertiser/top-campaigns?limit=${limit}`,
+    );
+  }
+
   // Campaigns
   async getCampaigns() {
     return this.request<any[]>("/campaigns");

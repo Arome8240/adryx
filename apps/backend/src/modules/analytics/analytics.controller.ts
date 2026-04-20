@@ -23,6 +23,27 @@ export class AnalyticsController {
     return await this.analyticsService.getAdvertiserDashboard(req.user.userId);
   }
 
+  @Get('advertiser/activity')
+  @Roles(UserRole.ADVERTISER)
+  async getAdvertiserActivity(@Request() req, @Query('limit') limit?: number) {
+    return await this.analyticsService.getAdvertiserActivity(
+      req.user.userId,
+      limit ? parseInt(limit.toString()) : 10,
+    );
+  }
+
+  @Get('advertiser/top-campaigns')
+  @Roles(UserRole.ADVERTISER)
+  async getAdvertiserTopCampaigns(
+    @Request() req,
+    @Query('limit') limit?: number,
+  ) {
+    return await this.analyticsService.getAdvertiserTopCampaigns(
+      req.user.userId,
+      limit ? parseInt(limit.toString()) : 10,
+    );
+  }
+
   @Get('publisher/dashboard')
   @Roles(UserRole.PUBLISHER)
   async getPublisherDashboard(@Request() req) {
@@ -41,7 +62,10 @@ export class AnalyticsController {
   }
 
   @Get('site/:id')
-  async getSiteAnalytics(@Param('id') id: string, @Query('days') days?: number) {
+  async getSiteAnalytics(
+    @Param('id') id: string,
+    @Query('days') days?: number,
+  ) {
     return await this.analyticsService.getSiteAnalytics(
       id,
       days ? parseInt(days.toString()) : 30,

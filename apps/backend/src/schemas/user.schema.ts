@@ -29,6 +29,9 @@ export class User {
   @Prop({ default: false })
   emailVerified: boolean;
 
+  @Prop({ default: 'UTC' })
+  timezone: string;
+
   // Virtual fields for relations (populated)
   campaigns: Types.ObjectId[];
   sites: Types.ObjectId[];

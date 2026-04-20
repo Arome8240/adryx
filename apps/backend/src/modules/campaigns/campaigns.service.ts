@@ -19,6 +19,27 @@ export class CampaignsService {
     private readonly paymentService: PaymentService,
   ) {}
 
+  async duplicateCampaign(id: string, advertiserId: string): Promise<Campaign> {
+    const source = await this.campaignModel.findOne({ _id: id, advertiserId });
+    if (!source) throw new NotFoundException(`Campaign ${id} not found`);
+
+    const copy = await this.campaignModel.create({
+      name: `${source.name} (Copy)`,
+      description: source.description,
+      format: source.format,
+      budget: source.budget,
+      startDate: source.startDate,
+      endDate: source.endDate,
+      targetUrl: source.targetUrl,
+      creativeUrl: source.creativeUrl,
+      advertiserId,
+      status: CampaignStatus.DRAFT,
+      spent: 0,
+    });
+
+    return copy;
+  }
+
   async create(
     advertiserId: string,
     createCampaignDto: CreateCampaignDto,
