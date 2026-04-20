@@ -178,7 +178,7 @@ class ApiClient {
   async fundCampaign(
     id: string,
     advertiserWallet: string,
-    amountSol: number,
+    amountUsdc: number,
     txSignature?: string,
   ) {
     return this.request<{
@@ -188,7 +188,7 @@ class ApiClient {
       status: string;
     }>(`/campaigns/${id}/fund`, {
       method: "POST",
-      body: JSON.stringify({ advertiserWallet, amountSol, txSignature }),
+      body: JSON.stringify({ advertiserWallet, amountUsdc, txSignature }),
     });
   }
 

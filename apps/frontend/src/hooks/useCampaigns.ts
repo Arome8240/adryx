@@ -45,13 +45,13 @@ export function useCampaigns() {
   const fundCampaign = async (
     id: string,
     walletAddress: string,
-    amount: number,
+    amountUsdc: number,
     txSignature?: string,
   ) => {
     const result = await apiClient.fundCampaign(
       id,
       walletAddress,
-      amount,
+      amountUsdc,
       txSignature,
     );
     await fetchCampaigns();

@@ -5,7 +5,10 @@ import { PublicKey, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { BN } from '@coral-xyz/anchor';
 import { SolanaService } from './solana.service';
 import { Campaign, CampaignDocument } from '../../schemas/campaign.schema';
-import { Interaction, InteractionDocument } from '../../schemas/interaction.schema';
+import {
+  Interaction,
+  InteractionDocument,
+} from '../../schemas/interaction.schema';
 import { InteractionType } from '../../common/enums';
 
 @Injectable()
@@ -29,7 +32,7 @@ export class PaymentService {
   ): Promise<{ signature: string; escrowPda: string }> {
     try {
       this.logger.log(
-        `Creating campaign escrow for ${campaignId} with ${amountSol} SOL`,
+        `Creating campaign escrow for ${campaignId} with ${amountSol} USDC`,
       );
 
       const advertiserPubkey = new PublicKey(advertiserWallet);
@@ -137,7 +140,10 @@ export class PaymentService {
           txHash,
         };
       } catch (paymentError) {
-        this.logger.error('Payment failed, click recorded but not paid', paymentError);
+        this.logger.error(
+          'Payment failed, click recorded but not paid',
+          paymentError,
+        );
         // Click is recorded but payment failed - can be retried later
         return {
           interactionId: interaction._id.toString(),
@@ -190,9 +196,7 @@ export class PaymentService {
       // For now, simulate the transaction
       const signature = 'payment_tx_' + Date.now();
 
-      this.logger.log(
-        `Paid ${amountSol} SOL to publisher ${publisherWallet}`,
-      );
+      this.logger.log(`Paid ${amountSol} USDC to publisher ${publisherWallet}`);
 
       return signature;
     } catch (error) {
@@ -211,9 +215,7 @@ export class PaymentService {
         throw new Error('Campaign not found');
       }
 
-      const advertiserPubkey = new PublicKey(
-        campaign.advertiserId.toString(),
-      );
+      const advertiserPubkey = new PublicKey(campaign.advertiserId.toString());
       const escrowPda = this.solanaService.deriveCampaignEscrowPda(
         advertiserPubkey,
         campaignId,
@@ -317,9 +319,7 @@ export class PaymentService {
 
       for (const click of unpaidClicks) {
         try {
-          const campaign = await this.campaignModel.findById(
-            click.campaignId,
-          );
+          const campaign = await this.campaignModel.findById(click.campaignId);
           if (!campaign || campaign.status !== 'active') {
             continue;
           }

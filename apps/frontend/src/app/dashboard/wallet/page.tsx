@@ -33,9 +33,9 @@ export default function WalletPage() {
   const { campaigns, isLoading: campaignsLoading } = useCampaigns();
   const { dashboard } = useAdvertiserDashboard();
 
+  const [usdcBalance, setUsdcBalance] = useState<number | null>(null);
   const [solBalance, setSolBalance] = useState<number | null>(null);
   const [balanceLoading, setBalanceLoading] = useState(false);
-  const [solPrice, setSolPrice] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
   const [toast, setToast] = useState<{
     message: string;
@@ -47,36 +47,35 @@ export default function WalletPage() {
   const [filterFrom, setFilterFrom] = useState("");
   const [filterTo, setFilterTo] = useState("");
 
-  // T22 — Auto-reload threshold
+  // T22 — Auto-reload threshold (in USDC)
   const [autoReload, setAutoReload] = useState<number>(0);
   const [showReloadSettings, setShowReloadSettings] = useState(false);
   const [reloadInput, setReloadInput] = useState("");
 
-  // Fetch on-chain SOL balance
+  // Fetch USDC + SOL balances
   useEffect(() => {
     if (!publicKey || !connection) {
+      setUsdcBalance(null);
       setSolBalance(null);
       return;
     }
     setBalanceLoading(true);
-    connection
-      .getBalance(publicKey)
-      .then((lamports) => setSolBalance(lamports / LAMPORTS_PER_SOL))
-      .catch(() => setSolBalance(null))
+    Promise.all([
+      getUsdcBalance(connection, publicKey),
+      connection
+        .getBalance(publicKey)
+        .then((l) => l / LAMPORTS_PER_SOL)
+        .catch(() => null),
+    ])
+      .then(([usdc, sol]) => {
+        setUsdcBalance(usdc);
+        setSolBalance(sol);
+      })
+      .catch(() => {})
       .finally(() => setBalanceLoading(false));
   }, [publicKey, connection]);
 
-  // T20 — Fetch live SOL/USD price from CoinGecko
-  useEffect(() => {
-    fetch(
-      "https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd",
-    )
-      .then((r) => r.json())
-      .then((data) => setSolPrice(data?.solana?.usd ?? null))
-      .catch(() => setSolPrice(null));
-  }, []);
-
-  // T22 — Load auto-reload threshold from localStorage
+  // T22 — Load auto-reload threshold
   useEffect(() => {
     const saved = localStorage.getItem(AUTO_RELOAD_KEY);
     if (saved) {
@@ -93,7 +92,7 @@ export default function WalletPage() {
       setShowReloadSettings(false);
       setToast({
         message:
-          val === 0 ? "Auto-reload disabled" : `Auto-reload set at ${val} SOL`,
+          val === 0 ? "Auto-reload disabled" : `Alert set at $${val} USDC`,
         type: "success",
       });
     }
@@ -106,7 +105,6 @@ export default function WalletPage() {
     setTimeout(() => setCopied(false), 1500);
   }
 
-  // Derive transactions from funded campaigns
   const allTxRows = campaigns
     .filter((c) => c.solanaTxHash)
     .map((c) => ({
@@ -121,23 +119,26 @@ export default function WalletPage() {
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   // T21 — Apply filters
-  const txRows = useMemo(() => {
-    return allTxRows.filter((tx) => {
-      if (
-        filterCampaign &&
-        !tx.campaignName.toLowerCase().includes(filterCampaign.toLowerCase())
-      )
-        return false;
-      if (filterFrom && new Date(tx.date) < new Date(filterFrom)) return false;
-      if (filterTo && new Date(tx.date) > new Date(filterTo + "T23:59:59"))
-        return false;
-      return true;
-    });
-  }, [allTxRows, filterCampaign, filterFrom, filterTo]);
+  const txRows = useMemo(
+    () =>
+      allTxRows.filter((tx) => {
+        if (
+          filterCampaign &&
+          !tx.campaignName.toLowerCase().includes(filterCampaign.toLowerCase())
+        )
+          return false;
+        if (filterFrom && new Date(tx.date) < new Date(filterFrom))
+          return false;
+        if (filterTo && new Date(tx.date) > new Date(filterTo + "T23:59:59"))
+          return false;
+        return true;
+      }),
+    [allTxRows, filterCampaign, filterFrom, filterTo],
+  );
 
-  // T22 — Auto-reload alert
+  // T22 — Auto-reload alert (USDC threshold)
   const showAutoReloadAlert =
-    autoReload > 0 && solBalance !== null && solBalance < autoReload;
+    autoReload > 0 && usdcBalance !== null && usdcBalance < autoReload;
 
   const totalFunded = campaigns.reduce((s, c) => s + (c.budget || 0), 0);
   const totalSpent =
@@ -151,38 +152,30 @@ export default function WalletPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="glass rounded-2xl p-6 border border-[#f7931a]/20 relative overflow-hidden"
+        className="glass rounded-2xl p-6 border border-[#4ade80]/20 relative overflow-hidden"
       >
-        <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-[#f7931a]/5 blur-[80px] pointer-events-none" />
+        <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-[#4ade80]/5 blur-[80px] pointer-events-none" />
         <div className="relative">
-          <div className="flex items-start justify-between gap-4 mb-6">
+          <div className="flex items-start justify-between gap-4 mb-5">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-[#f7931a]/15 flex items-center justify-center shrink-0">
-                <Wallet size={24} color="#f7931a" variant="Bold" />
+              <div className="w-12 h-12 rounded-2xl bg-[#4ade80]/15 flex items-center justify-center shrink-0">
+                <Wallet size={24} color="#4ade80" variant="Bold" />
               </div>
               <div>
                 <p className="text-xs text-white/40 uppercase tracking-widest">
-                  Wallet Balance
+                  USDC Balance
                 </p>
                 {balanceLoading ? (
-                  <div className="h-8 w-32 bg-white/8 rounded animate-pulse mt-1" />
-                ) : connected && solBalance !== null ? (
+                  <div className="h-8 w-36 bg-white/8 rounded animate-pulse mt-1" />
+                ) : connected && usdcBalance !== null ? (
                   <>
                     <p className="text-3xl font-bold text-white mt-0.5">
-                      {solBalance.toFixed(4)}{" "}
-                      <span className="text-lg text-white/50">SOL</span>
+                      ${formatUsdc(usdcBalance)}{" "}
+                      <span className="text-lg text-white/50">USDC</span>
                     </p>
-                    {solPrice !== null && (
-                      <p className="text-sm text-white/30 mt-0.5">
-                        ≈ $
-                        {(solBalance * solPrice).toLocaleString("en-US", {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}{" "}
-                        USD
-                        <span className="ml-2 text-[10px] text-white/20">
-                          @ ${solPrice.toLocaleString()} / SOL
-                        </span>
+                    {solBalance !== null && (
+                      <p className="text-xs text-white/30 mt-1">
+                        {solBalance.toFixed(4)} SOL for gas
                       </p>
                     )}
                   </>
@@ -196,7 +189,6 @@ export default function WalletPage() {
             <WalletButton />
           </div>
 
-          {/* Wallet address */}
           {connected && publicKey && (
             <button
               onClick={handleCopyAddress}
@@ -212,10 +204,9 @@ export default function WalletPage() {
               )}
             </button>
           )}
-
           {!connected && (
             <p className="text-xs text-white/30 mt-2">
-              Connect your wallet to view your on-chain balance.
+              Connect your wallet to view your USDC balance.
             </p>
           )}
         </div>
@@ -226,8 +217,8 @@ export default function WalletPage() {
         <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-yellow-400/10 border border-yellow-400/20 text-yellow-400 text-sm">
           <Wallet size={16} color="currentColor" />
           <span>
-            Balance below {autoReload} SOL threshold — consider topping up your
-            wallet.
+            USDC balance below ${autoReload} threshold — consider topping up
+            your wallet.
           </span>
         </div>
       )}
@@ -237,22 +228,22 @@ export default function WalletPage() {
         {[
           {
             label: "Total Funded",
-            value: `${totalFunded.toFixed(2)} SOL`,
-            usd: solPrice ? `$${(totalFunded * solPrice).toFixed(2)}` : null,
+            value: `$${formatUsdc(totalFunded)}`,
+            sub: "USDC",
             color: "text-[#4ade80]",
             icon: <ArrowCircleDown size={18} color="#4ade80" variant="Bold" />,
           },
           {
             label: "Total Spent",
-            value: `${totalSpent.toFixed(2)} SOL`,
-            usd: solPrice ? `$${(totalSpent * solPrice).toFixed(2)}` : null,
+            value: `$${formatUsdc(totalSpent)}`,
+            sub: "USDC",
             color: "text-red-400",
             icon: <ArrowCircleUp size={18} color="#f87171" variant="Bold" />,
           },
           {
             label: "Remaining",
-            value: `${totalRemaining.toFixed(2)} SOL`,
-            usd: solPrice ? `$${(totalRemaining * solPrice).toFixed(2)}` : null,
+            value: `$${formatUsdc(totalRemaining)}`,
+            sub: "USDC",
             color: "text-[#f7931a]",
             icon: <Wallet size={18} color="#f7931a" variant="Bold" />,
           },
@@ -269,7 +260,7 @@ export default function WalletPage() {
               <p className="text-xs text-white/40">{s.label}</p>
             </div>
             <p className={`text-lg font-bold ${s.color}`}>{s.value}</p>
-            {s.usd && <p className="text-xs text-white/25 mt-0.5">{s.usd}</p>}
+            <p className="text-xs text-white/25 mt-0.5">{s.sub}</p>
           </motion.div>
         ))}
       </div>
@@ -300,7 +291,7 @@ export default function WalletPage() {
             }`}
           >
             <Setting2 size={13} color="currentColor" />
-            Auto-reload {autoReload > 0 ? `@ ${autoReload} SOL` : "off"}
+            Alert {autoReload > 0 ? `@ $${autoReload}` : "off"}
           </button>
         </div>
 
@@ -308,18 +299,23 @@ export default function WalletPage() {
         {showReloadSettings && (
           <div className="px-6 py-4 border-b border-white/8 bg-white/2 flex items-center gap-3 flex-wrap">
             <p className="text-xs text-white/50">
-              Alert when balance drops below:
+              Alert when USDC balance drops below:
             </p>
-            <input
-              type="number"
-              step="0.1"
-              min="0"
-              value={reloadInput}
-              onChange={(e) => setReloadInput(e.target.value)}
-              placeholder="0.00"
-              className="w-24 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-[#f7931a]/50 transition-colors"
-            />
-            <span className="text-xs text-white/30">SOL (0 = disabled)</span>
+            <div className="relative">
+              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-white/30">
+                $
+              </span>
+              <input
+                type="number"
+                step="1"
+                min="0"
+                value={reloadInput}
+                onChange={(e) => setReloadInput(e.target.value)}
+                placeholder="0"
+                className="w-24 pl-6 pr-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-[#f7931a]/50 transition-colors"
+              />
+            </div>
+            <span className="text-xs text-white/30">USDC (0 = disabled)</span>
             <button
               onClick={saveAutoReload}
               className="px-3 py-1.5 rounded-xl bg-[#f7931a] hover:bg-[#f7931a]/90 text-white text-xs font-semibold transition-colors"
@@ -377,7 +373,7 @@ export default function WalletPage() {
               }}
               className="text-xs text-white/30 hover:text-white/60 transition-colors"
             >
-              Clear filters
+              Clear
             </button>
           )}
           <span className="text-xs text-white/20 ml-auto">
@@ -429,7 +425,7 @@ export default function WalletPage() {
                       {tx.description}
                     </td>
                     <td className="px-5 py-3.5 font-semibold text-[#4ade80]">
-                      +{tx.amount.toFixed(2)} SOL
+                      +${formatUsdc(tx.amount)} USDC
                     </td>
                     <td className="px-5 py-3.5">
                       <span
