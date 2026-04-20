@@ -1,7 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Notification,
   SearchNormal1,
@@ -13,7 +13,9 @@ import {
   HambergerMenu,
   CloseCircle,
   LogoutCurve,
+  Copy,
 } from "iconsax-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const navItems = [
   { label: "Overview", href: "/dashboard", icon: <Home2 size={20} /> },
@@ -47,14 +49,51 @@ const pageTitles: Record<string, string> = {
   "/dashboard/wallet": "Wallet",
 };
 
+function truncateWallet(address: string) {
+  return `${address.slice(0, 4)}...${address.slice(-4)}`;
+}
+
+function getInitial(name: string) {
+  return name?.charAt(0)?.toUpperCase() ?? "?";
+}
+
 export default function DashboardNav() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
+        setProfileOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  function handleLogout() {
+    logout();
+    router.push("/login");
+  }
+
+  function handleCopyWallet() {
+    if (!user?.walletAddress) return;
+    navigator.clipboard.writeText(user.walletAddress);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  }
 
   return (
     <>
       <header className="sticky top-0 z-40 flex items-center justify-between px-6 py-4 bg-[#0d0d1a]/80 backdrop-blur-md border-b border-white/8">
-        {/* Mobile menu button + page title */}
         <div className="flex items-center gap-3">
           <button
             className="md:hidden text-white/60 hover:text-white"
@@ -68,7 +107,6 @@ export default function DashboardNav() {
           </h1>
         </div>
 
-        {/* Right side */}
         <div className="flex items-center gap-3">
           <button className="w-9 h-9 rounded-xl glass border border-white/10 flex items-center justify-center text-white/50 hover:text-white transition-colors">
             <SearchNormal1 size={16} color="#a855f7" />
@@ -77,18 +115,82 @@ export default function DashboardNav() {
             <Notification size={16} color="#f7931a" />
             <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#f7931a]" />
           </button>
-          <div className="flex items-center gap-2 pl-2 border-l border-white/10">
-            <div className="w-8 h-8 rounded-full bg-linear-to-br from-[#f7931a] to-[#a855f7] flex items-center justify-center text-xs font-bold text-white">
-              A
-            </div>
-            <span className="hidden sm:block text-sm font-medium text-white/70">
-              Advertiser
-            </span>
+
+          <div
+            className="relative pl-2 border-l border-white/10"
+            ref={dropdownRef}
+          >
+            <button
+              onClick={() => setProfileOpen((v) => !v)}
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+              aria-label="Profile menu"
+            >
+              <div className="w-8 h-8 rounded-full bg-linear-to-br from-[#f7931a] to-[#a855f7] flex items-center justify-center text-xs font-bold text-white">
+                {user ? getInitial(user.name) : "?"}
+              </div>
+              <div className="hidden sm:flex flex-col items-start">
+                <span className="text-sm font-medium text-white/90 leading-tight max-w-[120px] truncate">
+                  {user?.name ?? "Loading..."}
+                </span>
+                <span className="text-[10px] text-white/40 capitalize leading-tight">
+                  {user?.role ?? ""}
+                </span>
+              </div>
+            </button>
+
+            {profileOpen && (
+              <div className="absolute right-0 top-full mt-2 w-60 rounded-2xl bg-[#13131f] border border-white/10 shadow-xl shadow-black/40 overflow-hidden">
+                <div className="px-4 py-3 border-b border-white/8">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-[#f7931a] to-[#a855f7] flex items-center justify-center text-sm font-bold text-white shrink-0">
+                      {user ? getInitial(user.name) : "?"}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-white truncate">
+                        {user?.name}
+                      </p>
+                      {user?.email && (
+                        <p className="text-xs text-white/40 truncate">
+                          {user.email}
+                        </p>
+                      )}
+                      <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded-md bg-[#f7931a]/15 text-[#f7931a] text-[10px] font-semibold capitalize">
+                        {user?.role}
+                      </span>
+                    </div>
+                  </div>
+
+                  {user?.walletAddress && (
+                    <button
+                      onClick={handleCopyWallet}
+                      className="mt-2 w-full flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+                    >
+                      <span className="text-xs text-white/50 font-mono">
+                        {truncateWallet(user.walletAddress)}
+                      </span>
+                      <Copy
+                        size={12}
+                        color={copied ? "#4ade80" : "#ffffff80"}
+                      />
+                    </button>
+                  )}
+                </div>
+
+                <div className="p-2">
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-white/60 hover:text-[#f87171] hover:bg-[#f87171]/10 transition-all"
+                  >
+                    <LogoutCurve size={16} color="currentColor" />
+                    Sign out
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </header>
 
-      {/* Mobile drawer */}
       {mobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div
@@ -107,6 +209,23 @@ export default function DashboardNav() {
                 <CloseCircle size={22} color="#f87171" />
               </button>
             </div>
+
+            {user && (
+              <div className="px-4 py-3 border-b border-white/8 flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-linear-to-br from-[#f7931a] to-[#a855f7] flex items-center justify-center text-sm font-bold text-white shrink-0">
+                  {getInitial(user.name)}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-white truncate">
+                    {user.name}
+                  </p>
+                  <span className="text-[10px] text-[#f7931a] capitalize">
+                    {user.role}
+                  </span>
+                </div>
+              </div>
+            )}
+
             <nav className="flex-1 px-3 py-4 flex flex-col gap-1">
               {navItems.map((item) => {
                 const active = pathname === item.href;
@@ -131,14 +250,15 @@ export default function DashboardNav() {
                 );
               })}
             </nav>
+
             <div className="px-3 py-4 border-t border-white/8">
-              <Link
-                href="/"
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/40 hover:text-white hover:bg-white/5 transition-all"
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/40 hover:text-[#f87171] hover:bg-[#f87171]/10 transition-all"
               >
-                <LogoutCurve size={20} color="#f87171" />
-                Back to Site
-              </Link>
+                <LogoutCurve size={20} color="currentColor" />
+                Sign out
+              </button>
             </div>
           </aside>
         </div>
