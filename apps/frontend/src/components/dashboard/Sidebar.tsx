@@ -11,26 +11,40 @@ import {
 } from "iconsax-react";
 
 const navItems = [
-  { label: "Overview", href: "/dashboard", icon: <Home2 size={20} /> },
+  {
+    label: "Overview",
+    href: "/dashboard",
+    icon: (active: boolean) => (
+      <Home2 size={20} color={active ? "#f7931a" : "#6366f1"} />
+    ),
+  },
   {
     label: "Campaigns",
     href: "/dashboard/campaigns",
-    icon: <Chart size={20} />,
+    icon: (active: boolean) => (
+      <Chart size={20} color={active ? "#f7931a" : "#a855f7"} />
+    ),
   },
   {
     label: "Create Campaign",
     href: "/dashboard/create",
-    icon: <AddCircle size={20} />,
+    icon: (active: boolean) => (
+      <AddCircle size={20} color={active ? "#f7931a" : "#10b981"} />
+    ),
   },
   {
     label: "Analytics",
     href: "/dashboard/analytics",
-    icon: <PresentionChart size={20} />,
+    icon: (active: boolean) => (
+      <PresentionChart size={20} color={active ? "#f7931a" : "#3b82f6"} />
+    ),
   },
   {
     label: "Wallet",
     href: "/dashboard/wallet",
-    icon: <EmptyWallet size={20} />,
+    icon: (active: boolean) => (
+      <EmptyWallet size={20} color={active ? "#f7931a" : "#f59e0b"} />
+    ),
   },
 ];
 
@@ -66,9 +80,7 @@ export default function Sidebar() {
                   : "text-white/50 hover:text-white hover:bg-white/5"
               }`}
             >
-              <span className={active ? "text-[#f7931a]" : "text-white/40"}>
-                {item.icon}
-              </span>
+              <span>{item.icon(active)}</span>
               {item.label}
               {active && (
                 <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[#f7931a]" />
