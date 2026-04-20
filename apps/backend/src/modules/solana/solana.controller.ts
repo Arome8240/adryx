@@ -64,11 +64,15 @@ export class SolanaController {
   @Post('claim-earnings')
   @HttpCode(HttpStatus.OK)
   async claimEarnings(@Body() dto: ClaimEarningsDto) {
-    this.logger.log(`Claiming earnings for ${dto.publisherWallet}`);
+    this.logger.log(
+      `Claiming ${dto.token ?? 'USDC'} earnings for ${dto.publisherWallet}`,
+    );
     const signature = await this.paymentService.claimEarnings(
       dto.publisherWallet,
+      dto.token ?? 'USDC',
+      dto.txSignature,
     );
-    return { signature };
+    return { signature, token: dto.token ?? 'USDC' };
   }
 
   @Post('retry-failed-payments')

@@ -273,27 +273,25 @@ export class PaymentService {
   /**
    * Claim earnings for publisher
    */
-  async claimEarnings(publisherWallet: string): Promise<string> {
+  async claimEarnings(
+    publisherWallet: string,
+    token = 'USDC',
+    txSignature?: string,
+  ): Promise<string> {
     try {
-      const publisherPubkey = new PublicKey(publisherWallet);
-      const earningsPda =
-        this.solanaService.derivePublisherEarningsPda(publisherPubkey);
+      // If a real on-chain tx was submitted by the frontend, record it
+      if (txSignature) {
+        this.logger.log(
+          `${token} earnings claimed by ${publisherWallet}: ${txSignature}`,
+        );
+        return txSignature;
+      }
 
-      // In production, this would call the smart contract
-      // const tx = await this.solanaService.program.methods
-      //   .claimEarnings()
-      //   .accounts({
-      //     publisherEarnings: earningsPda,
-      //     publisher: publisherPubkey,
-      //     systemProgram: SystemProgram.programId,
-      //   })
-      //   .rpc();
-
-      // For now, simulate the transaction
-      const signature = 'claim_tx_' + Date.now();
-
-      this.logger.log(`Earnings claimed by ${publisherWallet}: ${signature}`);
-
+      // Simulated fallback (dev only)
+      const signature = `claim_${token.toLowerCase()}_tx_` + Date.now();
+      this.logger.log(
+        `${token} earnings claimed by ${publisherWallet}: ${signature}`,
+      );
       return signature;
     } catch (error) {
       this.logger.error('Failed to claim earnings', error);

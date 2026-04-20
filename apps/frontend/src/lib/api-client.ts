@@ -240,11 +240,18 @@ class ApiClient {
     );
   }
 
-  async claimEarnings(publisherWallet: string) {
-    return this.request<{ signature: string }>("/solana/claim-earnings", {
-      method: "POST",
-      body: JSON.stringify({ publisherWallet }),
-    });
+  async claimEarnings(
+    publisherWallet: string,
+    token: "USDC" | "USDT" = "USDC",
+    txSignature?: string,
+  ) {
+    return this.request<{ signature: string; token: string }>(
+      "/solana/claim-earnings",
+      {
+        method: "POST",
+        body: JSON.stringify({ publisherWallet, token, txSignature }),
+      },
+    );
   }
 
   // Campaigns
