@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { apiClient } from '@/lib/api-client';
+import { useState, useEffect } from "react";
+import { apiClient } from "@/lib/api-client";
 
 export function useAdvertiserDashboard() {
   const [dashboard, setDashboard] = useState<any>(null);
@@ -28,13 +28,20 @@ export function useAdvertiserDashboard() {
   return { dashboard, isLoading, error, refetch: fetchDashboard };
 }
 
-export function useCampaignAnalytics(campaignId: string | null, days: number = 30) {
+export function useCampaignAnalytics(
+  campaignId: string | null,
+  days: number = 30,
+) {
   const [analytics, setAnalytics] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!campaignId) return;
+    if (!campaignId) {
+      setAnalytics([]);
+      setIsLoading(false);
+      return;
+    }
 
     const fetchAnalytics = async () => {
       try {
