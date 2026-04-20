@@ -30,13 +30,22 @@ select option {
   color: #f0f0f5;
 }
 
-/* Wallet adapter modal — ensure it always renders above everything */
+/* Wallet adapter modal — ensure it always renders above everything,
+   including elements with backdrop-filter stacking contexts */
 .wallet-adapter-modal-wrapper {
   z-index: 9999 !important;
+  position: fixed !important;
+  isolation: isolate;
 }
 
 .wallet-adapter-modal {
   z-index: 9999 !important;
+  position: relative;
+}
+
+.wallet-adapter-modal-overlay {
+  z-index: 9998 !important;
+  position: fixed !important;
 }
 
 .gradient-text {
@@ -48,7 +57,6 @@ select option {
 
 .glass {
   background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
