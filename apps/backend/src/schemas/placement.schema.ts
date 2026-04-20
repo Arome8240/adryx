@@ -9,8 +9,14 @@ export class Placement {
   @Prop({ required: true })
   name: string;
 
-  @Prop({ required: true })
+  @Prop()
   location: string;
+
+  @Prop()
+  description: string;
+
+  @Prop({ default: 'active' })
+  status: string;
 
   @Prop({ type: String, enum: AdFormat, required: true })
   format: AdFormat;
