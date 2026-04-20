@@ -9,8 +9,8 @@
 
 ## Dashboard Overview
 
-- [ ] T01 — Spending velocity chart (daily burn rate across all campaigns)
-- [ ] T02 — Budget health indicator (% used per campaign, color-coded)
+- [x] T01 — Spending velocity chart (daily burn rate across all campaigns)
+- [x] T02 — Budget health indicator (% used per campaign, color-coded)
 - [x] T03 — Recent activity feed (funded, paused, resumed, created events)
 - [x] T04 — Top performing campaigns table (CTR, impressions, clicks)
 
@@ -19,30 +19,30 @@
 - [x] T05 — Edit campaign modal (name, description, dates, targetUrl, creativeUrl)
 - [x] T06 — Duplicate campaign
 - [x] T07 — Campaign filter & sort (by status, budget, date created)
-- [ ] T08 — Bulk actions (pause all active, delete all drafts)
+- [x] T08 — Bulk actions (pause all active, delete all drafts)
 - [x] T09 — End date countdown badge on active campaigns
-- [ ] T10 — Campaign detail drawer/modal (full stats inline)
+- [x] T10 — Campaign detail drawer/modal (full stats inline)
 
 ## Create Campaign
 
 - [x] T11 — Draft auto-save (persist form to localStorage)
-- [ ] T12 — Creative preview (show ad mockup before submit)
-- [ ] T13 — Target URL validator (check URL is reachable on blur)
-- [ ] T14 — Budget recommendation hint based on format
+- [x] T12 — Creative preview (show ad mockup before submit)
+- [x] T13 — Target URL validator (check URL is reachable on blur)
+- [x] T14 — Budget recommendation hint based on format
 
 ## Analytics
 
 - [x] T15 — Campaign selector dropdown (pick any campaign, not just via URL param)
 - [x] T16 — Top performing campaigns table on analytics page
 - [x] T17 — Export analytics to CSV
-- [ ] T18 — Campaign comparison (select two campaigns, side-by-side metrics)
-- [ ] T19 — Time-of-day heatmap (best performing hours)
+- [x] T18 — Campaign comparison (select two campaigns, side-by-side metrics)
+- [x] T19 — Time-of-day heatmap (best performing hours)
 
 ## Wallet
 
 - [x] T20 — Live SOL → USD price conversion (via CoinGecko API)
-- [ ] T21 — Transaction filter (by campaign, date range)
-- [ ] T22 — Auto-reload threshold setting (stored in profile)
+- [x] T21 — Transaction filter (by campaign, date range)
+- [x] T22 — Auto-reload threshold setting (stored in localStorage)
 
 ## Notifications
 

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
@@ -10,12 +10,17 @@ import {
   Copy,
   TickCircle,
   Link21,
+  SearchNormal1,
+  Setting2,
+  CloseCircle,
 } from "iconsax-react";
 import WalletButton from "@/components/dashboard/WalletButton";
 import Toast from "@/components/dashboard/Toast";
 import type { ToastType } from "@/components/dashboard/Toast";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import { useAdvertiserDashboard } from "@/hooks/useAnalytics";
+
+const AUTO_RELOAD_KEY = "adryx_auto_reload_threshold";
 
 function truncateTx(sig: string) {
   return `${sig.slice(0, 8)}…${sig.slice(-6)}`;
@@ -35,6 +40,16 @@ export default function WalletPage() {
     message: string;
     type: ToastType;
   } | null>(null);
+
+  // T21 — Filter state
+  const [filterCampaign, setFilterCampaign] = useState("");
+  const [filterFrom, setFilterFrom] = useState("");
+  const [filterTo, setFilterTo] = useState("");
+
+  // T22 — Auto-reload threshold
+  const [autoReload, setAutoReload] = useState<number>(0);
+  const [showReloadSettings, setShowReloadSettings] = useState(false);
+  const [reloadInput, setReloadInput] = useState("");
 
   // Fetch on-chain SOL balance
   useEffect(() => {
@@ -60,6 +75,29 @@ export default function WalletPage() {
       .catch(() => setSolPrice(null));
   }, []);
 
+  // T22 — Load auto-reload threshold from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem(AUTO_RELOAD_KEY);
+    if (saved) {
+      setAutoReload(parseFloat(saved));
+      setReloadInput(saved);
+    }
+  }, []);
+
+  function saveAutoReload() {
+    const val = parseFloat(reloadInput);
+    if (!isNaN(val) && val >= 0) {
+      setAutoReload(val);
+      localStorage.setItem(AUTO_RELOAD_KEY, String(val));
+      setShowReloadSettings(false);
+      setToast({
+        message:
+          val === 0 ? "Auto-reload disabled" : `Auto-reload set at ${val} SOL`,
+        type: "success",
+      });
+    }
+  }
+
   function handleCopyAddress() {
     if (!publicKey) return;
     navigator.clipboard.writeText(publicKey.toString());
@@ -68,18 +106,37 @@ export default function WalletPage() {
   }
 
   // Derive transactions from funded campaigns
-  const txRows = campaigns
+  const allTxRows = campaigns
     .filter((c) => c.solanaTxHash)
     .map((c) => ({
       id: c._id,
-      type: "Fund" as const,
       description: `Funded "${c.name}"`,
+      campaignName: c.name,
       amount: c.budget,
       status: c.status,
       txHash: c.solanaTxHash as string,
       date: c.updatedAt ?? c.createdAt,
     }))
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  // T21 — Apply filters
+  const txRows = useMemo(() => {
+    return allTxRows.filter((tx) => {
+      if (
+        filterCampaign &&
+        !tx.campaignName.toLowerCase().includes(filterCampaign.toLowerCase())
+      )
+        return false;
+      if (filterFrom && new Date(tx.date) < new Date(filterFrom)) return false;
+      if (filterTo && new Date(tx.date) > new Date(filterTo + "T23:59:59"))
+        return false;
+      return true;
+    });
+  }, [allTxRows, filterCampaign, filterFrom, filterTo]);
+
+  // T22 — Auto-reload alert
+  const showAutoReloadAlert =
+    autoReload > 0 && solBalance !== null && solBalance < autoReload;
 
   const totalFunded = campaigns.reduce((s, c) => s + (c.budget || 0), 0);
   const totalSpent =
@@ -163,6 +220,17 @@ export default function WalletPage() {
         </div>
       </motion.div>
 
+      {/* T22 — Auto-reload alert */}
+      {showAutoReloadAlert && (
+        <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-yellow-400/10 border border-yellow-400/20 text-yellow-400 text-sm">
+          <Wallet size={16} color="currentColor" />
+          <span>
+            Balance below {autoReload} SOL threshold — consider topping up your
+            wallet.
+          </span>
+        </div>
+      )}
+
       {/* Stats row */}
       <div className="grid grid-cols-3 gap-4">
         {[
@@ -222,6 +290,98 @@ export default function WalletPage() {
               {txRows.length !== 1 ? "s" : ""}
             </p>
           </div>
+          <button
+            onClick={() => setShowReloadSettings((v) => !v)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-colors ${
+              showReloadSettings
+                ? "bg-[#f7931a]/15 border-[#f7931a]/30 text-[#f7931a]"
+                : "bg-white/5 border-white/10 text-white/40 hover:text-white"
+            }`}
+          >
+            <Setting2 size={13} color="currentColor" />
+            Auto-reload {autoReload > 0 ? `@ ${autoReload} SOL` : "off"}
+          </button>
+        </div>
+
+        {/* T22 — Auto-reload settings */}
+        {showReloadSettings && (
+          <div className="px-6 py-4 border-b border-white/8 bg-white/2 flex items-center gap-3 flex-wrap">
+            <p className="text-xs text-white/50">
+              Alert when balance drops below:
+            </p>
+            <input
+              type="number"
+              step="0.1"
+              min="0"
+              value={reloadInput}
+              onChange={(e) => setReloadInput(e.target.value)}
+              placeholder="0.00"
+              className="w-24 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-[#f7931a]/50 transition-colors"
+            />
+            <span className="text-xs text-white/30">SOL (0 = disabled)</span>
+            <button
+              onClick={saveAutoReload}
+              className="px-3 py-1.5 rounded-xl bg-[#f7931a] hover:bg-[#f7931a]/90 text-white text-xs font-semibold transition-colors"
+            >
+              Save
+            </button>
+            <button
+              onClick={() => setShowReloadSettings(false)}
+              className="text-white/30 hover:text-white transition-colors"
+            >
+              <CloseCircle size={16} color="currentColor" />
+            </button>
+          </div>
+        )}
+
+        {/* T21 — Filters */}
+        <div className="px-6 py-3 border-b border-white/5 flex flex-wrap items-center gap-3">
+          <div className="relative">
+            <SearchNormal1
+              size={13}
+              color="#ffffff30"
+              className="absolute left-2.5 top-1/2 -translate-y-1/2"
+            />
+            <input
+              value={filterCampaign}
+              onChange={(e) => setFilterCampaign(e.target.value)}
+              placeholder="Filter by campaign…"
+              className="pl-7 pr-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white placeholder-white/25 outline-none focus:border-white/20 transition-colors w-44"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-white/30">From</span>
+            <input
+              type="date"
+              value={filterFrom}
+              onChange={(e) => setFilterFrom(e.target.value)}
+              className="px-2 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white/60 outline-none focus:border-white/20 transition-colors"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-white/30">To</span>
+            <input
+              type="date"
+              value={filterTo}
+              onChange={(e) => setFilterTo(e.target.value)}
+              className="px-2 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs text-white/60 outline-none focus:border-white/20 transition-colors"
+            />
+          </div>
+          {(filterCampaign || filterFrom || filterTo) && (
+            <button
+              onClick={() => {
+                setFilterCampaign("");
+                setFilterFrom("");
+                setFilterTo("");
+              }}
+              className="text-xs text-white/30 hover:text-white/60 transition-colors"
+            >
+              Clear filters
+            </button>
+          )}
+          <span className="text-xs text-white/20 ml-auto">
+            {txRows.length} result{txRows.length !== 1 ? "s" : ""}
+          </span>
         </div>
 
         {campaignsLoading ? (
