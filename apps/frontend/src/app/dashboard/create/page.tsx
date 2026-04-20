@@ -9,18 +9,35 @@ import {
   CloseCircle,
   InfoCircle,
   DocumentText,
+  Eye,
 } from "iconsax-react";
 
 const DRAFT_KEY = "adryx_campaign_draft";
 
 const AD_FORMATS = [
-  { value: "banner", label: "Banner", desc: "Static or animated image ad" },
-  { value: "video", label: "Video", desc: "Short-form video ad" },
-  { value: "native", label: "Native", desc: "Blends with site content" },
+  {
+    value: "banner",
+    label: "Banner",
+    desc: "Static or animated image ad",
+    budgetHint: "0.5–5 SOL/day typical",
+  },
+  {
+    value: "video",
+    label: "Video",
+    desc: "Short-form video ad",
+    budgetHint: "1–10 SOL/day typical",
+  },
+  {
+    value: "native",
+    label: "Native",
+    desc: "Blends with site content",
+    budgetHint: "0.3–3 SOL/day typical",
+  },
   {
     value: "interstitial",
     label: "Interstitial",
     desc: "Full-screen overlay ad",
+    budgetHint: "2–15 SOL/day typical",
   },
 ];
 
@@ -59,6 +76,8 @@ export default function CreateCampaignPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
   const [hasDraft, setHasDraft] = useState(false);
+  const [urlError, setUrlError] = useState("");
+  const [showPreview, setShowPreview] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -270,6 +289,10 @@ export default function CreateCampaignPage() {
                 SOL
               </span>
             </div>
+            {/* T14 — Budget hint */}
+            <p className="text-xs text-white/30 mt-1">
+              {AD_FORMATS.find((f) => f.value === formData.format)?.budgetHint}
+            </p>
           </Field>
 
           <div className="grid grid-cols-2 gap-3">
@@ -311,24 +334,51 @@ export default function CreateCampaignPage() {
               type="url"
               value={formData.targetUrl}
               onChange={handleChange}
+              onBlur={(e) => {
+                const val = e.target.value;
+                if (!val) {
+                  setUrlError("");
+                  return;
+                }
+                try {
+                  new URL(val);
+                  setUrlError("");
+                } catch {
+                  setUrlError("Enter a valid URL including https://");
+                }
+              }}
               required
               placeholder="https://yoursite.com/landing"
-              className={inputCls}
+              className={`${inputCls} ${urlError ? "border-[#f87171]/50" : ""}`}
             />
+            {urlError && (
+              <p className="text-xs text-[#f87171] mt-1">{urlError}</p>
+            )}
           </Field>
 
           <Field
             label="Creative URL"
             hint="URL to your ad image or video asset"
           >
-            <input
-              name="creativeUrl"
-              type="url"
-              value={formData.creativeUrl}
-              onChange={handleChange}
-              placeholder="https://yoursite.com/banner.jpg"
-              className={inputCls}
-            />
+            <div className="flex gap-2">
+              <input
+                name="creativeUrl"
+                type="url"
+                value={formData.creativeUrl}
+                onChange={handleChange}
+                placeholder="https://yoursite.com/banner.jpg"
+                className={`${inputCls} flex-1`}
+              />
+              {formData.creativeUrl && (
+                <button
+                  type="button"
+                  onClick={() => setShowPreview(true)}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white/50 hover:text-white text-xs font-medium transition-colors shrink-0"
+                >
+                  <Eye size={13} color="currentColor" /> Preview
+                </button>
+              )}
+            </div>
           </Field>
         </div>
 
@@ -351,6 +401,59 @@ export default function CreateCampaignPage() {
           </button>
         </div>
       </form>
+
+      {/* T12 — Creative preview modal */}
+      {showPreview && formData.creativeUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <div
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            onClick={() => setShowPreview(false)}
+          />
+          <div className="relative w-full max-w-lg rounded-2xl bg-[#13131f] border border-white/10 shadow-2xl overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-white/8">
+              <p className="text-sm font-semibold text-white">Ad Preview</p>
+              <button
+                onClick={() => setShowPreview(false)}
+                className="text-white/30 hover:text-white transition-colors"
+              >
+                <CloseCircle size={18} color="currentColor" />
+              </button>
+            </div>
+            <div className="p-5">
+              {/* Simulated ad unit */}
+              <div className="rounded-xl border border-white/10 overflow-hidden bg-white/3">
+                {formData.format === "video" ? (
+                  <video
+                    src={formData.creativeUrl}
+                    controls
+                    className="w-full max-h-64 object-contain"
+                  />
+                ) : (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={formData.creativeUrl}
+                    alt="Ad creative preview"
+                    className="w-full max-h-64 object-contain"
+                  />
+                )}
+              </div>
+              <div className="mt-3 p-3 rounded-xl bg-white/3 border border-white/8">
+                <p className="text-xs font-semibold text-white truncate">
+                  {formData.name || "Campaign Name"}
+                </p>
+                {formData.targetUrl && (
+                  <p className="text-[10px] text-white/30 truncate mt-0.5">
+                    {formData.targetUrl}
+                  </p>
+                )}
+                <span className="inline-block mt-1.5 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#f7931a]/15 text-[#f7931a] capitalize">
+                  {formData.format}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

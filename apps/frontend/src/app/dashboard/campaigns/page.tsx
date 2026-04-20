@@ -92,9 +92,15 @@ export default function CampaignsPage() {
   const [editForm, setEditForm] = useState<any>({});
   const [isSaving, setIsSaving] = useState(false);
 
+  const [detailCampaign, setDetailCampaign] = useState<any | null>(null);
+
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("newest");
   const [search, setSearch] = useState("");
+
+  // Bulk selection
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [isBulking, setIsBulking] = useState(false);
 
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
 
@@ -241,6 +247,48 @@ export default function CampaignsPage() {
     }
   }
 
+  function toggleSelect(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  function toggleSelectAll() {
+    if (selected.size === filtered.length) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(filtered.map((c) => c._id)));
+    }
+  }
+
+  async function handleBulkPause() {
+    setIsBulking(true);
+    const active = filtered.filter(
+      (c) => selected.has(c._id) && c.status === "active",
+    );
+    await Promise.allSettled(active.map((c) => pauseCampaign(c._id)));
+    setSelected(new Set());
+    setIsBulking(false);
+    showToast(
+      `Paused ${active.length} campaign${active.length !== 1 ? "s" : ""}`,
+    );
+  }
+
+  async function handleBulkDelete() {
+    setIsBulking(true);
+    const drafts = filtered.filter(
+      (c) => selected.has(c._id) && c.status === "draft",
+    );
+    await Promise.allSettled(drafts.map((c) => deleteCampaign(c._id)));
+    setSelected(new Set());
+    setIsBulking(false);
+    showToast(
+      `Deleted ${drafts.length} draft${drafts.length !== 1 ? "s" : ""}`,
+    );
+  }
+
   return (
     <div className="space-y-5">
       {/* Toast */}
@@ -335,6 +383,45 @@ export default function CampaignsPage() {
         </div>
       </div>
 
+      {/* Bulk action bar */}
+      {selected.size > 0 && (
+        <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-[#13131f] border border-white/10">
+          <span className="text-xs text-white/60">
+            {selected.size} selected
+          </span>
+          <div className="flex items-center gap-2 ml-auto">
+            {filtered.some(
+              (c) => selected.has(c._id) && c.status === "active",
+            ) && (
+              <button
+                onClick={handleBulkPause}
+                disabled={isBulking}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-yellow-400/10 hover:bg-yellow-400/20 text-yellow-400 text-xs font-semibold transition-colors disabled:opacity-40"
+              >
+                <Pause size={12} color="currentColor" /> Pause active
+              </button>
+            )}
+            {filtered.some(
+              (c) => selected.has(c._id) && c.status === "draft",
+            ) && (
+              <button
+                onClick={handleBulkDelete}
+                disabled={isBulking}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#f87171]/10 hover:bg-[#f87171]/20 text-[#f87171] text-xs font-semibold transition-colors disabled:opacity-40"
+              >
+                <Trash size={12} color="currentColor" /> Delete drafts
+              </button>
+            )}
+            <button
+              onClick={() => setSelected(new Set())}
+              className="text-xs text-white/30 hover:text-white/60 transition-colors"
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* List */}
       {isLoading ? (
         <div className="space-y-3">
@@ -381,34 +468,43 @@ export default function CampaignsPage() {
                 className="rounded-2xl bg-[#0d0d1a] border border-white/8 p-5 hover:border-white/15 transition-colors"
               >
                 <div className="flex items-start justify-between gap-4 mb-4">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2.5 flex-wrap">
-                      <h3 className="text-sm font-semibold text-white truncate">
-                        {c.name}
-                      </h3>
-                      <span
-                        className={`text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize ${status.classes}`}
-                      >
-                        {status.label}
-                      </span>
-                      <span className="text-[10px] text-white/30 capitalize px-2 py-0.5 rounded-full bg-white/5">
-                        {c.format}
-                      </span>
-                      {/* End date countdown */}
-                      {c.status === "active" &&
-                        dl !== null &&
-                        dl <= 7 &&
-                        dl >= 0 && (
-                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#f87171]/10 text-[#f87171] border border-[#f87171]/20">
-                            {dl === 0 ? "Ends today" : `${dl}d left`}
-                          </span>
-                        )}
+                  <div className="flex items-start gap-3 min-w-0">
+                    {/* Checkbox */}
+                    <input
+                      type="checkbox"
+                      checked={selected.has(c._id)}
+                      onChange={() => toggleSelect(c._id)}
+                      className="mt-1 shrink-0 accent-[#f7931a] cursor-pointer"
+                    />
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2.5 flex-wrap">
+                        <h3 className="text-sm font-semibold text-white truncate">
+                          {c.name}
+                        </h3>
+                        <span
+                          className={`text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize ${status.classes}`}
+                        >
+                          {status.label}
+                        </span>
+                        <span className="text-[10px] text-white/30 capitalize px-2 py-0.5 rounded-full bg-white/5">
+                          {c.format}
+                        </span>
+                        {/* End date countdown */}
+                        {c.status === "active" &&
+                          dl !== null &&
+                          dl <= 7 &&
+                          dl >= 0 && (
+                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#f87171]/10 text-[#f87171] border border-[#f87171]/20">
+                              {dl === 0 ? "Ends today" : `${dl}d left`}
+                            </span>
+                          )}
+                      </div>
+                      {c.description && (
+                        <p className="text-xs text-white/40 mt-1 truncate">
+                          {c.description}
+                        </p>
+                      )}
                     </div>
-                    {c.description && (
-                      <p className="text-xs text-white/40 mt-1 truncate">
-                        {c.description}
-                      </p>
-                    )}
                   </div>
                 </div>
 
@@ -483,6 +579,12 @@ export default function CampaignsPage() {
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/50 hover:text-white text-xs font-semibold transition-colors"
                   >
                     <Copy size={13} color="currentColor" /> Duplicate
+                  </button>
+                  <button
+                    onClick={() => setDetailCampaign(c)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/50 hover:text-white text-xs font-semibold transition-colors"
+                  >
+                    <Chart size={13} color="currentColor" /> Details
                   </button>
                   {c.status === "draft" && (
                     <button
@@ -629,6 +731,178 @@ export default function CampaignsPage() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Detail Drawer — T10 */}
+      {detailCampaign && (
+        <div className="fixed inset-0 z-50 flex justify-end">
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setDetailCampaign(null)}
+          />
+          <aside className="relative w-full max-w-md bg-[#0d0d1a] border-l border-white/10 h-full overflow-y-auto shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-white/8">
+              <h2 className="text-base font-bold text-white truncate">
+                {detailCampaign.name}
+              </h2>
+              <button
+                onClick={() => setDetailCampaign(null)}
+                className="text-white/30 hover:text-white transition-colors"
+              >
+                <CloseCircle size={20} color="currentColor" />
+              </button>
+            </div>
+            <div className="p-6 space-y-5">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span
+                  className={`text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize ${(STATUS_STYLES[detailCampaign.status] ?? STATUS_STYLES.draft).classes}`}
+                >
+                  {detailCampaign.status}
+                </span>
+                <span className="text-[10px] text-white/30 capitalize px-2 py-0.5 rounded-full bg-white/5">
+                  {detailCampaign.format}
+                </span>
+              </div>
+              {detailCampaign.description && (
+                <p className="text-sm text-white/50">
+                  {detailCampaign.description}
+                </p>
+              )}
+              <div className="rounded-xl bg-white/3 border border-white/8 p-4 space-y-3">
+                <p className="text-xs font-semibold text-white/30 uppercase tracking-wider">
+                  Budget
+                </p>
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    {
+                      label: "Total",
+                      value: `${detailCampaign.budget.toFixed(2)} SOL`,
+                      color: "text-white",
+                    },
+                    {
+                      label: "Spent",
+                      value: `${detailCampaign.spent.toFixed(2)} SOL`,
+                      color: "text-[#f7931a]",
+                    },
+                    {
+                      label: "Left",
+                      value: `${(detailCampaign.budget - detailCampaign.spent).toFixed(2)} SOL`,
+                      color: "text-emerald-400",
+                    },
+                  ].map((s) => (
+                    <div key={s.label}>
+                      <p className="text-[10px] text-white/30 mb-0.5">
+                        {s.label}
+                      </p>
+                      <p className={`text-sm font-bold ${s.color}`}>
+                        {s.value}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                <BudgetBar
+                  budget={detailCampaign.budget}
+                  spent={detailCampaign.spent}
+                />
+              </div>
+              <div className="rounded-xl bg-white/3 border border-white/8 p-4 space-y-2">
+                <p className="text-xs font-semibold text-white/30 uppercase tracking-wider">
+                  Schedule
+                </p>
+                {[
+                  { label: "Start", value: detailCampaign.startDate },
+                  { label: "End", value: detailCampaign.endDate },
+                ].map((d) => (
+                  <div
+                    key={d.label}
+                    className="flex items-center justify-between"
+                  >
+                    <span className="text-xs text-white/40">{d.label}</span>
+                    <span className="text-xs font-medium text-white/70">
+                      {d.value
+                        ? new Date(d.value).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })
+                        : "—"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              {(detailCampaign.targetUrl || detailCampaign.creativeUrl) && (
+                <div className="rounded-xl bg-white/3 border border-white/8 p-4 space-y-2">
+                  <p className="text-xs font-semibold text-white/30 uppercase tracking-wider">
+                    Links
+                  </p>
+                  {[
+                    { label: "Target URL", value: detailCampaign.targetUrl },
+                    {
+                      label: "Creative URL",
+                      value: detailCampaign.creativeUrl,
+                    },
+                  ].map(
+                    (u) =>
+                      u.value && (
+                        <div key={u.label}>
+                          <p className="text-[10px] text-white/30 mb-0.5">
+                            {u.label}
+                          </p>
+                          <a
+                            href={u.value}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-[#a855f7] hover:text-[#c084fc] truncate block transition-colors"
+                          >
+                            {u.value}
+                          </a>
+                        </div>
+                      ),
+                  )}
+                </div>
+              )}
+              {detailCampaign.solanaTxHash && (
+                <div className="rounded-xl bg-white/3 border border-white/8 p-4">
+                  <p className="text-xs font-semibold text-white/30 uppercase tracking-wider mb-2">
+                    On-chain Tx
+                  </p>
+                  <a
+                    href={`https://explorer.solana.com/tx/${detailCampaign.solanaTxHash}?cluster=devnet`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-mono text-xs text-[#a855f7] hover:text-[#c084fc] break-all transition-colors"
+                  >
+                    {detailCampaign.solanaTxHash}
+                  </a>
+                </div>
+              )}
+              <div className="flex gap-2 pt-2">
+                <button
+                  onClick={() => {
+                    router.push(
+                      `/dashboard/analytics?campaign=${detailCampaign._id}`,
+                    );
+                    setDetailCampaign(null);
+                  }}
+                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-[#3b82f6]/10 hover:bg-[#3b82f6]/20 text-[#3b82f6] text-xs font-semibold transition-colors"
+                >
+                  <TrendUp size={13} color="currentColor" /> Analytics
+                </button>
+                {detailCampaign.status === "draft" && (
+                  <button
+                    onClick={() => {
+                      openEdit(detailCampaign);
+                      setDetailCampaign(null);
+                    }}
+                    className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 text-xs font-semibold transition-colors"
+                  >
+                    <Edit2 size={13} color="currentColor" /> Edit
+                  </button>
+                )}
+              </div>
+            </div>
+          </aside>
         </div>
       )}
     </div>

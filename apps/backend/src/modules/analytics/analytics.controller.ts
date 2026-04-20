@@ -44,6 +44,15 @@ export class AnalyticsController {
     );
   }
 
+  @Get('advertiser/heatmap')
+  @Roles(UserRole.ADVERTISER)
+  async getHourlyHeatmap(@Request() req, @Query('days') days?: number) {
+    return await this.analyticsService.getCampaignHourlyHeatmap(
+      req.user.userId,
+      days ? parseInt(days.toString()) : 30,
+    );
+  }
+
   @Get('publisher/dashboard')
   @Roles(UserRole.PUBLISHER)
   async getPublisherDashboard(@Request() req) {

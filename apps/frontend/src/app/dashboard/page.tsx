@@ -19,13 +19,7 @@ import {
   Clock,
   Flash,
 } from "iconsax-react";
-
-const STATUS_STYLES: Record<string, string> = {
-  active: "bg-emerald-400/10 text-emerald-400 border border-emerald-400/20",
-  paused: "bg-yellow-400/10 text-yellow-400 border border-yellow-400/20",
-  draft: "bg-white/5 text-white/40 border border-white/10",
-  completed: "bg-[#a855f7]/10 text-[#a855f7] border border-[#a855f7]/20",
-};
+import PerformanceChart from "@/components/dashboard/PerformanceChart";
 
 const ACTIVITY_COLORS: Record<string, { dot: string; label: string }> = {
   active: { dot: "bg-emerald-400", label: "Funded & activated" },
@@ -91,9 +85,26 @@ export default function OverviewPage() {
   const router = useRouter();
   const { user } = useAuth();
   const { dashboard, isLoading: dashboardLoading } = useAdvertiserDashboard();
-  const { campaigns, isLoading: campaignsLoading } = useCampaigns();
+  const { campaigns } = useCampaigns();
   const { activity, isLoading: activityLoading } = useAdvertiserActivity(6);
   const { topCampaigns, isLoading: topLoading } = useTopCampaigns(5);
+
+  // T01 — Spending velocity: derive daily spend from campaigns (budget / days active)
+  const velocityData = campaigns
+    .filter((c) => c.status === "active" && c.spent > 0)
+    .map((c) => {
+      const start = new Date(c.startDate ?? c.createdAt);
+      const daysActive = Math.max(
+        1,
+        Math.ceil((Date.now() - start.getTime()) / 86400000),
+      );
+      return {
+        name: c.name.slice(0, 12),
+        dailyBurn: parseFloat((c.spent / daysActive).toFixed(4)),
+      };
+    })
+    .sort((a, b) => b.dailyBurn - a.dailyBurn)
+    .slice(0, 6);
 
   const hour = new Date().getHours();
   const greeting =
@@ -209,6 +220,77 @@ export default function OverviewPage() {
           </button>
         ))}
       </div>
+
+      {/* T01 — Spending velocity + T02 — Budget health */}
+      {campaigns.filter((c) => c.status === "active").length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          {/* T01 Velocity chart */}
+          <div className="rounded-2xl bg-[#0d0d1a] border border-white/8 p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <TrendUp size={15} color="#f7931a" />
+              <p className="text-sm font-semibold text-white">
+                Daily Burn Rate
+              </p>
+              <span className="text-xs text-white/30 ml-auto">SOL / day</span>
+            </div>
+            {velocityData.length === 0 ? (
+              <p className="text-xs text-white/30 text-center py-8">
+                No spend data yet
+              </p>
+            ) : (
+              <PerformanceChart
+                data={velocityData}
+                lines={[
+                  { key: "dailyBurn", color: "#f7931a", label: "SOL/day" },
+                ]}
+                height={160}
+              />
+            )}
+          </div>
+
+          {/* T02 Budget health */}
+          <div className="rounded-2xl bg-[#0d0d1a] border border-white/8 p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <EmptyWallet size={15} color="#a855f7" />
+              <p className="text-sm font-semibold text-white">Budget Health</p>
+            </div>
+            <div className="space-y-3">
+              {campaigns
+                .filter((c) => c.status === "active" || c.status === "paused")
+                .slice(0, 5)
+                .map((c) => {
+                  const pct =
+                    c.budget > 0
+                      ? Math.min((c.spent / c.budget) * 100, 100)
+                      : 0;
+                  const color =
+                    pct >= 85 ? "#f87171" : pct >= 60 ? "#f7931a" : "#4ade80";
+                  return (
+                    <div key={c._id}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs text-white/60 truncate max-w-[140px]">
+                          {c.name}
+                        </span>
+                        <span
+                          className="text-xs font-semibold tabular-nums"
+                          style={{ color }}
+                        >
+                          {pct.toFixed(0)}%
+                        </span>
+                      </div>
+                      <div className="w-full h-1.5 rounded-full bg-white/5 overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all"
+                          style={{ width: `${pct}%`, backgroundColor: color }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Bottom two-column grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">

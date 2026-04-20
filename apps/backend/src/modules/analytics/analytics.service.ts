@@ -167,6 +167,40 @@ export class AnalyticsService {
     return interactions;
   }
 
+  async getCampaignHourlyHeatmap(advertiserId: string, days: number = 30) {
+    const campaigns = await this.campaignModel.find({ advertiserId });
+    const campaignIds = campaigns.map((c) => c._id);
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    const result = await this.interactionModel.aggregate([
+      {
+        $match: {
+          campaignId: { $in: campaignIds },
+          type: 'click',
+          createdAt: { $gte: startDate },
+        },
+      },
+      {
+        $group: {
+          _id: { hour: { $hour: '$createdAt' } },
+          clicks: { $sum: 1 },
+        },
+      },
+      { $sort: { '_id.hour': 1 } },
+    ]);
+
+    // Fill all 24 hours
+    const byHour: Record<number, number> = {};
+    result.forEach((r: any) => {
+      byHour[r._id.hour] = r.clicks;
+    });
+    return Array.from({ length: 24 }, (_, h) => ({
+      hour: h,
+      clicks: byHour[h] ?? 0,
+    }));
+  }
+
   async getSiteAnalytics(siteId: string, days: number = 30) {
     const placements = await this.placementModel.find({ siteId });
     const placementIds = placements.map((p) => p._id);

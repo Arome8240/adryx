@@ -131,6 +131,12 @@ class ApiClient {
     );
   }
 
+  async getHourlyHeatmap(days = 30) {
+    return this.request<{ hour: number; clicks: number }[]>(
+      `/analytics/advertiser/heatmap?days=${days}`,
+    );
+  }
+
   // Campaigns
   async getCampaigns() {
     return this.request<any[]>("/campaigns");

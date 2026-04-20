@@ -91,3 +91,20 @@ export function useCampaignAnalytics(
 
   return { analytics, isLoading, error };
 }
+
+export function useHourlyHeatmap(days = 30) {
+  const [heatmap, setHeatmap] = useState<{ hour: number; clicks: number }[]>(
+    [],
+  );
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    apiClient
+      .getHourlyHeatmap(days)
+      .then(setHeatmap)
+      .catch(() => setHeatmap([]))
+      .finally(() => setIsLoading(false));
+  }, [days]);
+
+  return { heatmap, isLoading };
+}

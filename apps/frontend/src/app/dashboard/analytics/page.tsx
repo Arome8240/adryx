@@ -19,6 +19,7 @@ import {
   useAdvertiserDashboard,
   useCampaignAnalytics,
   useTopCampaigns,
+  useHourlyHeatmap,
 } from "@/hooks/useAnalytics";
 import { useCampaigns } from "@/hooks/useCampaigns";
 
@@ -50,6 +51,8 @@ export default function AnalyticsPage() {
   const urlCampaignId = searchParams.get("campaign");
 
   const [selectedId, setSelectedId] = useState<string>(urlCampaignId ?? "");
+  const [compareId, setCompareId] = useState<string>("");
+  const [compareMode, setCompareMode] = useState(false);
   const [rangeIdx, setRangeIdx] = useState(1);
   const days = ranges[rangeIdx].days;
 
@@ -58,8 +61,13 @@ export default function AnalyticsPage() {
     selectedId || null,
     days,
   );
+  const { analytics: compareAnalytics } = useCampaignAnalytics(
+    compareMode && compareId ? compareId : null,
+    days,
+  );
   const { campaigns } = useCampaigns();
   const { topCampaigns, isLoading: topLoading } = useTopCampaigns(10);
+  const { heatmap, isLoading: heatmapLoading } = useHourlyHeatmap(days);
 
   const chartData = useMemo(() => {
     if (!analytics || analytics.length === 0) return [];
@@ -79,6 +87,41 @@ export default function AnalyticsPage() {
     });
     return Object.values(byDate).sort((a, b) => a.date.localeCompare(b.date));
   }, [analytics]);
+
+  // T18 — Comparison data: merge both campaigns by date
+  const compareChartData = useMemo(() => {
+    if (!compareMode || !compareAnalytics?.length) return [];
+    const byDate: Record<
+      string,
+      {
+        date: string;
+        clicks_a: number;
+        clicks_b: number;
+        impressions_a: number;
+        impressions_b: number;
+      }
+    > = {};
+    const addData = (items: any[], suffix: "a" | "b") => {
+      items.forEach((item: any) => {
+        const date = item._id.date;
+        if (!byDate[date])
+          byDate[date] = {
+            date,
+            clicks_a: 0,
+            clicks_b: 0,
+            impressions_a: 0,
+            impressions_b: 0,
+          };
+        if (item._id.type === "click")
+          (byDate[date] as any)[`clicks_${suffix}`] = item.count;
+        if (item._id.type === "impression")
+          (byDate[date] as any)[`impressions_${suffix}`] = item.count;
+      });
+    };
+    addData(analytics, "a");
+    addData(compareAnalytics, "b");
+    return Object.values(byDate).sort((a, b) => a.date.localeCompare(b.date));
+  }, [compareMode, analytics, compareAnalytics]);
 
   const metrics = useMemo(() => {
     if (!dashboard) return [];
