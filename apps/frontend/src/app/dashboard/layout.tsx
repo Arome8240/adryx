@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Sidebar from "@/components/dashboard/Sidebar";
 import DashboardNav from "@/components/dashboard/DashboardNav";
 import { WalletProvider } from "@/components/providers/WalletProvider";
@@ -13,16 +13,25 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push('/login');
-    }
-  }, [isAuthenticated, isLoading, router]);
+    setHydrated(true);
+  }, []);
 
-  // Show loading state while checking auth
-  if (isLoading) {
+  useEffect(() => {
+    if (!hydrated || isLoading) return;
+    if (!isAuthenticated) {
+      router.push("/login");
+      return;
+    }
+    if (user?.role === "publisher") {
+      router.push("/publishers");
+    }
+  }, [hydrated, isAuthenticated, isLoading, user, router]);
+
+  if (!hydrated || isLoading) {
     return (
       <div className="flex min-h-screen bg-[#07070f] items-center justify-center">
         <div className="text-white">Loading...</div>
@@ -30,8 +39,7 @@ export default function DashboardLayout({
     );
   }
 
-  // Don't render dashboard if not authenticated
-  if (!isAuthenticated) {
+  if (!isAuthenticated || user?.role === "publisher") {
     return null;
   }
 
