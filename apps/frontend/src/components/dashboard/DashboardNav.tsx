@@ -16,6 +16,9 @@ import {
   Copy,
 } from "iconsax-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useNotifications } from "@/hooks/useNotifications";
+import SearchPanel from "./SearchPanel";
+import NotificationsPanel from "./NotificationsPanel";
 
 const navItems = [
   { label: "Overview", href: "/dashboard", icon: <Home2 size={20} /> },
@@ -61,10 +64,14 @@ export default function DashboardNav() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
+  const { count: notifCount } = useNotifications();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const notifRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -108,20 +115,44 @@ export default function DashboardNav() {
         </div>
 
         <div className="flex items-center gap-3">
-          <button className="w-9 h-9 rounded-xl glass border border-white/10 flex items-center justify-center text-white/50 hover:text-white transition-colors">
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="w-9 h-9 rounded-xl glass border border-white/10 flex items-center justify-center text-white/50 hover:text-white transition-colors"
+            aria-label="Search"
+          >
             <SearchNormal1 size={16} color="#a855f7" />
           </button>
-          <button className="relative w-9 h-9 rounded-xl glass border border-white/10 flex items-center justify-center text-white/50 hover:text-white transition-colors">
-            <Notification size={16} color="#f7931a" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#f7931a]" />
-          </button>
+
+          {/* Notifications */}
+          <div className="relative" ref={notifRef}>
+            <button
+              onClick={() => {
+                setNotifOpen((v) => !v);
+                setProfileOpen(false);
+              }}
+              className="relative w-9 h-9 rounded-xl glass border border-white/10 flex items-center justify-center text-white/50 hover:text-white transition-colors"
+              aria-label="Notifications"
+            >
+              <Notification size={16} color="#f7931a" />
+              {notifCount > 0 && (
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#f7931a]" />
+              )}
+            </button>
+            <NotificationsPanel
+              open={notifOpen}
+              onClose={() => setNotifOpen(false)}
+            />
+          </div>
 
           <div
             className="relative pl-2 border-l border-white/10"
             ref={dropdownRef}
           >
             <button
-              onClick={() => setProfileOpen((v) => !v)}
+              onClick={() => {
+                setProfileOpen((v) => !v);
+                setNotifOpen(false);
+              }}
               className="flex items-center gap-2 hover:opacity-80 transition-opacity"
               aria-label="Profile menu"
             >
