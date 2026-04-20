@@ -7,6 +7,7 @@ import {
   PresentionChart,
   EmptyWallet,
   LogoutCurve,
+  Setting2,
 } from "iconsax-react";
 
 const navItems = [
@@ -36,6 +37,13 @@ const navItems = [
     href: "/dashboard/wallet",
     icon: (active: boolean) => (
       <EmptyWallet size={20} color={active ? "#f7931a" : "#f59e0b"} />
+    ),
+  },
+  {
+    label: "Settings",
+    href: "/dashboard/settings",
+    icon: (active: boolean) => (
+      <Setting2 size={20} color={active ? "#f7931a" : "#6b7280"} />
     ),
   },
 ];

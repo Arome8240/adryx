@@ -1,9 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCampaigns } from "@/hooks/useCampaigns";
-import { ArrowLeft, TickCircle, CloseCircle, InfoCircle } from "iconsax-react";
+import {
+  ArrowLeft,
+  TickCircle,
+  CloseCircle,
+  InfoCircle,
+  DocumentText,
+} from "iconsax-react";
+
+const DRAFT_KEY = "adryx_campaign_draft";
 
 const AD_FORMATS = [
   { value: "banner", label: "Banner", desc: "Static or animated image ad" },
@@ -50,6 +58,7 @@ export default function CreateCampaignPage() {
   const { createCampaign } = useCampaigns();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
+  const [hasDraft, setHasDraft] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -60,6 +69,29 @@ export default function CreateCampaignPage() {
     targetUrl: "",
     creativeUrl: "",
   });
+
+  // Load draft on mount
+  useEffect(() => {
+    const saved = localStorage.getItem(DRAFT_KEY);
+    if (saved) {
+      try {
+        setFormData(JSON.parse(saved));
+        setHasDraft(true);
+      } catch {}
+    }
+  }, []);
+
+  // Auto-save draft on change
+  useEffect(() => {
+    const hasContent =
+      formData.name || formData.description || formData.targetUrl;
+    if (hasContent) localStorage.setItem(DRAFT_KEY, JSON.stringify(formData));
+  }, [formData]);
+
+  function clearDraft() {
+    localStorage.removeItem(DRAFT_KEY);
+    setHasDraft(false);
+  }
 
   function showToast(msg: string, ok = true) {
     setToast({ msg, ok });
@@ -81,6 +113,7 @@ export default function CreateCampaignPage() {
         budget: parseFloat(formData.budget),
       });
       showToast("Campaign created successfully");
+      clearDraft();
       setTimeout(() => router.push("/dashboard/campaigns"), 1000);
     } catch (err: any) {
       showToast(err.message, false);
@@ -124,6 +157,32 @@ export default function CreateCampaignPage() {
           </p>
         </div>
       </div>
+
+      {/* Draft restored banner */}
+      {hasDraft && (
+        <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-[#a855f7]/10 border border-[#a855f7]/20 text-[#a855f7] text-xs font-medium">
+          <DocumentText size={14} color="currentColor" />
+          Draft restored from your last session.
+          <button
+            onClick={() => {
+              clearDraft();
+              setFormData({
+                name: "",
+                description: "",
+                format: "banner",
+                budget: "",
+                startDate: "",
+                endDate: "",
+                targetUrl: "",
+                creativeUrl: "",
+              });
+            }}
+            className="ml-auto underline hover:no-underline"
+          >
+            Clear
+          </button>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Basic info */}

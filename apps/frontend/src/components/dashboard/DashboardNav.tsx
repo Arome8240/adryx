@@ -13,6 +13,7 @@ import {
   CloseCircle,
   LogoutCurve,
   Copy,
+  Setting2,
 } from "iconsax-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotifications } from "@/hooks/useNotifications";
@@ -36,6 +37,11 @@ const navItems = [
     href: "/dashboard/wallet",
     icon: <EmptyWallet size={20} />,
   },
+  {
+    label: "Settings",
+    href: "/dashboard/settings",
+    icon: <Setting2 size={20} />,
+  },
 ];
 
 const pageTitles: Record<string, string> = {
@@ -43,6 +49,7 @@ const pageTitles: Record<string, string> = {
   "/dashboard/campaigns": "Campaigns",
   "/dashboard/analytics": "Analytics",
   "/dashboard/wallet": "Wallet",
+  "/dashboard/settings": "Settings",
 };
 
 function truncateWallet(address: string) {

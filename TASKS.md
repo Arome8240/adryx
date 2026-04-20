@@ -16,16 +16,16 @@
 
 ## Campaigns
 
-- [ ] T05 — Edit campaign modal (name, description, dates, targetUrl, creativeUrl)
-- [ ] T06 — Duplicate campaign
-- [ ] T07 — Campaign filter & sort (by status, budget, date created)
+- [x] T05 — Edit campaign modal (name, description, dates, targetUrl, creativeUrl)
+- [x] T06 — Duplicate campaign
+- [x] T07 — Campaign filter & sort (by status, budget, date created)
 - [ ] T08 — Bulk actions (pause all active, delete all drafts)
-- [ ] T09 — End date countdown badge on active campaigns
+- [x] T09 — End date countdown badge on active campaigns
 - [ ] T10 — Campaign detail drawer/modal (full stats inline)
 
 ## Create Campaign
 
-- [ ] T11 — Draft auto-save (persist form to localStorage)
+- [x] T11 — Draft auto-save (persist form to localStorage)
 - [ ] T12 — Creative preview (show ad mockup before submit)
 - [ ] T13 — Target URL validator (check URL is reachable on blur)
 - [ ] T14 — Budget recommendation hint based on format
@@ -46,22 +46,22 @@
 
 ## Notifications
 
-- [ ] T23 — Mark notification as read / dismiss
-- [ ] T24 — Persist dismissed notifications (localStorage)
+- [x] T23 — Mark notification as read / dismiss
+- [x] T24 — Persist dismissed notifications (localStorage)
 
-## Settings Page (new page)
+## Settings Page
 
-- [ ] T25 — Settings page scaffold at /dashboard/settings
-- [ ] T26 — Edit profile (name, email) — backend: PATCH /auth/profile
-- [ ] T27 — Change password — backend: PATCH /auth/password
-- [ ] T28 — Notification preferences (budget alert threshold %)
-- [ ] T29 — Connected wallet display + link/unlink wallet
-- [ ] T30 — Timezone preference (stored in profile, used in analytics dates)
+- [x] T25 — Settings page scaffold at /dashboard/settings
+- [x] T26 — Edit profile (name, email) — backend: PATCH /auth/profile
+- [x] T27 — Change password — backend: PATCH /auth/password
+- [x] T28 — Notification preferences (budget alert threshold %)
+- [x] T29 — Connected wallet display + link/unlink wallet
+- [x] T30 — Timezone preference (stored in profile, used in analytics dates)
 
 ## Backend
 
-- [ ] T31 — PATCH /auth/profile endpoint (update name, email, timezone)
-- [ ] T32 — PATCH /auth/password endpoint (change password)
-- [ ] T33 — GET /analytics/advertiser/activity — recent events feed
-- [ ] T34 — GET /analytics/top-campaigns scoped to advertiserId (currently returns all active)
-- [ ] T35 — Campaign duplicate endpoint POST /campaigns/:id/duplicate
+- [x] T31 — PATCH /auth/profile endpoint (update name, email, timezone)
+- [x] T32 — PATCH /auth/password endpoint (change password)
+- [x] T33 — GET /analytics/advertiser/activity — recent events feed
+- [x] T34 — GET /analytics/advertiser/top-campaigns scoped to advertiserId
+- [x] T35 — Campaign duplicate endpoint POST /campaigns/:id/duplicate

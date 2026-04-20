@@ -15,26 +15,22 @@ import {
 
 const TYPE_STYLES: Record<
   NotificationType,
-  { icon: React.ReactNode; dot: string; bg: string }
+  { icon: React.ReactNode; bg: string }
 > = {
   warning: {
     icon: <Warning2 size={14} color="#f7931a" />,
-    dot: "bg-[#f7931a]",
     bg: "bg-[#f7931a]/8",
   },
   error: {
     icon: <CloseCircle size={14} color="#f87171" />,
-    dot: "bg-[#f87171]",
     bg: "bg-[#f87171]/8",
   },
   info: {
     icon: <InfoCircle size={14} color="#a855f7" />,
-    dot: "bg-[#a855f7]",
     bg: "bg-[#a855f7]/8",
   },
   success: {
     icon: <TickCircle size={14} color="#4ade80" />,
-    dot: "bg-emerald-400",
     bg: "bg-emerald-400/8",
   },
 };
@@ -48,14 +44,13 @@ export default function NotificationsPanel({
   open,
   onClose,
 }: NotificationsPanelProps) {
-  const { notifications } = useNotifications();
+  const { notifications, dismiss, dismissAll } = useNotifications();
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node))
         onClose();
-      }
     }
     if (open) document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
@@ -74,11 +69,19 @@ export default function NotificationsPanel({
           <span className="text-sm font-semibold text-white">
             Notifications
           </span>
+          {notifications.length > 0 && (
+            <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#f7931a]/15 text-[#f7931a]">
+              {notifications.length}
+            </span>
+          )}
         </div>
         {notifications.length > 0 && (
-          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-[#f7931a]/15 text-[#f7931a]">
-            {notifications.length}
-          </span>
+          <button
+            onClick={() => dismissAll(notifications.map((n) => n.id))}
+            className="text-[10px] text-white/30 hover:text-white/60 transition-colors"
+          >
+            Clear all
+          </button>
         )}
       </div>
 
@@ -92,12 +95,12 @@ export default function NotificationsPanel({
           <ul className="p-2 flex flex-col gap-1">
             {notifications.map((n) => {
               const style = TYPE_STYLES[n.type];
-              const content = (
+              const inner = (
                 <div
                   className={`flex items-start gap-3 px-3 py-2.5 rounded-xl ${style.bg} transition-colors`}
                 >
                   <div className="mt-0.5 shrink-0">{style.icon}</div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="text-xs font-semibold text-white leading-tight">
                       {n.title}
                     </p>
@@ -105,6 +108,16 @@ export default function NotificationsPanel({
                       {n.message}
                     </p>
                   </div>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      dismiss(n.id);
+                    }}
+                    className="shrink-0 text-white/20 hover:text-white/50 transition-colors mt-0.5"
+                  >
+                    <CloseCircle size={13} color="currentColor" />
+                  </button>
                 </div>
               );
 
@@ -112,10 +125,10 @@ export default function NotificationsPanel({
                 <li key={n.id}>
                   {n.href ? (
                     <Link href={n.href} onClick={onClose}>
-                      {content}
+                      {inner}
                     </Link>
                   ) : (
-                    content
+                    inner
                   )}
                 </li>
               );
