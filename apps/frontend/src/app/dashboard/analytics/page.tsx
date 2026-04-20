@@ -1,6 +1,6 @@
 "use client";
 import { useState, useMemo } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   Calendar,
@@ -9,12 +9,16 @@ import {
   MouseCircle,
   DollarCircle,
   ChartCircle,
+  ArrowDown2,
+  DocumentDownload,
+  Flash,
 } from "iconsax-react";
 import PerformanceChart from "@/components/dashboard/PerformanceChart";
 import MetricCard from "@/components/dashboard/MetricCard";
 import {
   useAdvertiserDashboard,
   useCampaignAnalytics,
+  useTopCampaigns,
 } from "@/hooks/useAnalytics";
 import { useCampaigns } from "@/hooks/useCampaigns";
 
@@ -24,42 +28,55 @@ const ranges = [
   { label: "90D", days: 90 },
 ];
 
+function exportCSV(data: any[], filename: string) {
+  if (!data.length) return;
+  const headers = Object.keys(data[0]);
+  const rows = data.map((row) =>
+    headers.map((h) => JSON.stringify(row[h] ?? "")).join(","),
+  );
+  const csv = [headers.join(","), ...rows].join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export default function AnalyticsPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const campaignId = searchParams.get("campaign");
-  const [rangeIdx, setRangeIdx] = useState(1); // Default 30D
+  const urlCampaignId = searchParams.get("campaign");
+
+  const [selectedId, setSelectedId] = useState<string>(urlCampaignId ?? "");
+  const [rangeIdx, setRangeIdx] = useState(1);
   const days = ranges[rangeIdx].days;
 
   const { dashboard, isLoading: dashboardLoading } = useAdvertiserDashboard();
   const { analytics, isLoading: analyticsLoading } = useCampaignAnalytics(
-    campaignId,
+    selectedId || null,
     days,
   );
   const { campaigns } = useCampaigns();
+  const { topCampaigns, isLoading: topLoading } = useTopCampaigns(10);
 
-  // Transform analytics data for charts
   const chartData = useMemo(() => {
     if (!analytics || analytics.length === 0) return [];
-
-    // Group by date
     const byDate: Record<
       string,
       { date: string; impressions: number; clicks: number; spend: number }
     > = {};
-
     analytics.forEach((item: any) => {
       const date = item._id.date;
-      if (!byDate[date]) {
+      if (!byDate[date])
         byDate[date] = { date, impressions: 0, clicks: 0, spend: 0 };
-      }
-      if (item._id.type === "impression") {
-        byDate[date].impressions = item.count;
-      } else if (item._id.type === "click") {
+      if (item._id.type === "impression") byDate[date].impressions = item.count;
+      else if (item._id.type === "click") {
         byDate[date].clicks = item.count;
         byDate[date].spend = item.totalReward || 0;
       }
     });
-
     return Object.values(byDate).sort((a, b) => a.date.localeCompare(b.date));
   }, [analytics]);
 
@@ -69,7 +86,7 @@ export default function AnalyticsPage() {
       {
         title: "Total Impressions",
         value: dashboard.impressions.toLocaleString(),
-        change: "+8.1%",
+        change: "",
         positive: true,
         icon: <Eye size={20} color="#a855f7" variant="Bold" />,
         iconBg: "bg-[#a855f7]/10",
@@ -77,7 +94,7 @@ export default function AnalyticsPage() {
       {
         title: "Total Clicks",
         value: dashboard.clicks.toLocaleString(),
-        change: "+5.3%",
+        change: "",
         positive: true,
         icon: <MouseCircle size={20} color="#22d3ee" variant="Bold" />,
         iconBg: "bg-[#22d3ee]/10",
@@ -85,7 +102,7 @@ export default function AnalyticsPage() {
       {
         title: "Total Spend",
         value: `${dashboard.totalSpent.toFixed(2)} SOL`,
-        change: "+12.4%",
+        change: "",
         positive: true,
         icon: <DollarCircle size={20} color="#f7931a" variant="Bold" />,
         iconBg: "bg-[#f7931a]/10",
@@ -93,16 +110,16 @@ export default function AnalyticsPage() {
       {
         title: "Avg. CTR",
         value: `${dashboard.ctr}%`,
-        change: "-0.2%",
-        positive: false,
+        change: "",
+        positive: true,
         icon: <ChartCircle size={20} color="#4ade80" variant="Bold" />,
         iconBg: "bg-[#4ade80]/10",
       },
     ];
   }, [dashboard]);
 
-  const selectedCampaign = campaignId
-    ? campaigns.find((c) => c._id === campaignId)
+  const selectedCampaign = selectedId
+    ? campaigns.find((c) => c._id === selectedId)
     : null;
 
   return (
@@ -123,22 +140,68 @@ export default function AnalyticsPage() {
           </p>
         </div>
 
-        {/* Date range filter */}
-        <div className="flex items-center gap-1 glass rounded-xl p-1 border border-white/8">
-          <Calendar size={16} color="#f7931a" className="ml-2" />
-          {ranges.map((r, i) => (
-            <button
-              key={r.label}
-              onClick={() => setRangeIdx(i)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                rangeIdx === i
-                  ? "bg-[#f7931a]/20 text-[#f7931a]"
-                  : "text-white/40 hover:text-white"
-              }`}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* T15 — Campaign selector */}
+          <div className="relative">
+            <select
+              value={selectedId}
+              onChange={(e) => {
+                setSelectedId(e.target.value);
+                if (e.target.value)
+                  router.replace(
+                    `/dashboard/analytics?campaign=${e.target.value}`,
+                  );
+                else router.replace("/dashboard/analytics");
+              }}
+              className="appearance-none pl-3 pr-8 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white/70 outline-none cursor-pointer max-w-[200px] truncate"
             >
-              {r.label}
+              <option value="">All campaigns</option>
+              {campaigns.map((c) => (
+                <option key={c._id} value={c._id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+            <ArrowDown2
+              size={12}
+              color="#ffffff40"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
+            />
+          </div>
+
+          {/* Date range */}
+          <div className="flex items-center gap-1 glass rounded-xl p-1 border border-white/8">
+            <Calendar size={16} color="#f7931a" className="ml-2" />
+            {ranges.map((r, i) => (
+              <button
+                key={r.label}
+                onClick={() => setRangeIdx(i)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  rangeIdx === i
+                    ? "bg-[#f7931a]/20 text-[#f7931a]"
+                    : "text-white/40 hover:text-white"
+                }`}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
+
+          {/* T17 — Export CSV */}
+          {chartData.length > 0 && (
+            <button
+              onClick={() =>
+                exportCSV(
+                  chartData,
+                  `analytics-${selectedId || "all"}-${ranges[rangeIdx].label}.csv`,
+                )
+              }
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/8 text-white/60 hover:text-white text-xs font-medium transition-colors"
+            >
+              <DocumentDownload size={14} color="currentColor" />
+              Export CSV
             </button>
-          ))}
+          )}
         </div>
       </motion.div>
 
@@ -172,18 +235,17 @@ export default function AnalyticsPage() {
       ) : chartData.length === 0 ? (
         <div className="glass rounded-2xl p-12 border border-white/8 text-center">
           <p className="text-white/40 text-sm">
-            {campaignId
-              ? "No analytics data available for this campaign yet."
-              : "No analytics data available. Create and fund a campaign to start tracking."}
+            {selectedId
+              ? "No analytics data for this campaign yet."
+              : "Select a campaign above or fund one to start tracking."}
           </p>
         </div>
       ) : (
         <>
-          {/* Impressions chart */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.3 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
             className="glass rounded-2xl p-6 border border-white/8"
           >
             <div className="flex items-center gap-2 mb-1">
@@ -206,11 +268,10 @@ export default function AnalyticsPage() {
             />
           </motion.div>
 
-          {/* Clicks chart */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.38 }}
+            transition={{ duration: 0.4, delay: 0.3 }}
             className="glass rounded-2xl p-6 border border-white/8"
           >
             <div className="flex items-center gap-2 mb-1">
@@ -231,11 +292,10 @@ export default function AnalyticsPage() {
             />
           </motion.div>
 
-          {/* Spend vs performance */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.46 }}
+            transition={{ duration: 0.4, delay: 0.4 }}
             className="glass rounded-2xl p-6 border border-white/8"
           >
             <div className="flex items-center gap-2 mb-1">
@@ -258,6 +318,131 @@ export default function AnalyticsPage() {
           </motion.div>
         </>
       )}
+
+      {/* T16 — Top campaigns table */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.5 }}
+        className="glass rounded-2xl border border-white/8 overflow-hidden"
+      >
+        <div className="flex items-center justify-between px-6 py-4 border-b border-white/8">
+          <div className="flex items-center gap-2">
+            <Flash size={15} color="#f7931a" />
+            <h3 className="text-base font-semibold text-white">
+              Top Performing Campaigns
+            </h3>
+          </div>
+          {topCampaigns.length > 0 && (
+            <button
+              onClick={() =>
+                exportCSV(
+                  topCampaigns.map((c) => ({
+                    name: c.name,
+                    status: c.status,
+                    impressions: c.impressions,
+                    clicks: c.clicks,
+                    ctr: c.ctr,
+                    spent: c.spent,
+                  })),
+                  "top-campaigns.csv",
+                )
+              }
+              className="flex items-center gap-1.5 text-xs text-white/30 hover:text-white/60 transition-colors"
+            >
+              <DocumentDownload size={13} color="currentColor" /> Export
+            </button>
+          )}
+        </div>
+
+        {topLoading ? (
+          <div className="p-6 space-y-3">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="animate-pulse flex gap-4">
+                <div className="h-3 bg-white/8 rounded flex-1" />
+                <div className="h-3 bg-white/5 rounded w-16" />
+                <div className="h-3 bg-white/5 rounded w-16" />
+                <div className="h-3 bg-white/8 rounded w-12" />
+              </div>
+            ))}
+          </div>
+        ) : topCampaigns.length === 0 ? (
+          <div className="flex items-center justify-center py-12">
+            <p className="text-sm text-white/30">No campaign data yet</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/5">
+                  {[
+                    "#",
+                    "Campaign",
+                    "Status",
+                    "Impressions",
+                    "Clicks",
+                    "CTR",
+                    "Spent",
+                  ].map((h) => (
+                    <th
+                      key={h}
+                      className="px-5 py-3 text-left text-xs font-medium text-white/30 uppercase tracking-wider whitespace-nowrap"
+                    >
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {topCampaigns.map((c, i) => (
+                  <tr
+                    key={String(c.campaignId)}
+                    onClick={() => {
+                      setSelectedId(String(c.campaignId));
+                      router.replace(
+                        `/dashboard/analytics?campaign=${c.campaignId}`,
+                      );
+                    }}
+                    className={`border-b border-white/5 hover:bg-white/3 cursor-pointer transition-colors ${i % 2 !== 0 ? "bg-white/1" : ""}`}
+                  >
+                    <td className="px-5 py-3.5 text-white/20 font-bold text-xs">
+                      {i + 1}
+                    </td>
+                    <td className="px-5 py-3.5 font-medium text-white max-w-[180px] truncate">
+                      {c.name}
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <span
+                        className={`text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize ${
+                          c.status === "active"
+                            ? "bg-emerald-400/10 text-emerald-400 border border-emerald-400/20"
+                            : c.status === "paused"
+                              ? "bg-yellow-400/10 text-yellow-400 border border-yellow-400/20"
+                              : "bg-white/5 text-white/40 border border-white/10"
+                        }`}
+                      >
+                        {c.status}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3.5 text-white/60 tabular-nums">
+                      {c.impressions.toLocaleString()}
+                    </td>
+                    <td className="px-5 py-3.5 text-white/60 tabular-nums">
+                      {c.clicks.toLocaleString()}
+                    </td>
+                    <td className="px-5 py-3.5 font-bold text-emerald-400 tabular-nums">
+                      {c.ctr.toFixed(2)}%
+                    </td>
+                    <td className="px-5 py-3.5 text-[#f7931a] tabular-nums">
+                      {c.spent.toFixed(4)} SOL
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </motion.div>
     </div>
   );
 }

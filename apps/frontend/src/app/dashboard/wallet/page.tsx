@@ -29,6 +29,7 @@ export default function WalletPage() {
 
   const [solBalance, setSolBalance] = useState<number | null>(null);
   const [balanceLoading, setBalanceLoading] = useState(false);
+  const [solPrice, setSolPrice] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
   const [toast, setToast] = useState<{
     message: string;
@@ -48,6 +49,16 @@ export default function WalletPage() {
       .catch(() => setSolBalance(null))
       .finally(() => setBalanceLoading(false));
   }, [publicKey, connection]);
+
+  // T20 — Fetch live SOL/USD price from CoinGecko
+  useEffect(() => {
+    fetch(
+      "https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd",
+    )
+      .then((r) => r.json())
+      .then((data) => setSolPrice(data?.solana?.usd ?? null))
+      .catch(() => setSolPrice(null));
+  }, []);
 
   function handleCopyAddress() {
     if (!publicKey) return;
@@ -98,10 +109,25 @@ export default function WalletPage() {
                 {balanceLoading ? (
                   <div className="h-8 w-32 bg-white/8 rounded animate-pulse mt-1" />
                 ) : connected && solBalance !== null ? (
-                  <p className="text-3xl font-bold text-white mt-0.5">
-                    {solBalance.toFixed(4)}{" "}
-                    <span className="text-lg text-white/50">SOL</span>
-                  </p>
+                  <>
+                    <p className="text-3xl font-bold text-white mt-0.5">
+                      {solBalance.toFixed(4)}{" "}
+                      <span className="text-lg text-white/50">SOL</span>
+                    </p>
+                    {solPrice !== null && (
+                      <p className="text-sm text-white/30 mt-0.5">
+                        ≈ $
+                        {(solBalance * solPrice).toLocaleString("en-US", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}{" "}
+                        USD
+                        <span className="ml-2 text-[10px] text-white/20">
+                          @ ${solPrice.toLocaleString()} / SOL
+                        </span>
+                      </p>
+                    )}
+                  </>
                 ) : (
                   <p className="text-xl font-semibold text-white/30 mt-0.5">
                     —
@@ -143,18 +169,21 @@ export default function WalletPage() {
           {
             label: "Total Funded",
             value: `${totalFunded.toFixed(2)} SOL`,
+            usd: solPrice ? `$${(totalFunded * solPrice).toFixed(2)}` : null,
             color: "text-[#4ade80]",
             icon: <ArrowCircleDown size={18} color="#4ade80" variant="Bold" />,
           },
           {
             label: "Total Spent",
             value: `${totalSpent.toFixed(2)} SOL`,
+            usd: solPrice ? `$${(totalSpent * solPrice).toFixed(2)}` : null,
             color: "text-red-400",
             icon: <ArrowCircleUp size={18} color="#f87171" variant="Bold" />,
           },
           {
             label: "Remaining",
             value: `${totalRemaining.toFixed(2)} SOL`,
+            usd: solPrice ? `$${(totalRemaining * solPrice).toFixed(2)}` : null,
             color: "text-[#f7931a]",
             icon: <Wallet size={18} color="#f7931a" variant="Bold" />,
           },
@@ -171,6 +200,7 @@ export default function WalletPage() {
               <p className="text-xs text-white/40">{s.label}</p>
             </div>
             <p className={`text-lg font-bold ${s.color}`}>{s.value}</p>
+            {s.usd && <p className="text-xs text-white/25 mt-0.5">{s.usd}</p>}
           </motion.div>
         ))}
       </div>

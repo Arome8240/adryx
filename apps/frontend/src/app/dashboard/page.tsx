@@ -2,7 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { useAdvertiserDashboard } from "@/hooks/useAnalytics";
+import {
+  useAdvertiserDashboard,
+  useAdvertiserActivity,
+  useTopCampaigns,
+} from "@/hooks/useAnalytics";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import {
   Chart,
@@ -12,6 +16,8 @@ import {
   MouseCircle,
   PercentageCircle,
   ArrowRight,
+  Clock,
+  Flash,
 } from "iconsax-react";
 
 const STATUS_STYLES: Record<string, string> = {
@@ -21,15 +27,26 @@ const STATUS_STYLES: Record<string, string> = {
   completed: "bg-[#a855f7]/10 text-[#a855f7] border border-[#a855f7]/20",
 };
 
-interface StatCardProps {
+const ACTIVITY_COLORS: Record<string, { dot: string; label: string }> = {
+  active: { dot: "bg-emerald-400", label: "Funded & activated" },
+  paused: { dot: "bg-yellow-400", label: "Paused" },
+  draft: { dot: "bg-white/30", label: "Created" },
+  completed: { dot: "bg-[#a855f7]", label: "Completed" },
+};
+
+function StatCard({
+  label,
+  value,
+  sub,
+  icon,
+  accent,
+}: {
   label: string;
   value: string | number;
   sub: string;
   icon: React.ReactNode;
   accent: string;
-}
-
-function StatCard({ label, value, sub, icon, accent }: StatCardProps) {
+}) {
   return (
     <div className="rounded-2xl bg-[#0d0d1a] border border-white/8 p-5 flex flex-col gap-3">
       <div className="flex items-center justify-between">
@@ -61,11 +78,22 @@ function SkeletonCard() {
   );
 }
 
+function timeAgo(dateStr: string) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
 export default function OverviewPage() {
   const router = useRouter();
   const { user } = useAuth();
   const { dashboard, isLoading: dashboardLoading } = useAdvertiserDashboard();
   const { campaigns, isLoading: campaignsLoading } = useCampaigns();
+  const { activity, isLoading: activityLoading } = useAdvertiserActivity(6);
+  const { topCampaigns, isLoading: topLoading } = useTopCampaigns(5);
 
   const hour = new Date().getHours();
   const greeting =
@@ -176,83 +204,143 @@ export default function OverviewPage() {
             <ArrowRight
               size={14}
               color="#ffffff20"
-              className="ml-auto shrink-0 group-hover:text-white/40 transition-colors"
+              className="ml-auto shrink-0"
             />
           </button>
         ))}
       </div>
 
-      {/* Recent campaigns */}
-      <div className="rounded-2xl bg-[#0d0d1a] border border-white/8 overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/8">
-          <p className="text-sm font-semibold text-white">Recent Campaigns</p>
-          <button
-            onClick={() => router.push("/dashboard/campaigns")}
-            className="text-xs text-[#a855f7] hover:text-[#c084fc] transition-colors"
-          >
-            View all →
-          </button>
-        </div>
-
-        {campaignsLoading ? (
-          <div className="p-5 space-y-3">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="animate-pulse flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-white/5 shrink-0" />
-                <div className="flex-1 space-y-1.5">
-                  <div className="h-3 bg-white/8 rounded w-1/3" />
-                  <div className="h-2.5 bg-white/5 rounded w-1/4" />
-                </div>
-                <div className="h-3 bg-white/8 rounded w-16" />
-              </div>
-            ))}
-          </div>
-        ) : campaigns.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-14 gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-[#f7931a]/10 flex items-center justify-center">
-              <Chart size={22} color="#f7931a" />
+      {/* Bottom two-column grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {/* T04 — Top performing campaigns */}
+        <div className="rounded-2xl bg-[#0d0d1a] border border-white/8 overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-white/8">
+            <div className="flex items-center gap-2">
+              <Flash size={15} color="#f7931a" />
+              <p className="text-sm font-semibold text-white">Top Campaigns</p>
             </div>
-            <p className="text-sm text-white/40">No campaigns yet</p>
             <button
-              onClick={() => router.push("/dashboard/create")}
-              className="text-xs text-[#f7931a] hover:text-[#f7931a]/80 transition-colors"
+              onClick={() => router.push("/dashboard/analytics")}
+              className="text-xs text-[#a855f7] hover:text-[#c084fc] transition-colors"
             >
-              Create your first campaign →
+              Full analytics →
             </button>
           </div>
-        ) : (
-          <ul>
-            {campaigns.slice(0, 5).map((c, i) => (
-              <li
-                key={c._id}
-                onClick={() => router.push("/dashboard/campaigns")}
-                className={`flex items-center gap-3 px-5 py-3.5 cursor-pointer hover:bg-white/3 transition-colors ${
-                  i !== 0 ? "border-t border-white/5" : ""
-                }`}
-              >
-                <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[#f7931a]/20 to-[#a855f7]/20 flex items-center justify-center text-xs font-bold text-white/50 shrink-0">
-                  {c.name?.charAt(0)?.toUpperCase()}
+
+          {topLoading ? (
+            <div className="p-5 space-y-3">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="animate-pulse flex items-center gap-3">
+                  <div className="w-7 h-7 rounded-lg bg-white/5 shrink-0" />
+                  <div className="flex-1 space-y-1.5">
+                    <div className="h-3 bg-white/8 rounded w-1/2" />
+                    <div className="h-2 bg-white/5 rounded w-1/3" />
+                  </div>
+                  <div className="h-3 bg-white/8 rounded w-12" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-white truncate">
-                    {c.name}
-                  </p>
-                  <p className="text-xs text-white/30 capitalize">{c.format}</p>
+              ))}
+            </div>
+          ) : topCampaigns.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-10 gap-2">
+              <p className="text-sm text-white/30">No campaign data yet</p>
+            </div>
+          ) : (
+            <ul>
+              {topCampaigns.map((c, i) => (
+                <li
+                  key={String(c.campaignId)}
+                  onClick={() =>
+                    router.push(`/dashboard/analytics?campaign=${c.campaignId}`)
+                  }
+                  className={`flex items-center gap-3 px-5 py-3 cursor-pointer hover:bg-white/3 transition-colors ${i !== 0 ? "border-t border-white/5" : ""}`}
+                >
+                  <span className="text-xs font-bold text-white/20 w-4 shrink-0">
+                    {i + 1}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-white truncate">
+                      {c.name}
+                    </p>
+                    <p className="text-xs text-white/30">
+                      {c.impressions.toLocaleString()} impr ·{" "}
+                      {c.clicks.toLocaleString()} clicks
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-sm font-bold text-emerald-400">
+                      {c.ctr.toFixed(2)}%
+                    </p>
+                    <p className="text-[10px] text-white/30">CTR</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {/* T03 — Activity feed */}
+        <div className="rounded-2xl bg-[#0d0d1a] border border-white/8 overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-white/8">
+            <div className="flex items-center gap-2">
+              <Clock size={15} color="#a855f7" />
+              <p className="text-sm font-semibold text-white">
+                Recent Activity
+              </p>
+            </div>
+            <button
+              onClick={() => router.push("/dashboard/campaigns")}
+              className="text-xs text-[#a855f7] hover:text-[#c084fc] transition-colors"
+            >
+              All campaigns →
+            </button>
+          </div>
+
+          {activityLoading ? (
+            <div className="p-5 space-y-3">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="animate-pulse flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full bg-white/10 shrink-0" />
+                  <div className="flex-1 space-y-1.5">
+                    <div className="h-3 bg-white/8 rounded w-2/3" />
+                    <div className="h-2 bg-white/5 rounded w-1/3" />
+                  </div>
                 </div>
-                <div className="flex items-center gap-3 shrink-0">
-                  <span
-                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize ${STATUS_STYLES[c.status] ?? STATUS_STYLES.draft}`}
+              ))}
+            </div>
+          ) : activity.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-10 gap-2">
+              <p className="text-sm text-white/30">No activity yet</p>
+            </div>
+          ) : (
+            <ul className="p-3 space-y-1">
+              {activity.map((item, i) => {
+                const ac =
+                  ACTIVITY_COLORS[item.status] ?? ACTIVITY_COLORS.draft;
+                return (
+                  <li
+                    key={String(item.campaignId) + i}
+                    onClick={() => router.push("/dashboard/campaigns")}
+                    className="flex items-start gap-3 px-3 py-2.5 rounded-xl hover:bg-white/3 cursor-pointer transition-colors"
                   >
-                    {c.status}
-                  </span>
-                  <span className="text-xs font-semibold text-white/60 tabular-nums">
-                    {c.budget.toFixed(2)} SOL
-                  </span>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
+                    <span
+                      className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${ac.dot}`}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-white/80 truncate">
+                        <span className="font-medium">{item.name}</span>
+                        <span className="text-white/40"> — {ac.label}</span>
+                      </p>
+                      <p className="text-xs text-white/30 mt-0.5">
+                        {item.budget.toFixed(2)} SOL budget ·{" "}
+                        {timeAgo(item.updatedAt)}
+                      </p>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
       </div>
     </div>
   );

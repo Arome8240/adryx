@@ -11,8 +11,8 @@
 
 - [ ] T01 — Spending velocity chart (daily burn rate across all campaigns)
 - [ ] T02 — Budget health indicator (% used per campaign, color-coded)
-- [ ] T03 — Recent activity feed (funded, paused, resumed, created events)
-- [ ] T04 — Top performing campaigns table (CTR, impressions, clicks)
+- [x] T03 — Recent activity feed (funded, paused, resumed, created events)
+- [x] T04 — Top performing campaigns table (CTR, impressions, clicks)
 
 ## Campaigns
 
@@ -32,15 +32,15 @@
 
 ## Analytics
 
-- [ ] T15 — Campaign selector dropdown (pick any campaign, not just via URL param)
-- [ ] T16 — Top performing campaigns table on analytics page
-- [ ] T17 — Export analytics to CSV
+- [x] T15 — Campaign selector dropdown (pick any campaign, not just via URL param)
+- [x] T16 — Top performing campaigns table on analytics page
+- [x] T17 — Export analytics to CSV
 - [ ] T18 — Campaign comparison (select two campaigns, side-by-side metrics)
 - [ ] T19 — Time-of-day heatmap (best performing hours)
 
 ## Wallet
 
-- [ ] T20 — Live SOL → USD price conversion (via CoinGecko API)
+- [x] T20 — Live SOL → USD price conversion (via CoinGecko API)
 - [ ] T21 — Transaction filter (by campaign, date range)
 - [ ] T22 — Auto-reload threshold setting (stored in profile)
 
