@@ -59,6 +59,48 @@ export class AnalyticsController {
     return await this.analyticsService.getPublisherDashboard(req.user.userId);
   }
 
+  @Get('publisher/activity')
+  @Roles(UserRole.PUBLISHER)
+  async getPublisherActivity(@Request() req, @Query('limit') limit?: number) {
+    return await this.analyticsService.getPublisherActivity(
+      req.user.userId,
+      limit ? parseInt(limit.toString()) : 8,
+    );
+  }
+
+  @Get('publisher/top-placements')
+  @Roles(UserRole.PUBLISHER)
+  async getPublisherTopPlacements(
+    @Request() req,
+    @Query('limit') limit?: number,
+  ) {
+    return await this.analyticsService.getPublisherTopPlacements(
+      req.user.userId,
+      limit ? parseInt(limit.toString()) : 10,
+    );
+  }
+
+  @Get('publisher/earnings-chart')
+  @Roles(UserRole.PUBLISHER)
+  async getPublisherEarningsChart(
+    @Request() req,
+    @Query('days') days?: number,
+  ) {
+    return await this.analyticsService.getPublisherEarningsChart(
+      req.user.userId,
+      days ? parseInt(days.toString()) : 30,
+    );
+  }
+
+  @Get('publisher/heatmap')
+  @Roles(UserRole.PUBLISHER)
+  async getPublisherHeatmap(@Request() req, @Query('days') days?: number) {
+    return await this.analyticsService.getPublisherHourlyHeatmap(
+      req.user.userId,
+      days ? parseInt(days.toString()) : 30,
+    );
+  }
+
   @Get('campaign/:id')
   async getCampaignAnalytics(
     @Param('id') id: string,

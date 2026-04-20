@@ -1,272 +1,304 @@
 "use client";
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { useAuth } from "@/hooks/useAuth";
+import { apiClient } from "@/lib/api-client";
+import WalletButton from "@/components/dashboard/WalletButton";
 import {
-  Profile,
-  EmptyWallet,
+  User,
+  Lock,
   Notification,
-  SecuritySafe,
-  Setting2,
+  EmptyWallet,
+  TickCircle,
+  CloseCircle,
+  Global,
 } from "iconsax-react";
 
-export default function SettingsPage() {
+const inputCls =
+  "w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-white/20 outline-none focus:border-[#4ade80]/50 transition-colors";
+const TIMEZONES = [
+  "UTC",
+  "America/New_York",
+  "America/Chicago",
+  "America/Los_Angeles",
+  "Europe/London",
+  "Europe/Paris",
+  "Asia/Dubai",
+  "Asia/Singapore",
+  "Asia/Tokyo",
+];
+const BUDGET_THRESHOLDS = [50, 70, 80, 85, 90, 95];
+
+function Section({
+  title,
+  icon,
+  children,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="flex flex-col gap-6 max-w-4xl mx-auto">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-      >
-        <h1 className="text-2xl font-bold text-white">Settings</h1>
-        <p className="text-sm text-white/40 mt-1">
-          Manage your account and preferences
+    <div className="rounded-2xl bg-[#0d0d1a] border border-white/8 p-5 space-y-5">
+      <div className="flex items-center gap-2 pb-1 border-b border-white/8">
+        {icon}
+        <p className="text-sm font-semibold text-white">{title}</p>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+export default function PublisherSettingsPage() {
+  const { user, loadUser } = useAuth();
+  const { publicKey } = useWallet();
+  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
+  const [profile, setProfile] = useState({
+    name: "",
+    email: "",
+    timezone: "UTC",
+  });
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [passwords, setPasswords] = useState({
+    current: "",
+    next: "",
+    confirm: "",
+  });
+  const [savingPassword, setSavingPassword] = useState(false);
+  const [budgetThreshold, setBudgetThreshold] = useState(85);
+
+  useEffect(() => {
+    if (user)
+      setProfile({
+        name: user.name ?? "",
+        email: user.email ?? "",
+        timezone: (user as any).timezone ?? "UTC",
+      });
+    const saved = localStorage.getItem("adryx_budget_threshold");
+    if (saved) setBudgetThreshold(parseInt(saved));
+  }, [user]);
+
+  function showToast(msg: string, ok = true) {
+    setToast({ msg, ok });
+    setTimeout(() => setToast(null), 3500);
+  }
+
+  async function handleSaveProfile(e: React.FormEvent) {
+    e.preventDefault();
+    setSavingProfile(true);
+    try {
+      await apiClient.updateProfile({
+        name: profile.name,
+        email: profile.email,
+        timezone: profile.timezone,
+      });
+      await loadUser();
+      showToast("Profile updated");
+    } catch (err: any) {
+      showToast(err.message, false);
+    } finally {
+      setSavingProfile(false);
+    }
+  }
+
+  async function handleChangePassword(e: React.FormEvent) {
+    e.preventDefault();
+    if (passwords.next !== passwords.confirm)
+      return showToast("Passwords don't match", false);
+    if (passwords.next.length < 8)
+      return showToast("Password must be at least 8 characters", false);
+    setSavingPassword(true);
+    try {
+      await apiClient.changePassword(passwords.current, passwords.next);
+      setPasswords({ current: "", next: "", confirm: "" });
+      showToast("Password changed");
+    } catch (err: any) {
+      showToast(err.message, false);
+    } finally {
+      setSavingPassword(false);
+    }
+  }
+
+  return (
+    <div className="max-w-2xl mx-auto space-y-5">
+      {toast && (
+        <div
+          className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl text-sm font-medium ${
+            toast.ok
+              ? "bg-emerald-400/10 border-emerald-400/20 text-emerald-400"
+              : "bg-[#f87171]/10 border-[#f87171]/20 text-[#f87171]"
+          }`}
+        >
+          {toast.ok ? (
+            <TickCircle size={16} color="currentColor" />
+          ) : (
+            <CloseCircle size={16} color="currentColor" />
+          )}
+          {toast.msg}
+        </div>
+      )}
+
+      <div>
+        <h1 className="text-xl font-bold text-white">Settings</h1>
+        <p className="text-sm text-white/40 mt-0.5">
+          Manage your publisher account
         </p>
-      </motion.div>
+      </div>
 
-      {/* Profile Settings */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.1 }}
-        className="glass rounded-2xl p-6 border border-white/8"
-      >
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-[#4ade80]/10 flex items-center justify-center">
-            <Profile size={20} color="#4ade80" variant="Bold" />
-          </div>
-          <div>
-            <h2 className="text-base font-semibold text-white">Profile</h2>
-            <p className="text-xs text-white/40">
-              Update your profile information
-            </p>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-white/60 mb-2">
-              Publisher Name
-            </label>
-            <input
-              type="text"
-              defaultValue="My Publisher Account"
-              className="w-full px-4 py-2.5 bg-white/5 border border-white/8 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:border-[#4ade80]/50 transition-colors"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-white/60 mb-2">
-              Email
-            </label>
-            <input
-              type="email"
-              defaultValue="publisher@example.com"
-              className="w-full px-4 py-2.5 bg-white/5 border border-white/8 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:border-[#4ade80]/50 transition-colors"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-white/60 mb-2">
-              Website
-            </label>
-            <input
-              type="url"
-              defaultValue="https://myapp.com"
-              className="w-full px-4 py-2.5 bg-white/5 border border-white/8 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:border-[#4ade80]/50 transition-colors"
-            />
-          </div>
-          <button className="flex items-center gap-2 px-4 py-2.5 bg-[#f7931a] hover:bg-[#f7931a]/90 text-white text-sm font-medium rounded-xl transition-colors">
-            Save Changes
-          </button>
-        </div>
-      </motion.div>
-
-      {/* Wallet Settings */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.2 }}
-        className="glass rounded-2xl p-6 border border-white/8"
-      >
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-[#f7931a]/10 flex items-center justify-center">
-            <EmptyWallet size={20} color="#f7931a" variant="Bold" />
-          </div>
-          <div>
-            <h2 className="text-base font-semibold text-white">
-              Wallet & Payouts
-            </h2>
-            <p className="text-xs text-white/40">
-              Configure your payout preferences
-            </p>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-white/60 mb-2">
-              Solana Wallet Address
-            </label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                defaultValue="7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU"
-                className="flex-1 px-4 py-2.5 bg-white/5 border border-white/8 rounded-xl text-white font-mono text-sm placeholder:text-white/30 focus:outline-none focus:border-[#4ade80]/50 transition-colors"
-                readOnly
-              />
-              <button className="px-4 py-2.5 bg-white/5 hover:bg-white/8 text-white text-sm font-medium rounded-xl transition-colors border border-white/8">
-                Change
-              </button>
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-white/60 mb-2">
-              Minimum Payout Threshold
-            </label>
-            <select className="w-full px-4 py-2.5 bg-white/5 border border-white/8 rounded-xl text-white focus:outline-none focus:border-[#4ade80]/50 transition-colors">
-              <option>$100</option>
-              <option>$250</option>
-              <option>$500</option>
-              <option>$1000</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-white/60 mb-2">
-              Payout Frequency
-            </label>
-            <select className="w-full px-4 py-2.5 bg-white/5 border border-white/8 rounded-xl text-white focus:outline-none focus:border-[#4ade80]/50 transition-colors">
-              <option>Monthly (15th of each month)</option>
-              <option>Bi-weekly</option>
-              <option>Weekly</option>
-            </select>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Notification Settings */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.3 }}
-        className="glass rounded-2xl p-6 border border-white/8"
-      >
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-[#a855f7]/10 flex items-center justify-center">
-            <Notification
-              size={20}
-              className="text-[#a855f7]"
-              variant="Bold"
-            />
-          </div>
-          <div>
-            <h2 className="text-base font-semibold text-white">
-              Notifications
-            </h2>
-            <p className="text-xs text-white/40">
-              Choose what updates you receive
-            </p>
-          </div>
-        </div>
-
-        <div className="space-y-3">
+      <Section title="Profile" icon={<User size={16} color="#4ade80" />}>
+        <form onSubmit={handleSaveProfile} className="space-y-4">
           {[
-            { label: "Payout notifications", defaultChecked: true },
-            { label: "Performance alerts", defaultChecked: true },
-            { label: "New placement opportunities", defaultChecked: false },
-            { label: "Weekly reports", defaultChecked: true },
-            { label: "Product updates", defaultChecked: false },
-          ].map((item) => (
-            <label
-              key={item.label}
-              className="flex items-center justify-between p-3 rounded-xl bg-white/3 border border-white/5 cursor-pointer hover:bg-white/5 transition-colors group"
-            >
-              <span className="text-sm text-white">{item.label}</span>
-              <div className="relative">
-                <input
-                  type="checkbox"
-                  defaultChecked={item.defaultChecked}
-                  className="w-4 h-4 rounded bg-white/5 border-white/20 text-[#4ade80] focus:ring-[#4ade80] focus:ring-offset-0 cursor-pointer"
-                />
-              </div>
-            </label>
+            {
+              label: "Name",
+              key: "name",
+              type: "text",
+              placeholder: "Your name",
+            },
+            {
+              label: "Email",
+              key: "email",
+              type: "email",
+              placeholder: "you@example.com",
+            },
+          ].map(({ label, key, type, placeholder }) => (
+            <div key={key}>
+              <label className="block text-xs font-semibold text-white/40 uppercase tracking-wider mb-1.5">
+                {label}
+              </label>
+              <input
+                type={type}
+                value={(profile as any)[key]}
+                onChange={(e) =>
+                  setProfile((p) => ({ ...p, [key]: e.target.value }))
+                }
+                placeholder={placeholder}
+                className={inputCls}
+              />
+            </div>
           ))}
-        </div>
-      </motion.div>
-
-      {/* Security Settings */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.4 }}
-        className="glass rounded-2xl p-6 border border-white/8"
-      >
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-[#22d3ee]/10 flex items-center justify-center">
-            <SecuritySafe
-              size={20}
-              className="text-[#22d3ee]"
-              variant="Bold"
-            />
-          </div>
           <div>
-            <h2 className="text-base font-semibold text-white">Security</h2>
-            <p className="text-xs text-white/40">
-              Manage your account security
-            </p>
+            <label className="block text-xs font-semibold text-white/40 uppercase tracking-wider mb-1.5">
+              <span className="flex items-center gap-1.5">
+                <Global size={12} color="#ffffff40" /> Timezone
+              </span>
+            </label>
+            <select
+              value={profile.timezone}
+              onChange={(e) =>
+                setProfile((p) => ({ ...p, timezone: e.target.value }))
+              }
+              className={`${inputCls} cursor-pointer`}
+            >
+              {TIMEZONES.map((tz) => (
+                <option key={tz} value={tz}>
+                  {tz}
+                </option>
+              ))}
+            </select>
           </div>
-        </div>
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              disabled={savingProfile}
+              className="px-5 py-2.5 rounded-xl bg-[#4ade80] hover:bg-[#4ade80]/90 text-black text-sm font-bold disabled:opacity-40 transition-colors"
+            >
+              {savingProfile ? "Saving…" : "Save Profile"}
+            </button>
+          </div>
+        </form>
+      </Section>
 
-        <div className="space-y-3">
-          <button className="w-full flex items-center justify-between p-3 rounded-xl bg-white/3 border border-white/5 hover:bg-white/5 transition-colors text-left">
-            <div>
-              <p className="text-sm font-medium text-white">Change Password</p>
-              <p className="text-xs text-white/40 mt-0.5">
-                Last changed 3 months ago
-              </p>
-            </div>
-            <span className="text-[#22d3ee]">→</span>
-          </button>
-          <button className="w-full flex items-center justify-between p-3 rounded-xl bg-white/3 border border-white/5 hover:bg-white/5 transition-colors text-left">
-            <div>
-              <p className="text-sm font-medium text-white">
-                Two-Factor Authentication
-              </p>
-              <p className="text-xs text-white/40 mt-0.5">Not enabled</p>
-            </div>
-            <span className="text-[#22d3ee]">→</span>
-          </button>
-          <button className="w-full flex items-center justify-between p-3 rounded-xl bg-white/3 border border-white/5 hover:bg-white/5 transition-colors text-left">
-            <div>
-              <p className="text-sm font-medium text-white">API Keys</p>
-              <p className="text-xs text-white/40 mt-0.5">
-                Manage your API access
-              </p>
-            </div>
-            <span className="text-[#22d3ee]">→</span>
-          </button>
-        </div>
-      </motion.div>
-
-      {/* Danger Zone */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.5 }}
-        className="glass rounded-2xl p-6 border border-red-500/20"
+      <Section
+        title="Change Password"
+        icon={<Lock size={16} color="#3b82f6" />}
       >
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center">
-            <Setting2 size={20} color="#ef4444" variant="Bold" />
+        <form onSubmit={handleChangePassword} className="space-y-4">
+          {[
+            { label: "Current Password", key: "current" },
+            { label: "New Password", key: "next" },
+            { label: "Confirm New Password", key: "confirm" },
+          ].map(({ label, key }) => (
+            <div key={key}>
+              <label className="block text-xs font-semibold text-white/40 uppercase tracking-wider mb-1.5">
+                {label}
+              </label>
+              <input
+                type="password"
+                value={(passwords as any)[key]}
+                onChange={(e) =>
+                  setPasswords((p) => ({ ...p, [key]: e.target.value }))
+                }
+                placeholder="••••••••"
+                className={inputCls}
+              />
+            </div>
+          ))}
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              disabled={savingPassword}
+              className="px-5 py-2.5 rounded-xl bg-[#3b82f6] hover:bg-[#3b82f6]/90 text-white text-sm font-semibold disabled:opacity-40 transition-colors"
+            >
+              {savingPassword ? "Updating…" : "Update Password"}
+            </button>
           </div>
-          <div>
-            <h2 className="text-base font-semibold text-white">Danger Zone</h2>
-            <p className="text-xs text-white/40">
-              Irreversible account actions
-            </p>
+        </form>
+      </Section>
+
+      <Section
+        title="Notification Preferences"
+        icon={<Notification size={16} color="#f7931a" />}
+      >
+        <div>
+          <label className="block text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">
+            Earnings alert threshold
+          </label>
+          <p className="text-xs text-white/30 mb-3">
+            Get notified when a placement earns above this % of its expected
+            daily earnings.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {BUDGET_THRESHOLDS.map((t) => (
+              <button
+                key={t}
+                onClick={() => {
+                  setBudgetThreshold(t);
+                  localStorage.setItem("adryx_budget_threshold", String(t));
+                  showToast("Saved");
+                }}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+                  budgetThreshold === t
+                    ? "bg-[#f7931a]/20 text-[#f7931a] border border-[#f7931a]/30"
+                    : "bg-white/5 text-white/50 border border-white/8 hover:border-white/20"
+                }`}
+              >
+                {t}%
+              </button>
+            ))}
           </div>
         </div>
-        <button className="px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-sm font-medium rounded-xl transition-colors border border-red-500/20">
-          Delete Account
-        </button>
-      </motion.div>
+      </Section>
+
+      <Section
+        title="Connected Wallet"
+        icon={<EmptyWallet size={16} color="#4ade80" />}
+      >
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            {publicKey ? (
+              <>
+                <p className="text-xs text-white/40 mb-1">Connected wallet</p>
+                <p className="text-sm font-mono text-white/70 break-all">
+                  {publicKey.toString()}
+                </p>
+              </>
+            ) : (
+              <p className="text-sm text-white/40">No wallet connected</p>
+            )}
+          </div>
+          <WalletButton />
+        </div>
+      </Section>
     </div>
   );
 }

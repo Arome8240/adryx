@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Home2,
   Global,
@@ -11,49 +11,61 @@ import {
   Book1,
   LogoutCurve,
 } from "iconsax-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const navItems = [
-  { label: "Overview", href: "/publishers", icon: <Home2 size={20} />, color: "#4ade80" },
+  { label: "Overview", href: "/publishers", icon: Home2, color: "#4ade80" },
   {
     label: "Sites & Apps",
     href: "/publishers/sites",
-    icon: <Global size={20} />,
+    icon: Global,
     color: "#a855f7",
   },
   {
     label: "Ad Placements",
     href: "/publishers/placements",
-    icon: <Code1 size={20} />,
+    icon: Code1,
     color: "#22d3ee",
   },
   {
     label: "Earnings",
     href: "/publishers/earnings",
-    icon: <DollarCircle size={20} />,
+    icon: DollarCircle,
     color: "#4ade80",
   },
   {
     label: "Analytics",
     href: "/publishers/analytics",
-    icon: <PresentionChart size={20} />,
+    icon: PresentionChart,
     color: "#f7931a",
   },
   {
     label: "Integration",
     href: "/publishers/integrate",
-    icon: <Book1 size={20} />,
+    icon: Book1,
     color: "#22d3ee",
   },
   {
     label: "Settings",
     href: "/publishers/settings",
-    icon: <Setting2 size={20} />,
+    icon: Setting2,
     color: "#a855f7",
   },
 ];
 
+function getInitial(name: string) {
+  return name?.charAt(0)?.toUpperCase() ?? "?";
+}
+
 export default function PublisherSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, logout } = useAuth();
+
+  function handleLogout() {
+    logout();
+    router.push("/login");
+  }
 
   return (
     <aside className="hidden md:flex flex-col w-60 shrink-0 min-h-screen bg-[#0d0d1a] border-r border-white/8">
@@ -74,6 +86,23 @@ export default function PublisherSidebar() {
         </Link>
       </div>
 
+      {/* User info */}
+      {user && (
+        <div className="px-4 py-3 border-b border-white/8 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-linear-to-br from-[#4ade80] to-[#22d3ee] flex items-center justify-center text-xs font-bold text-white shrink-0">
+            {getInitial(user.name)}
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-white truncate">
+              {user.name}
+            </p>
+            <span className="text-[10px] text-[#4ade80] capitalize">
+              {user.role}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 flex flex-col gap-1">
         <p className="px-3 mb-2 text-[10px] font-semibold text-white/30 uppercase tracking-widest">
@@ -81,7 +110,7 @@ export default function PublisherSidebar() {
         </p>
         {navItems.map((item) => {
           const active = pathname === item.href;
-          const IconComponent = item.icon.type;
+          const Icon = item.icon;
           return (
             <Link
               key={item.href}
@@ -92,7 +121,7 @@ export default function PublisherSidebar() {
                   : "text-white/50 hover:text-white hover:bg-white/5"
               }`}
             >
-              <IconComponent
+              <Icon
                 size={20}
                 color={active ? "#4ade80" : item.color}
                 variant={active ? "Bold" : "Linear"}
@@ -108,13 +137,13 @@ export default function PublisherSidebar() {
 
       {/* Bottom */}
       <div className="px-3 py-4 border-t border-white/8">
-        <Link
-          href="/"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/40 hover:text-white hover:bg-white/5 transition-all"
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/40 hover:text-[#f87171] hover:bg-[#f87171]/10 transition-all"
         >
-          <LogoutCurve size={20} color="#f87171" />
-          <span>Back to Site</span>
-        </Link>
+          <LogoutCurve size={20} color="currentColor" />
+          Sign out
+        </button>
       </div>
     </aside>
   );

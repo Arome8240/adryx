@@ -12,11 +12,12 @@ import { randomBytes } from 'crypto';
 
 @Injectable()
 export class SitesService {
-  constructor(
-    @InjectModel(Site.name) private siteModel: Model<SiteDocument>,
-  ) {}
+  constructor(@InjectModel(Site.name) private siteModel: Model<SiteDocument>) {}
 
-  async create(publisherId: string, createSiteDto: CreateSiteDto): Promise<Site> {
+  async create(
+    publisherId: string,
+    createSiteDto: CreateSiteDto,
+  ): Promise<Site> {
     // Generate verification code
     const verificationCode = `adryx-${randomBytes(16).toString('hex')}`;
 
@@ -56,11 +57,7 @@ export class SitesService {
     updateSiteDto: UpdateSiteDto,
   ): Promise<Site> {
     const site = await this.siteModel
-      .findOneAndUpdate(
-        { _id: id, publisherId },
-        updateSiteDto,
-        { new: true },
-      )
+      .findOneAndUpdate({ _id: id, publisherId }, updateSiteDto, { new: true })
       .exec();
 
     if (!site) {
@@ -87,9 +84,17 @@ export class SitesService {
       throw new BadRequestException('Site is already verified');
     }
 
-    // TODO: Implement actual verification logic
-    // For meta tag: fetch the site and check for meta tag
-    // For DNS: query DNS records
+    // Attempt real meta tag verification
+    const verified = await this.checkVerification(
+      (site as any).url,
+      (site as any).verificationCode,
+    );
+
+    if (!verified) {
+      throw new BadRequestException(
+        'Verification failed. Make sure the meta tag is present on your site.',
+      );
+    }
 
     const updatedSite = await this.siteModel
       .findByIdAndUpdate(
@@ -99,20 +104,23 @@ export class SitesService {
       )
       .exec();
 
-    if (!updatedSite) {
+    if (!updatedSite)
       throw new NotFoundException(`Site with ID ${id} not found`);
-    }
-
     return updatedSite;
   }
 
-  async checkVerification(url: string, verificationCode: string): Promise<boolean> {
+  async checkVerification(
+    url: string,
+    verificationCode: string,
+  ): Promise<boolean> {
     try {
-      // TODO: Implement actual verification check
-      // Fetch the URL and look for the meta tag or check DNS
-      console.log('Checking verification for:', url, verificationCode);
-      return true;
-    } catch (error) {
+      const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+      const html = await res.text();
+      return (
+        html.includes(`name="adryx:verification"`) &&
+        html.includes(verificationCode)
+      );
+    } catch {
       return false;
     }
   }

@@ -1,58 +1,83 @@
 "use client";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   DollarCircle,
   Eye,
   MouseCircle,
-  Code1,
   TrendUp,
-  Calendar,
+  Code1,
+  Clock,
+  Flash,
+  AddCircle,
 } from "iconsax-react";
-import MetricCard from "@/components/dashboard/MetricCard";
 import PerformanceChart from "@/components/dashboard/PerformanceChart";
-import {
-  publisherMetrics,
-  publisherEarningsData,
-  publisherPlacements,
-} from "@/lib/publisher-mock-data";
 import Link from "next/link";
+import {
+  usePublisherDashboard,
+  usePublisherEarnings,
+  usePublisherTopPlacements,
+  usePublisherActivity,
+} from "@/hooks/usePublisher";
 
-const metrics = [
-  {
-    title: "Total Earnings",
-    value: `$${publisherMetrics.totalEarnings.toLocaleString()}`,
-    change: "+18.2%",
-    positive: true,
-    icon: <DollarCircle size={20} color="#4ade80" variant="Bold" />,
-    iconBg: "bg-[#4ade80]/10",
-  },
-  {
-    title: "Impressions",
-    value: `${(publisherMetrics.impressions / 1000).toFixed(1)}M`,
-    change: "+12.4%",
-    positive: true,
-    icon: <Eye size={20} color="#a855f7" variant="Bold" />,
-    iconBg: "bg-[#a855f7]/10",
-  },
-  {
-    title: "Clicks",
-    value: `${(publisherMetrics.clicks / 1000).toFixed(1)}K`,
-    change: "+9.8%",
-    positive: true,
-    icon: <MouseCircle size={20} color="#22d3ee" variant="Bold" />,
-    iconBg: "bg-[#22d3ee]/10",
-  },
-  {
-    title: "eCPM",
-    value: `$${publisherMetrics.ecpm.toFixed(2)}`,
-    change: "+5.1%",
-    positive: true,
-    icon: <TrendUp size={20} color="#f7931a" variant="Bold" />,
-    iconBg: "bg-[#f7931a]/10",
-  },
-];
+function StatCard({
+  label,
+  value,
+  sub,
+  icon,
+  accent,
+}: {
+  label: string;
+  value: string | number;
+  sub: string;
+  icon: React.ReactNode;
+  accent: string;
+}) {
+  return (
+    <div className="rounded-2xl bg-[#0d0d1a] border border-white/8 p-5 flex flex-col gap-3">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold text-white/40 uppercase tracking-wider">
+          {label}
+        </p>
+        <div
+          className="w-8 h-8 rounded-xl flex items-center justify-center"
+          style={{ backgroundColor: `${accent}18` }}
+        >
+          {icon}
+        </div>
+      </div>
+      <div>
+        <p className="text-2xl font-bold text-white">{value}</p>
+        <p className="text-xs text-white/40 mt-0.5">{sub}</p>
+      </div>
+    </div>
+  );
+}
+
+function timeAgo(dateStr: string) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
 
 export default function PublishersPage() {
+  const router = useRouter();
+  const { dashboard, isLoading: dashLoading } = usePublisherDashboard();
+  const { earningsChart, isLoading: chartLoading } = usePublisherEarnings(30);
+  const { topPlacements, isLoading: topLoading } = usePublisherTopPlacements(5);
+  const { activity, isLoading: activityLoading } = usePublisherActivity(6);
+
+  const ecpm =
+    dashboard && dashboard.impressions > 0
+      ? (
+          (parseFloat(dashboard.totalEarnings) / dashboard.impressions) *
+          1000
+        ).toFixed(2)
+      : "0.00";
+
   return (
     <div className="flex flex-col gap-6 max-w-7xl mx-auto">
       {/* Header */}
@@ -63,204 +88,231 @@ export default function PublishersPage() {
         className="flex items-center justify-between"
       >
         <div>
-          <h1 className="text-2xl font-bold text-white">Publisher Dashboard</h1>
-          <p className="text-sm text-white/40 mt-1">
+          <h1 className="text-xl font-bold text-white">Publisher Dashboard</h1>
+          <p className="text-sm text-white/40 mt-0.5">
             Track your earnings and ad performance
           </p>
         </div>
         <Link
           href="/publishers/integrate"
-          className="flex items-center gap-2 px-4 py-2.5 bg-[#f7931a] hover:bg-[#f7931a]/90 text-white text-sm font-medium rounded-xl transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-[#f7931a] hover:bg-[#f7931a]/90 text-white text-sm font-semibold rounded-xl transition-colors"
         >
-          <Code1 size={18} color="#ffffff" variant="Bold" />
+          <Code1 size={16} color="#ffffff" variant="Bold" />
           Integration Guide
         </Link>
       </motion.div>
 
-      {/* Metric cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {metrics.map((m, i) => (
-          <MetricCard key={m.title} {...m} delay={i * 0.08} />
-        ))}
-      </div>
+      {/* Stats */}
+      {dashLoading ? (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {[...Array(4)].map((_, i) => (
+            <div
+              key={i}
+              className="rounded-2xl bg-[#0d0d1a] border border-white/8 p-5 animate-pulse space-y-3"
+            >
+              <div className="h-3 bg-white/8 rounded w-1/3" />
+              <div className="h-7 bg-white/8 rounded w-1/2" />
+            </div>
+          ))}
+        </div>
+      ) : dashboard ? (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <StatCard
+            label="Total Earnings"
+            value={`$${parseFloat(dashboard.totalEarnings).toFixed(2)}`}
+            sub="USDC lifetime"
+            icon={<DollarCircle size={16} color="#4ade80" />}
+            accent="#4ade80"
+          />
+          <StatCard
+            label="Impressions"
+            value={dashboard.impressions.toLocaleString()}
+            sub={`${dashboard.clicks.toLocaleString()} clicks`}
+            icon={<Eye size={16} color="#a855f7" />}
+            accent="#a855f7"
+          />
+          <StatCard
+            label="CTR"
+            value={`${dashboard.ctr}%`}
+            sub={`${dashboard.totalPlacements} placements`}
+            icon={<MouseCircle size={16} color="#22d3ee" />}
+            accent="#22d3ee"
+          />
+          <StatCard
+            label="eCPM"
+            value={`$${ecpm}`}
+            sub={`${dashboard.totalSites} sites`}
+            icon={<TrendUp size={16} color="#f7931a" />}
+            accent="#f7931a"
+          />
+        </div>
+      ) : null}
 
-      {/* Earnings Chart */}
+      {/* Earnings chart */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.3 }}
+        transition={{ duration: 0.4, delay: 0.2 }}
         className="glass rounded-2xl p-6 border border-white/8"
       >
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-5">
           <div>
             <h2 className="text-base font-semibold text-white">
               Earnings Overview
             </h2>
             <p className="text-xs text-white/40 mt-0.5">Last 30 days</p>
           </div>
-          <div className="flex items-center gap-2">
-            <Calendar size={16} color="#a855f7" variant="Bold" />
-            <span className="text-xs text-white/30 px-3 py-1.5 rounded-lg bg-white/5">
-              Mar 1 – Apr 3
-            </span>
-          </div>
-        </div>
-        <PerformanceChart
-          data={publisherEarningsData}
-          lines={[
-            { key: "earnings", color: "#4ade80", label: "Earnings ($)" },
-            { key: "impressions", color: "#a855f7", label: "Impressions (K)" },
-          ]}
-        />
-      </motion.div>
-
-      {/* Ad Placements */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.4 }}
-        className="glass rounded-2xl border border-white/8 overflow-hidden"
-      >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/8">
-          <h2 className="text-base font-semibold text-white">
-            Active Ad Placements
-          </h2>
           <Link
-            href="/publishers/placements"
-            className="text-xs text-[#f7931a] hover:underline"
+            href="/publishers/analytics"
+            className="text-xs text-[#a855f7] hover:text-[#c084fc] transition-colors"
           >
-            Manage placements →
+            Full analytics →
           </Link>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-white/5">
-                {[
-                  "Placement",
-                  "Format",
-                  "Status",
-                  "Impressions",
-                  "Clicks",
-                  "Earnings",
-                ].map((h) => (
-                  <th
-                    key={h}
-                    className="px-6 py-3 text-left text-xs font-medium text-white/30 uppercase tracking-wider"
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {publisherPlacements.map((p, i) => (
-                <tr
-                  key={p.id}
-                  className={`border-b border-white/5 hover:bg-white/3 transition-colors ${i % 2 === 0 ? "" : "bg-white/1"}`}
-                >
-                  <td className="px-6 py-4">
-                    <div>
-                      <div className="font-medium text-white">{p.name}</div>
-                      <div className="text-xs text-white/40 mt-0.5">
-                        {p.location}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-white/5 text-xs text-white/60">
-                      {p.format}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium ${
-                        p.status === "Active"
-                          ? "bg-[#4ade80]/10 text-[#4ade80]"
-                          : "bg-white/5 text-white/40"
-                      }`}
-                    >
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full ${p.status === "Active" ? "bg-[#4ade80]" : "bg-white/40"}`}
-                      />
-                      {p.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-white/60">
-                    {(p.impressions / 1000).toFixed(0)}K
-                  </td>
-                  <td className="px-6 py-4 text-white/60">
-                    {(p.clicks / 1000).toFixed(1)}K
-                  </td>
-                  <td className="px-6 py-4 text-[#4ade80] font-medium">
-                    ${p.earnings.toLocaleString()}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        {chartLoading ? (
+          <div className="h-48 bg-white/5 rounded animate-pulse" />
+        ) : earningsChart.length === 0 ? (
+          <div className="h-48 flex items-center justify-center">
+            <p className="text-sm text-white/30">
+              No earnings data yet. Add placements to start earning.
+            </p>
+          </div>
+        ) : (
+          <PerformanceChart
+            data={earningsChart}
+            lines={[
+              { key: "earnings", color: "#4ade80", label: "Earnings (USDC)" },
+            ]}
+            height={200}
+          />
+        )}
       </motion.div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.5 }}
-          className="glass rounded-2xl p-6 border border-white/8"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium text-white/60">
-              Pending Payout
-            </h3>
-            <DollarCircle size={20} color="#f7931a" variant="Bold" />
+      {/* Bottom two-column */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {/* Top placements */}
+        <div className="rounded-2xl bg-[#0d0d1a] border border-white/8 overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-white/8">
+            <div className="flex items-center gap-2">
+              <Flash size={15} color="#4ade80" />
+              <p className="text-sm font-semibold text-white">Top Placements</p>
+            </div>
+            <Link
+              href="/publishers/placements"
+              className="text-xs text-[#a855f7] hover:text-[#c084fc] transition-colors"
+            >
+              All placements →
+            </Link>
           </div>
-          <p className="text-2xl font-bold text-white">
-            ${publisherMetrics.pendingPayout.toLocaleString()}
-          </p>
-          <p className="text-xs text-white/40 mt-2">
-            Next payout: April 15, 2026
-          </p>
-        </motion.div>
+          {topLoading ? (
+            <div className="p-5 space-y-3">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="animate-pulse flex items-center gap-3">
+                  <div className="w-7 h-7 rounded-lg bg-white/5 shrink-0" />
+                  <div className="flex-1 space-y-1.5">
+                    <div className="h-3 bg-white/8 rounded w-1/2" />
+                    <div className="h-2 bg-white/5 rounded w-1/3" />
+                  </div>
+                  <div className="h-3 bg-white/8 rounded w-16" />
+                </div>
+              ))}
+            </div>
+          ) : topPlacements.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-10 gap-3">
+              <p className="text-sm text-white/30">No placements yet</p>
+              <Link
+                href="/publishers/placements"
+                className="flex items-center gap-1.5 text-xs text-[#f7931a] hover:text-[#f7931a]/80 transition-colors"
+              >
+                <AddCircle size={13} color="currentColor" /> Add your first
+                placement
+              </Link>
+            </div>
+          ) : (
+            <ul>
+              {topPlacements.map((p, i) => (
+                <li
+                  key={String(p.placementId)}
+                  onClick={() => router.push("/publishers/placements")}
+                  className={`flex items-center gap-3 px-5 py-3 cursor-pointer hover:bg-white/3 transition-colors ${i !== 0 ? "border-t border-white/5" : ""}`}
+                >
+                  <span className="text-xs font-bold text-white/20 w-4 shrink-0">
+                    {i + 1}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-white truncate">
+                      {p.name}
+                    </p>
+                    <p className="text-xs text-white/30 capitalize">
+                      {p.format} · {p.impressions.toLocaleString()} impr
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-sm font-bold text-[#4ade80]">
+                      ${p.earnings.toFixed(2)}
+                    </p>
+                    <p className="text-[10px] text-white/30">USDC</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.55 }}
-          className="glass rounded-2xl p-6 border border-white/8"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium text-white/60">
-              Active Placements
-            </h3>
-            <Code1 size={20} color="#a855f7" variant="Bold" />
+        {/* Activity feed */}
+        <div className="rounded-2xl bg-[#0d0d1a] border border-white/8 overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-white/8">
+            <div className="flex items-center gap-2">
+              <Clock size={15} color="#a855f7" />
+              <p className="text-sm font-semibold text-white">
+                Recent Activity
+              </p>
+            </div>
+            <Link
+              href="/publishers/placements"
+              className="text-xs text-[#a855f7] hover:text-[#c084fc] transition-colors"
+            >
+              All placements →
+            </Link>
           </div>
-          <p className="text-2xl font-bold text-white">
-            {publisherMetrics.activePlacements}
-          </p>
-          <p className="text-xs text-white/40 mt-2">
-            Across {publisherMetrics.totalApps} apps
-          </p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.6 }}
-          className="glass rounded-2xl p-6 border border-white/8"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium text-white/60">Fill Rate</h3>
-            <TrendUp size={20} color="#22d3ee" variant="Bold" />
-          </div>
-          <p className="text-2xl font-bold text-white">
-            {publisherMetrics.fillRate}%
-          </p>
-          <p className="text-xs text-white/40 mt-2">
-            +2.3% from last month
-          </p>
-        </motion.div>
+          {activityLoading ? (
+            <div className="p-5 space-y-3">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="animate-pulse flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full bg-white/10 shrink-0" />
+                  <div className="flex-1 space-y-1.5">
+                    <div className="h-3 bg-white/8 rounded w-2/3" />
+                    <div className="h-2 bg-white/5 rounded w-1/3" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : activity.length === 0 ? (
+            <div className="flex items-center justify-center py-10">
+              <p className="text-sm text-white/30">No activity yet</p>
+            </div>
+          ) : (
+            <ul className="p-3 space-y-1">
+              {activity.map((item, i) => (
+                <li
+                  key={String(item.placementId) + i}
+                  className="flex items-start gap-3 px-3 py-2.5 rounded-xl hover:bg-white/3 transition-colors"
+                >
+                  <span className="w-2 h-2 rounded-full mt-1.5 shrink-0 bg-[#4ade80]" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-white/80 truncate">
+                      <span className="font-medium">{item.name}</span>
+                      <span className="text-white/40"> on {item.siteName}</span>
+                    </p>
+                    <p className="text-xs text-white/30 mt-0.5 capitalize">
+                      {item.format} · {timeAgo(item.updatedAt)}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
     </div>
   );

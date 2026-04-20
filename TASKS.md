@@ -7,61 +7,85 @@
 
 ---
 
-## Dashboard Overview
+## Advertiser Dashboard (All Done)
 
-- [x] T01 — Spending velocity chart (daily burn rate across all campaigns)
-- [x] T02 — Budget health indicator (% used per campaign, color-coded)
-- [x] T03 — Recent activity feed (funded, paused, resumed, created events)
-- [x] T04 — Top performing campaigns table (CTR, impressions, clicks)
+- [x] T01–T35 — All advertiser tasks complete
 
-## Campaigns
+---
 
-- [x] T05 — Edit campaign modal (name, description, dates, targetUrl, creativeUrl)
-- [x] T06 — Duplicate campaign
-- [x] T07 — Campaign filter & sort (by status, budget, date created)
-- [x] T08 — Bulk actions (pause all active, delete all drafts)
-- [x] T09 — End date countdown badge on active campaigns
-- [x] T10 — Campaign detail drawer/modal (full stats inline)
+## Publisher Dashboard
 
-## Create Campaign
+### Backend
 
-- [x] T11 — Draft auto-save (persist form to localStorage)
-- [x] T12 — Creative preview (show ad mockup before submit)
-- [x] T13 — Target URL validator (check URL is reachable on blur)
-- [x] T14 — Budget recommendation hint based on format
+- [x] P01 — Fix sites controller: remove hardcoded `temp-publisher-id`, wire real JWT auth
+- [x] P02 — `verifySite` now fetches the URL and checks for the meta tag
+- [x] P03 — `GET /analytics/publisher/activity` — recent placement events feed
+- [x] P04 — `GET /analytics/publisher/top-placements` — top placements by earnings
+- [x] P05 — `GET /analytics/publisher/heatmap` — hourly click heatmap
+- [x] P06 — `GET /analytics/publisher/earnings-chart` — daily earnings time-series
 
-## Analytics
+### API Client
 
-- [x] T15 — Campaign selector dropdown (pick any campaign, not just via URL param)
-- [x] T16 — Top performing campaigns table on analytics page
-- [x] T17 — Export analytics to CSV
-- [x] T18 — Campaign comparison (select two campaigns, side-by-side metrics)
-- [x] T19 — Time-of-day heatmap (best performing hours)
+- [x] P07 — Publisher API methods: sites CRUD, placements CRUD, publisher dashboard, earnings chart, top placements, activity, heatmap, claim earnings
 
-## Wallet
+### Hooks
 
-- [x] T20 — Live SOL → USD price conversion (via CoinGecko API)
-- [x] T21 — Transaction filter (by campaign, date range)
-- [x] T22 — Auto-reload threshold setting (stored in localStorage)
+- [x] P08 — `useSites()`
+- [x] P09 — `usePlacements(siteId?)`
+- [x] P10 — `usePublisherDashboard()`
+- [x] P11 — `usePublisherEarnings()`
+- [x] P12 — `usePublisherActivity()`
+- [x] P13 — `usePublisherTopPlacements()`
 
-## Notifications
+### Publisher Overview Page
 
-- [x] T23 — Mark notification as read / dismiss
-- [x] T24 — Persist dismissed notifications (localStorage)
+- [x] P14 — Real metrics from `usePublisherDashboard()`
+- [x] P15 — Real top placements from `usePublisherTopPlacements()`
+- [x] P16 — Real activity feed from `usePublisherActivity()`
+- [x] P17 — Earnings chart from `usePublisherEarnings()`
 
-## Settings Page
+### Sites Page
 
-- [x] T25 — Settings page scaffold at /dashboard/settings
-- [x] T26 — Edit profile (name, email) — backend: PATCH /auth/profile
-- [x] T27 — Change password — backend: PATCH /auth/password
-- [x] T28 — Notification preferences (budget alert threshold %)
-- [x] T29 — Connected wallet display + link/unlink wallet
-- [x] T30 — Timezone preference (stored in profile, used in analytics dates)
+- [x] P18 — "Add Site" modal wired to `POST /sites`
+- [x] P19 — Real sites list from `useSites()`
+- [x] P20 — Verify button wired to `POST /sites/:id/verify`
+- [x] P21 — Verification code snippet with copy-to-clipboard
+- [x] P22 — Delete site action
+- [x] P23 — Per-site placement count from real data
 
-## Backend
+### Placements Page
 
-- [x] T31 — PATCH /auth/profile endpoint (update name, email, timezone)
-- [x] T32 — PATCH /auth/password endpoint (change password)
-- [x] T33 — GET /analytics/advertiser/activity — recent events feed
-- [x] T34 — GET /analytics/advertiser/top-campaigns scoped to advertiserId
-- [x] T35 — Campaign duplicate endpoint POST /campaigns/:id/duplicate
+- [x] P24 — "New Placement" modal wired to `POST /placements`
+- [x] P25 — Real placements from `usePlacements()`
+- [x] P26 — Real stats per placement (impressions, clicks, CTR, earnings)
+- [x] P27 — Pause/resume placement actions
+- [x] P28 — Delete placement action
+- [x] P29 — Embed code modal with copy-to-clipboard
+
+### Analytics Page
+
+- [x] P30 — Real earnings chart from `usePublisherEarnings()`
+- [x] P31 — Real top performers from `usePublisherTopPlacements()`
+- [x] P32 — Date range selector (7D / 30D / 90D)
+- [x] P33 — Hourly heatmap from `usePublisherHeatmap()`
+- [x] P34 — Export analytics to CSV
+
+### Earnings Page
+
+- [x] P35 — Real summary cards from `usePublisherDashboard()`
+- [x] P36 — Real earnings chart
+- [x] P37 — Avg CPC from real data
+- [x] P38 — "Claim Earnings" button wired to `POST /solana/claim-earnings`
+- [x] P39 — Pending vs claimed breakdown
+
+### Settings Page
+
+- [x] P40 — Profile form wired to `PATCH /auth/profile`
+- [x] P41 — Password change wired to `PATCH /auth/password`
+- [x] P42 — Wallet display with `WalletButton`
+- [x] P43 — Notification preferences in localStorage
+
+### Publisher Nav & Layout
+
+- [x] P44 — `PublisherSidebar` shows real user name/role from `useAuth()`
+- [x] P45 — Logout button in publisher sidebar

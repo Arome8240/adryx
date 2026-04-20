@@ -8,69 +8,55 @@ import {
   Delete,
   UseGuards,
   Request,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UserRole } from '../../common/enums';
 import { SitesService } from './sites.service';
 import { CreateSiteDto } from './dto/create-site.dto';
 import { UpdateSiteDto } from './dto/update-site.dto';
-// import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
-@ApiTags('sites')
 @Controller('sites')
-// @UseGuards(JwtAuthGuard)
-@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(UserRole.PUBLISHER)
 export class SitesController {
   constructor(private readonly sitesService: SitesService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Create a new site/app' })
   create(@Request() req, @Body() createSiteDto: CreateSiteDto) {
-    // const publisherId = req.user.id;
-    const publisherId = 'temp-publisher-id'; // TODO: Get from JWT
-    return this.sitesService.create(publisherId, createSiteDto);
+    return this.sitesService.create(req.user.userId, createSiteDto);
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all sites for the authenticated publisher' })
   findAll(@Request() req) {
-    // const publisherId = req.user.id;
-    const publisherId = 'temp-publisher-id'; // TODO: Get from JWT
-    return this.sitesService.findAll(publisherId);
+    return this.sitesService.findAll(req.user.userId);
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get a specific site by ID' })
   findOne(@Param('id') id: string, @Request() req) {
-    // const publisherId = req.user.id;
-    const publisherId = 'temp-publisher-id'; // TODO: Get from JWT
-    return this.sitesService.findOne(id, publisherId);
+    return this.sitesService.findOne(id, req.user.userId);
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Update a site' })
   update(
     @Param('id') id: string,
     @Request() req,
     @Body() updateSiteDto: UpdateSiteDto,
   ) {
-    // const publisherId = req.user.id;
-    const publisherId = 'temp-publisher-id'; // TODO: Get from JWT
-    return this.sitesService.update(id, publisherId, updateSiteDto);
+    return this.sitesService.update(id, req.user.userId, updateSiteDto);
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete a site' })
+  @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: string, @Request() req) {
-    // const publisherId = req.user.id;
-    const publisherId = 'temp-publisher-id'; // TODO: Get from JWT
-    return this.sitesService.remove(id, publisherId);
+    return this.sitesService.remove(id, req.user.userId);
   }
 
   @Post(':id/verify')
-  @ApiOperation({ summary: 'Verify site ownership' })
   verify(@Param('id') id: string, @Request() req) {
-    // const publisherId = req.user.id;
-    const publisherId = 'temp-publisher-id'; // TODO: Get from JWT
-    return this.sitesService.verifySite(id, publisherId);
+    return this.sitesService.verifySite(id, req.user.userId);
   }
 }

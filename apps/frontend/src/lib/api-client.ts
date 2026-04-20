@@ -137,6 +137,116 @@ class ApiClient {
     );
   }
 
+  // Publisher — Sites
+  async getSites() {
+    return this.request<any[]>("/sites");
+  }
+
+  async createSite(data: {
+    name: string;
+    url: string;
+    type: "website" | "app";
+    category?: string;
+  }) {
+    return this.request<any>("/sites", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateSite(id: string, data: any) {
+    return this.request<any>(`/sites/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteSite(id: string) {
+    return this.request<void>(`/sites/${id}`, { method: "DELETE" });
+  }
+
+  async verifySite(id: string) {
+    return this.request<any>(`/sites/${id}/verify`, { method: "POST" });
+  }
+
+  // Publisher — Placements
+  async getPlacements(siteId?: string) {
+    const q = siteId ? `?siteId=${siteId}` : "";
+    return this.request<any[]>(`/placements${q}`);
+  }
+
+  async createPlacement(data: {
+    name: string;
+    siteId: string;
+    format: string;
+    description?: string;
+  }) {
+    return this.request<any>("/placements", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updatePlacement(id: string, data: any) {
+    return this.request<any>(`/placements/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deletePlacement(id: string) {
+    return this.request<void>(`/placements/${id}`, { method: "DELETE" });
+  }
+
+  async getPlacementCode(id: string) {
+    return this.request<{ code: string }>(`/placements/${id}/code`);
+  }
+
+  async getPlacementStats(id: string) {
+    return this.request<any>(`/placements/${id}/stats`);
+  }
+
+  // Publisher — Analytics
+  async getPublisherDashboard() {
+    return this.request<{
+      totalSites: number;
+      totalPlacements: number;
+      impressions: number;
+      clicks: number;
+      ctr: string;
+      totalEarnings: string;
+    }>("/analytics/publisher/dashboard");
+  }
+
+  async getPublisherActivity(limit = 8) {
+    return this.request<any[]>(`/analytics/publisher/activity?limit=${limit}`);
+  }
+
+  async getPublisherTopPlacements(limit = 10) {
+    return this.request<any[]>(
+      `/analytics/publisher/top-placements?limit=${limit}`,
+    );
+  }
+
+  async getPublisherEarningsChart(days = 30) {
+    return this.request<{ date: string; earnings: number; clicks: number }[]>(
+      `/analytics/publisher/earnings-chart?days=${days}`,
+    );
+  }
+
+  async getPublisherHeatmap(days = 30) {
+    return this.request<{ hour: number; clicks: number }[]>(
+      `/analytics/publisher/heatmap?days=${days}`,
+    );
+  }
+
+  async claimEarnings(publisherWallet: string) {
+    return this.request<{ signature: string }>("/solana/claim-earnings", {
+      method: "POST",
+      body: JSON.stringify({ publisherWallet }),
+    });
+  }
+
   // Campaigns
   async getCampaigns() {
     return this.request<any[]>("/campaigns");

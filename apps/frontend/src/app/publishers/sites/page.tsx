@@ -1,15 +1,97 @@
 "use client";
-import { motion } from "framer-motion";
-import { AddCircle, Global, Mobile, TickCircle, CloseCircle, Copy } from "iconsax-react";
-import { publisherSites } from "@/lib/publisher-mock-data";
 import { useState } from "react";
+import { motion } from "framer-motion";
+import {
+  AddCircle,
+  Global,
+  Mobile,
+  TickCircle,
+  CloseCircle,
+  Copy,
+  Trash,
+} from "iconsax-react";
+import { useSites } from "@/hooks/usePublisher";
+
+const inputCls =
+  "w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-white/20 outline-none focus:border-[#f7931a]/50 transition-colors";
 
 export default function SitesPage() {
+  const { sites, isLoading, createSite, deleteSite, verifySite } = useSites();
   const [showAddModal, setShowAddModal] = useState(false);
-  const [selectedSite, setSelectedSite] = useState<string | null>(null);
+  const [verifyingSite, setVerifyingSite] = useState<any | null>(null);
+  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [form, setForm] = useState({
+    name: "",
+    url: "",
+    type: "website" as "website" | "app",
+    category: "",
+  });
+
+  function showToast(msg: string, ok = true) {
+    setToast({ msg, ok });
+    setTimeout(() => setToast(null), 3500);
+  }
+
+  async function handleCreate(e: React.FormEvent) {
+    e.preventDefault();
+    setIsSaving(true);
+    try {
+      await createSite({
+        name: form.name,
+        url: form.url,
+        type: form.type,
+        category: form.category || undefined,
+      });
+      showToast("Site added successfully");
+      setShowAddModal(false);
+      setForm({ name: "", url: "", type: "website", category: "" });
+    } catch (err: any) {
+      showToast(err.message, false);
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleVerify(site: any) {
+    try {
+      await verifySite(site._id);
+      showToast("Site verified!");
+      setVerifyingSite(null);
+    } catch (err: any) {
+      showToast(err.message, false);
+    }
+  }
+
+  async function handleDelete(id: string) {
+    try {
+      await deleteSite(id);
+      showToast("Site deleted");
+    } catch (err: any) {
+      showToast(err.message, false);
+    }
+  }
 
   return (
     <div className="flex flex-col gap-6 max-w-7xl mx-auto">
+      {/* Toast */}
+      {toast && (
+        <div
+          className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl text-sm font-medium ${
+            toast.ok
+              ? "bg-emerald-400/10 border-emerald-400/20 text-emerald-400"
+              : "bg-[#f87171]/10 border-[#f87171]/20 text-[#f87171]"
+          }`}
+        >
+          {toast.ok ? (
+            <TickCircle size={16} color="currentColor" />
+          ) : (
+            <CloseCircle size={16} color="currentColor" />
+          )}
+          {toast.msg}
+        </div>
+      )}
+
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -18,387 +100,271 @@ export default function SitesPage() {
         className="flex items-center justify-between"
       >
         <div>
-          <h1 className="text-2xl font-bold text-white">Sites & Apps</h1>
-          <p className="text-sm text-white/40 mt-1">
+          <h1 className="text-xl font-bold text-white">Sites & Apps</h1>
+          <p className="text-sm text-white/40 mt-0.5">
             Manage and verify your properties
           </p>
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-[#f7931a] hover:bg-[#f7931a]/90 text-white text-sm font-medium rounded-xl transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-[#f7931a] hover:bg-[#f7931a]/90 text-white text-sm font-semibold rounded-xl transition-colors"
         >
-          <AddCircle size={18} color="#ffffff" variant="Bold" />
+          <AddCircle size={16} color="#ffffff" variant="Bold" />
           Add Site/App
         </button>
       </motion.div>
 
-      {/* Sites Grid */}
-      <div className="grid grid-cols-1 gap-4">
-        {publisherSites.map((site, i) => (
-          <motion.div
-            key={site.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: i * 0.08 }}
-            className="glass rounded-2xl p-6 border border-white/8 hover:border-white/12 transition-colors"
+      {/* Sites list */}
+      {isLoading ? (
+        <div className="space-y-3">
+          {[...Array(3)].map((_, i) => (
+            <div
+              key={i}
+              className="rounded-2xl bg-[#0d0d1a] border border-white/8 p-5 animate-pulse"
+            >
+              <div className="h-4 bg-white/10 rounded w-1/3 mb-2" />
+              <div className="h-3 bg-white/5 rounded w-1/2" />
+            </div>
+          ))}
+        </div>
+      ) : sites.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 rounded-2xl border border-dashed border-white/10 gap-3">
+          <Global size={28} color="#f7931a" />
+          <p className="text-white font-semibold">No sites yet</p>
+          <p className="text-sm text-white/40">
+            Add your first site or app to start monetizing
+          </p>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-[#f7931a] hover:bg-[#f7931a]/90 text-white text-sm font-semibold rounded-xl transition-colors mt-2"
           >
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-start gap-4 flex-1">
-                {/* Icon */}
-                <div
-                  className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                    site.type === "website"
-                      ? "bg-[#a855f7]/10"
-                      : "bg-[#22d3ee]/10"
-                  }`}
-                >
-                  {site.type === "website" ? (
-                    <Global size={24} color="#a855f7" variant="Bold" />
-                  ) : (
-                    <Mobile size={24} color="#22d3ee" variant="Bold" />
-                  )}
-                </div>
-
-                {/* Info */}
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-lg font-semibold text-white">
-                      {site.name}
-                    </h3>
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium ${
-                        site.verified
-                          ? "bg-[#4ade80]/10 text-[#4ade80]"
-                          : "bg-[#f7931a]/10 text-[#f7931a]"
-                      }`}
-                    >
-                      {site.verified ? (
-                        <>
-                          <TickCircle size={14} color="#4ade80" variant="Bold" />
-                          Verified
-                        </>
-                      ) : (
-                        <>
-                          <CloseCircle size={14} color="#f7931a" variant="Bold" />
-                          Pending Verification
-                        </>
-                      )}
-                    </span>
-                  </div>
-                  <p className="text-sm text-white/60 mb-3">{site.url}</p>
-                  <div className="flex items-center gap-4 text-xs text-white/40">
-                    <span>Added: {site.addedDate}</span>
-                    {site.verified && (
-                      <span>Verified: {site.verifiedDate}</span>
+            <AddCircle size={15} color="white" /> Add Site
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {sites.map((site, i) => (
+            <motion.div
+              key={site._id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: i * 0.06 }}
+              className="rounded-2xl bg-[#0d0d1a] border border-white/8 p-5 hover:border-white/15 transition-colors"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-4 flex-1 min-w-0">
+                  <div
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                      site.type === "website"
+                        ? "bg-[#a855f7]/15"
+                        : "bg-[#22d3ee]/15"
+                    }`}
+                  >
+                    {site.type === "website" ? (
+                      <Global size={20} color="#a855f7" variant="Bold" />
+                    ) : (
+                      <Mobile size={20} color="#22d3ee" variant="Bold" />
                     )}
                   </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-sm font-semibold text-white">
+                        {site.name}
+                      </h3>
+                      {site.verified ? (
+                        <span className="flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-400/10 text-emerald-400 border border-emerald-400/20">
+                          <TickCircle size={10} color="currentColor" /> Verified
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-yellow-400/10 text-yellow-400 border border-yellow-400/20">
+                          Unverified
+                        </span>
+                      )}
+                      <span className="text-[10px] text-white/30 capitalize px-2 py-0.5 rounded-full bg-white/5">
+                        {site.type}
+                      </span>
+                    </div>
+                    <p className="text-xs text-white/40 mt-0.5 truncate">
+                      {site.url}
+                    </p>
+                    {site.category && (
+                      <p className="text-xs text-white/30 mt-0.5 capitalize">
+                        {site.category}
+                      </p>
+                    )}
+                    <p className="text-xs text-white/30 mt-1">
+                      {site.placements?.length ?? 0} placement
+                      {(site.placements?.length ?? 0) !== 1 ? "s" : ""}
+                    </p>
+                  </div>
                 </div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex gap-2">
-                {!site.verified && (
+                <div className="flex items-center gap-2 shrink-0">
+                  {!site.verified && (
+                    <button
+                      onClick={() => setVerifyingSite(site)}
+                      className="px-3 py-1.5 rounded-lg bg-[#f7931a]/15 hover:bg-[#f7931a]/25 text-[#f7931a] text-xs font-semibold transition-colors"
+                    >
+                      Verify
+                    </button>
+                  )}
                   <button
-                    onClick={() => setSelectedSite(site.id)}
-                    className="px-3 py-1.5 text-xs font-medium rounded-lg bg-[#f7931a]/15 text-[#f7931a] hover:bg-[#f7931a]/25 transition-colors"
+                    onClick={() => handleDelete(site._id)}
+                    className="p-1.5 rounded-lg bg-[#f87171]/10 hover:bg-[#f87171]/20 text-[#f87171] transition-colors"
                   >
-                    Verify Now
+                    <Trash size={14} color="currentColor" />
                   </button>
-                )}
-                <button className="px-3 py-1.5 text-xs font-medium rounded-lg bg-white/5 text-white/60 hover:bg-white/8 transition-colors">
-                  Settings
-                </button>
-              </div>
-            </div>
-
-            {/* Stats */}
-            {site.verified && (
-              <div className="grid grid-cols-4 gap-4 pt-4 border-t border-white/5">
-                <div>
-                  <p className="text-xs text-white/40 mb-1">Placements</p>
-                  <p className="text-lg font-semibold text-white">
-                    {site.stats.placements}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-white/40 mb-1">Impressions</p>
-                  <p className="text-lg font-semibold text-white">
-                    {(site.stats.impressions / 1000).toFixed(0)}K
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-white/40 mb-1">Clicks</p>
-                  <p className="text-lg font-semibold text-white">
-                    {(site.stats.clicks / 1000).toFixed(1)}K
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-white/40 mb-1">Earnings</p>
-                  <p className="text-lg font-semibold text-[#4ade80]">
-                    ${site.stats.earnings.toLocaleString()}
-                  </p>
                 </div>
               </div>
-            )}
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Verification Modal */}
-      {selectedSite && (
-        <VerificationModal
-          site={publisherSites.find((s) => s.id === selectedSite)!}
-          onClose={() => setSelectedSite(null)}
-        />
+            </motion.div>
+          ))}
+        </div>
       )}
 
-      {/* Add Site Modal */}
-      {showAddModal && <AddSiteModal onClose={() => setShowAddModal(false)} />}
-    </div>
-  );
-}
-
-function VerificationModal({
-  site,
-  onClose,
-}: {
-  site: any;
-  onClose: () => void;
-}) {
-  const [copied, setCopied] = useState(false);
-  const metaTag = `<meta name="adryx-site-verification" content="${site.verificationCode}" />`;
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(metaTag);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="glass rounded-2xl p-6 border border-white/8 max-w-2xl w-full"
-      >
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-white">Verify {site.name}</h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-white/5 rounded-lg transition-colors"
-          >
-            <CloseCircle size={20} color="#ffffff" />
-          </button>
-        </div>
-
-        <div className="space-y-6">
-          {/* Step 1 */}
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-6 h-6 rounded-full bg-[#4ade80]/10 flex items-center justify-center text-[#4ade80] text-xs font-bold">
-                1
+      {/* Add site modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowAddModal(false)}
+          />
+          <div className="relative w-full max-w-md rounded-2xl bg-[#13131f] border border-white/10 shadow-2xl p-6">
+            <h2 className="text-base font-bold text-white mb-5">
+              Add Site or App
+            </h2>
+            <form onSubmit={handleCreate} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-white/40 uppercase tracking-wider mb-1.5">
+                  Name
+                </label>
+                <input
+                  value={form.name}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, name: e.target.value }))
+                  }
+                  required
+                  placeholder="My Website"
+                  className={inputCls}
+                />
               </div>
-              <h3 className="text-sm font-semibold text-white">
-                Add Meta Tag to Your Site
-              </h3>
-            </div>
-            <p className="text-sm text-white/60 mb-3 ml-8">
-              Copy the meta tag below and paste it in the{" "}
-              <code className="px-1.5 py-0.5 bg-white/5 rounded text-[#4ade80]">
-                &lt;head&gt;
-              </code>{" "}
-              section of your website's HTML.
+              <div>
+                <label className="block text-xs font-semibold text-white/40 uppercase tracking-wider mb-1.5">
+                  URL
+                </label>
+                <input
+                  type="url"
+                  value={form.url}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, url: e.target.value }))
+                  }
+                  required
+                  placeholder="https://mysite.com"
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-white/40 uppercase tracking-wider mb-1.5">
+                  Type
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {(["website", "app"] as const).map((t) => (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => setForm((p) => ({ ...p, type: t }))}
+                      className={`px-3 py-2 rounded-xl border text-sm capitalize transition-all ${
+                        form.type === t
+                          ? "border-[#f7931a]/50 bg-[#f7931a]/8 text-[#f7931a]"
+                          : "border-white/8 text-white/50 hover:border-white/15"
+                      }`}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-white/40 uppercase tracking-wider mb-1.5">
+                  Category (optional)
+                </label>
+                <input
+                  value={form.category}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, category: e.target.value }))
+                  }
+                  placeholder="e.g. DeFi, Gaming, News"
+                  className={inputCls}
+                />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  disabled={isSaving}
+                  className="flex-1 px-4 py-2.5 rounded-xl border border-white/10 text-white/60 text-sm hover:bg-white/5 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSaving}
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-[#f7931a] hover:bg-[#f7931a]/90 text-white text-sm font-semibold disabled:opacity-40 transition-colors"
+                >
+                  {isSaving ? "Adding…" : "Add Site"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Verify modal — P20/P21 */}
+      {verifyingSite && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setVerifyingSite(null)}
+          />
+          <div className="relative w-full max-w-lg rounded-2xl bg-[#13131f] border border-white/10 shadow-2xl p-6">
+            <h2 className="text-base font-bold text-white mb-1">
+              Verify {verifyingSite.name}
+            </h2>
+            <p className="text-xs text-white/40 mb-5">
+              Add this meta tag to the{" "}
+              <code className="text-[#a855f7]">&lt;head&gt;</code> of your site,
+              then click Verify.
             </p>
-            <div className="ml-8 relative">
-              <pre className="bg-[#0d0d1a] rounded-xl p-4 text-sm text-white/80 overflow-x-auto border border-white/5">
-                <code>{metaTag}</code>
+            <div className="relative mb-5">
+              <pre className="text-xs text-[#4ade80] bg-white/5 border border-white/10 rounded-xl p-4 overflow-x-auto whitespace-pre-wrap break-all">
+                {`<meta name="adryx:verification" content="${verifyingSite.verificationCode}">`}
               </pre>
               <button
-                onClick={handleCopy}
-                className="absolute top-3 right-3 flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg bg-white/5 text-white/60 hover:bg-white/8 transition-colors"
+                onClick={() =>
+                  navigator.clipboard.writeText(
+                    `<meta name="adryx:verification" content="${verifyingSite.verificationCode}">`,
+                  )
+                }
+                className="absolute top-2 right-2 p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
               >
-                <Copy size={14} color="#22d3ee" />
-                {copied ? "Copied!" : "Copy"}
+                <Copy size={13} color="#ffffff80" />
               </button>
             </div>
-          </div>
-
-          {/* Step 2 */}
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-6 h-6 rounded-full bg-[#4ade80]/10 flex items-center justify-center text-[#4ade80] text-xs font-bold">
-                2
-              </div>
-              <h3 className="text-sm font-semibold text-white">
-                Verify Your Site
-              </h3>
-            </div>
-            <p className="text-sm text-white/60 mb-3 ml-8">
-              Once you've added the meta tag, click the button below to verify
-              your site. This usually takes a few seconds.
-            </p>
-            <div className="ml-8">
-              <button className="px-4 py-2.5 bg-[#4ade80] hover:bg-[#4ade80]/90 text-white text-sm font-medium rounded-xl transition-colors">
-                Verify Site
-              </button>
-            </div>
-          </div>
-
-          {/* Alternative Method */}
-          <div className="pt-4 border-t border-white/5">
-            <h3 className="text-sm font-semibold text-white mb-2">
-              Alternative: DNS Verification
-            </h3>
-            <p className="text-sm text-white/60 mb-3">
-              Add a TXT record to your domain's DNS settings:
-            </p>
-            <div className="bg-[#0d0d1a] rounded-xl p-4 border border-white/5">
-              <div className="grid grid-cols-3 gap-4 text-sm">
-                <div>
-                  <p className="text-white/40 mb-1">Type</p>
-                  <p className="text-white font-mono">TXT</p>
-                </div>
-                <div>
-                  <p className="text-white/40 mb-1">Name</p>
-                  <p className="text-white font-mono">@</p>
-                </div>
-                <div>
-                  <p className="text-white/40 mb-1">Value</p>
-                  <p className="text-white font-mono text-xs">
-                    adryx-verification={site.verificationCode}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-    </div>
-  );
-}
-
-function AddSiteModal({ onClose }: { onClose: () => void }) {
-  const [siteType, setSiteType] = useState<"website" | "app">("website");
-
-  return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="glass rounded-2xl p-6 border border-white/8 max-w-lg w-full"
-      >
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-white">Add New Site/App</h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-white/5 rounded-lg transition-colors"
-          >
-            <CloseCircle size={20} color="#ffffff" />
-          </button>
-        </div>
-
-        <div className="space-y-4">
-          {/* Type Selection */}
-          <div>
-            <label className="block text-sm font-medium text-white/60 mb-2">
-              Property Type
-            </label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="flex gap-3">
               <button
-                onClick={() => setSiteType("website")}
-                className={`p-4 rounded-xl border transition-colors ${
-                  siteType === "website"
-                    ? "bg-[#a855f7]/10 border-[#a855f7]/50"
-                    : "bg-white/3 border-white/5 hover:bg-white/5"
-                }`}
+                onClick={() => setVerifyingSite(null)}
+                className="flex-1 px-4 py-2.5 rounded-xl border border-white/10 text-white/60 text-sm hover:bg-white/5 transition-colors"
               >
-                <Global
-                  size={24}
-                  color={siteType === "website" ? "#a855f7" : "#ffffff40"}
-                  variant={siteType === "website" ? "Bold" : "Linear"}
-                />
-                <p className="text-sm font-medium text-white mt-2">Website</p>
+                Cancel
               </button>
               <button
-                onClick={() => setSiteType("app")}
-                className={`p-4 rounded-xl border transition-colors ${
-                  siteType === "app"
-                    ? "bg-[#22d3ee]/10 border-[#22d3ee]/50"
-                    : "bg-white/3 border-white/5 hover:bg-white/5"
-                }`}
+                onClick={() => handleVerify(verifyingSite)}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-[#f7931a] hover:bg-[#f7931a]/90 text-white text-sm font-semibold transition-colors"
               >
-                <Mobile
-                  size={24}
-                  color={siteType === "app" ? "#22d3ee" : "#ffffff40"}
-                  variant={siteType === "app" ? "Bold" : "Linear"}
-                />
-                <p className="text-sm font-medium text-white mt-2">
-                  Mobile App
-                </p>
+                Verify Now
               </button>
             </div>
           </div>
-
-          {/* Name */}
-          <div>
-            <label className="block text-sm font-medium text-white/60 mb-2">
-              {siteType === "website" ? "Site Name" : "App Name"}
-            </label>
-            <input
-              type="text"
-              placeholder={
-                siteType === "website" ? "My Awesome Site" : "My Awesome App"
-              }
-              className="w-full px-4 py-2.5 bg-white/5 border border-white/8 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:border-[#4ade80]/50 transition-colors"
-            />
-          </div>
-
-          {/* URL/Package */}
-          <div>
-            <label className="block text-sm font-medium text-white/60 mb-2">
-              {siteType === "website" ? "Website URL" : "Package Name"}
-            </label>
-            <input
-              type="text"
-              placeholder={
-                siteType === "website"
-                  ? "https://example.com"
-                  : "com.example.app"
-              }
-              className="w-full px-4 py-2.5 bg-white/5 border border-white/8 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:border-[#4ade80]/50 transition-colors"
-            />
-          </div>
-
-          {/* Category */}
-          <div>
-            <label className="block text-sm font-medium text-white/60 mb-2">
-              Category
-            </label>
-            <select className="w-full px-4 py-2.5 bg-white/5 border border-white/8 rounded-xl text-white focus:outline-none focus:border-[#4ade80]/50 transition-colors">
-              <option>Technology</option>
-              <option>Finance</option>
-              <option>Gaming</option>
-              <option>News</option>
-              <option>Entertainment</option>
-              <option>Education</option>
-              <option>Other</option>
-            </select>
-          </div>
-
-          {/* Actions */}
-          <div className="flex gap-3 pt-4">
-            <button
-              onClick={onClose}
-              className="flex-1 px-4 py-2.5 bg-white/5 hover:bg-white/8 text-white text-sm font-medium rounded-xl transition-colors"
-            >
-              Cancel
-            </button>
-            <button className="flex-1 px-4 py-2.5 bg-[#f7931a] hover:bg-[#f7931a]/90 text-white text-sm font-medium rounded-xl transition-colors">
-              Add Property
-            </button>
-          </div>
         </div>
-      </motion.div>
+      )}
     </div>
   );
 }

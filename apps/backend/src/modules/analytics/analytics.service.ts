@@ -138,6 +138,118 @@ export class AnalyticsService {
     };
   }
 
+  async getPublisherActivity(publisherId: string, limit = 8) {
+    const placements = await this.placementModel
+      .find({ publisherId })
+      .sort({ updatedAt: -1 })
+      .limit(limit)
+      .populate('site')
+      .lean();
+
+    return placements.map((p: any) => ({
+      placementId: p._id,
+      name: p.name,
+      format: p.format,
+      siteName: p.site?.name ?? 'Unknown',
+      updatedAt: p.updatedAt,
+    }));
+  }
+
+  async getPublisherTopPlacements(publisherId: string, limit = 10) {
+    const placements = await this.placementModel.find({ publisherId });
+
+    const stats = await Promise.all(
+      placements.map(async (p) => {
+        const impressions = await this.interactionModel.countDocuments({
+          placementId: p._id,
+          type: 'impression',
+        });
+        const clicks = await this.interactionModel.countDocuments({
+          placementId: p._id,
+          type: 'click',
+        });
+        const clickDocs = await this.interactionModel.find({
+          placementId: p._id,
+          type: 'click',
+        });
+        const earnings = clickDocs.reduce((s, i) => s + (i.reward || 0), 0);
+        const ctr = impressions > 0 ? (clicks / impressions) * 100 : 0;
+        return {
+          placementId: p._id,
+          name: p.name,
+          format: p.format,
+          impressions,
+          clicks,
+          ctr: parseFloat(ctr.toFixed(2)),
+          earnings: parseFloat(earnings.toFixed(4)),
+        };
+      }),
+    );
+
+    return stats.sort((a, b) => b.earnings - a.earnings).slice(0, limit);
+  }
+
+  async getPublisherEarningsChart(publisherId: string, days = 30) {
+    const placements = await this.placementModel.find({ publisherId });
+    const placementIds = placements.map((p) => p._id);
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    const result = await this.interactionModel.aggregate([
+      {
+        $match: {
+          placementId: { $in: placementIds },
+          type: 'click',
+          createdAt: { $gte: startDate },
+        },
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+          earnings: { $sum: '$reward' },
+          clicks: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    return result.map((r: any) => ({
+      date: r._id,
+      earnings: r.earnings,
+      clicks: r.clicks,
+    }));
+  }
+
+  async getPublisherHourlyHeatmap(publisherId: string, days = 30) {
+    const placements = await this.placementModel.find({ publisherId });
+    const placementIds = placements.map((p) => p._id);
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    const result = await this.interactionModel.aggregate([
+      {
+        $match: {
+          placementId: { $in: placementIds },
+          type: 'click',
+          createdAt: { $gte: startDate },
+        },
+      },
+      {
+        $group: { _id: { hour: { $hour: '$createdAt' } }, clicks: { $sum: 1 } },
+      },
+      { $sort: { '_id.hour': 1 } },
+    ]);
+
+    const byHour: Record<number, number> = {};
+    result.forEach((r: any) => {
+      byHour[r._id.hour] = r.clicks;
+    });
+    return Array.from({ length: 24 }, (_, h) => ({
+      hour: h,
+      clicks: byHour[h] ?? 0,
+    }));
+  }
+
   async getCampaignAnalytics(campaignId: string, days: number = 30) {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);

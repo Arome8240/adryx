@@ -1,13 +1,54 @@
 "use client";
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { Eye, MouseCircle, DollarCircle, TrendUp } from "iconsax-react";
+import {
+  Eye,
+  MouseCircle,
+  DollarCircle,
+  TrendUp,
+  Calendar,
+  DocumentDownload,
+  Flash,
+} from "iconsax-react";
 import PerformanceChart from "@/components/dashboard/PerformanceChart";
-import { publisherEarningsData, publisherPlacements } from "@/lib/publisher-mock-data";
+import {
+  usePublisherDashboard,
+  usePublisherEarnings,
+  usePublisherTopPlacements,
+  usePublisherHeatmap,
+} from "@/hooks/usePublisher";
 
-export default function AnalyticsPage() {
-  const topPerformers = [...publisherPlacements]
-    .sort((a, b) => b.earnings - a.earnings)
-    .slice(0, 3);
+const ranges = [
+  { label: "7D", days: 7 },
+  { label: "30D", days: 30 },
+  { label: "90D", days: 90 },
+];
+
+function exportCSV(data: any[], filename: string) {
+  if (!data.length) return;
+  const headers = Object.keys(data[0]);
+  const rows = data.map((row) =>
+    headers.map((h) => JSON.stringify(row[h] ?? "")).join(","),
+  );
+  const csv = [headers.join(","), ...rows].join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+export default function PublisherAnalyticsPage() {
+  const [rangeIdx, setRangeIdx] = useState(1);
+  const days = ranges[rangeIdx].days;
+
+  const { dashboard } = usePublisherDashboard();
+  const { earningsChart, isLoading: chartLoading } = usePublisherEarnings(days);
+  const { topPlacements, isLoading: topLoading } =
+    usePublisherTopPlacements(10);
+  const { heatmap, isLoading: heatmapLoading } = usePublisherHeatmap(days);
 
   return (
     <div className="flex flex-col gap-6 max-w-7xl mx-auto">
@@ -19,216 +60,287 @@ export default function AnalyticsPage() {
         className="flex items-center justify-between"
       >
         <div>
-          <h1 className="text-2xl font-bold text-white">Analytics</h1>
-          <p className="text-sm text-white/40 mt-1">
+          <h1 className="text-xl font-bold text-white">Analytics</h1>
+          <p className="text-sm text-white/40 mt-0.5">
             Deep dive into your performance metrics
           </p>
         </div>
-        <div className="flex gap-2">
-          <button className="px-3 py-1.5 text-xs font-medium rounded-lg bg-[#4ade80]/15 text-[#4ade80]">
-            30 Days
-          </button>
-          <button className="px-3 py-1.5 text-xs font-medium rounded-lg bg-white/5 text-white/40 hover:bg-white/8 transition-colors">
-            90 Days
-          </button>
-          <button className="px-3 py-1.5 text-xs font-medium rounded-lg bg-white/5 text-white/40 hover:bg-white/8 transition-colors">
-            1 Year
-          </button>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 glass rounded-xl p-1 border border-white/8">
+            <Calendar size={16} color="#4ade80" className="ml-2" />
+            {ranges.map((r, i) => (
+              <button
+                key={r.label}
+                onClick={() => setRangeIdx(i)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  rangeIdx === i
+                    ? "bg-[#4ade80]/20 text-[#4ade80]"
+                    : "text-white/40 hover:text-white"
+                }`}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
+          {earningsChart.length > 0 && (
+            <button
+              onClick={() =>
+                exportCSV(
+                  earningsChart,
+                  `publisher-analytics-${ranges[rangeIdx].label}.csv`,
+                )
+              }
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/8 text-white/60 hover:text-white text-xs font-medium transition-colors"
+            >
+              <DocumentDownload size={14} color="currentColor" /> Export
+            </button>
+          )}
         </div>
       </motion.div>
 
-      {/* Multi-metric Chart */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.1 }}
-        className="glass rounded-2xl p-6 border border-white/8"
-      >
-        <div className="mb-6">
-          <h2 className="text-base font-semibold text-white">
-            Performance Overview
-          </h2>
-          <p className="text-xs text-white/40 mt-0.5">
-            Earnings and impressions over time
-          </p>
+      {/* Metric cards */}
+      {dashboard && (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {[
+            {
+              label: "Total Earnings",
+              value: `$${parseFloat(dashboard.totalEarnings).toFixed(2)}`,
+              icon: <DollarCircle size={16} color="#4ade80" />,
+              accent: "#4ade80",
+            },
+            {
+              label: "Impressions",
+              value: dashboard.impressions.toLocaleString(),
+              icon: <Eye size={16} color="#a855f7" />,
+              accent: "#a855f7",
+            },
+            {
+              label: "Clicks",
+              value: dashboard.clicks.toLocaleString(),
+              icon: <MouseCircle size={16} color="#22d3ee" />,
+              accent: "#22d3ee",
+            },
+            {
+              label: "CTR",
+              value: `${dashboard.ctr}%`,
+              icon: <TrendUp size={16} color="#f7931a" />,
+              accent: "#f7931a",
+            },
+          ].map((s) => (
+            <div
+              key={s.label}
+              className="rounded-2xl bg-[#0d0d1a] border border-white/8 p-5"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-semibold text-white/40 uppercase tracking-wider">
+                  {s.label}
+                </p>
+                <div
+                  className="w-8 h-8 rounded-xl flex items-center justify-center"
+                  style={{ backgroundColor: `${s.accent}18` }}
+                >
+                  {s.icon}
+                </div>
+              </div>
+              <p className="text-2xl font-bold text-white">{s.value}</p>
+            </div>
+          ))}
         </div>
-        <PerformanceChart
-          data={publisherEarningsData}
-          lines={[
-            { key: "earnings", color: "#4ade80", label: "Earnings ($)" },
-            { key: "impressions", color: "#a855f7", label: "Impressions (K)" },
-          ]}
-        />
-      </motion.div>
+      )}
 
-      {/* Top Performers */}
+      {/* Earnings chart */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.2 }}
         className="glass rounded-2xl p-6 border border-white/8"
       >
-        <h2 className="text-base font-semibold text-white mb-4">
-          Top Performing Placements
-        </h2>
-        <div className="space-y-4">
-          {topPerformers.map((placement, i) => (
-            <div
-              key={placement.id}
-              className="flex items-center justify-between p-4 rounded-xl bg-white/3 border border-white/5"
-            >
-              <div className="flex items-center gap-4">
-                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#4ade80]/10 text-[#4ade80] font-bold text-sm">
-                  #{i + 1}
-                </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-white">
-                    {placement.name}
-                  </h3>
-                  <p className="text-xs text-white/40">{placement.location}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-6">
-                <div className="text-right">
-                  <p className="text-xs text-white/40">Impressions</p>
-                  <p className="text-sm font-medium text-white">
-                    {(placement.impressions / 1000).toFixed(0)}K
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-white/40">CTR</p>
-                  <p className="text-sm font-medium text-white">
-                    {((placement.clicks / placement.impressions) * 100).toFixed(2)}%
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-white/40">Earnings</p>
-                  <p className="text-sm font-medium text-[#4ade80]">
-                    ${placement.earnings.toLocaleString()}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ))}
+        <div className="flex items-center gap-2 mb-1">
+          <TrendUp size={18} color="#4ade80" variant="Bold" />
+          <h3 className="text-base font-semibold text-white">
+            Earnings Over Time
+          </h3>
         </div>
+        <p className="text-xs text-white/30 mb-5 ml-6">Daily USDC earnings</p>
+        {chartLoading ? (
+          <div className="h-56 bg-white/5 rounded animate-pulse" />
+        ) : earningsChart.length === 0 ? (
+          <div className="h-56 flex items-center justify-center">
+            <p className="text-sm text-white/30">
+              No earnings data for this period.
+            </p>
+          </div>
+        ) : (
+          <PerformanceChart
+            data={earningsChart}
+            lines={[
+              { key: "earnings", color: "#4ade80", label: "Earnings (USDC)" },
+              { key: "clicks", color: "#22d3ee", label: "Clicks" },
+            ]}
+            height={240}
+          />
+        )}
       </motion.div>
 
-      {/* Metrics Breakdown */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.3 }}
-          className="glass rounded-2xl p-6 border border-white/8"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium text-white/60">
-              Avg. Impressions/Day
-            </h3>
-            <Eye size={20} color="#a855f7" variant="Bold" />
-          </div>
-          <p className="text-2xl font-bold text-white">44.3K</p>
-          <div className="flex items-center gap-1.5 mt-2">
-            <TrendUp size={14} color="#4ade80" variant="Bold" />
-            <span className="text-xs text-[#4ade80] font-medium">+12.4%</span>
-            <span className="text-xs text-white/40">vs last period</span>
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.35 }}
-          className="glass rounded-2xl p-6 border border-white/8"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium text-white/60">
-              Avg. Clicks/Day
-            </h3>
-            <MouseCircle size={20} color="#22d3ee" variant="Bold" />
-          </div>
-          <p className="text-2xl font-bold text-white">1.6K</p>
-          <div className="flex items-center gap-1.5 mt-2">
-            <TrendUp size={14} color="#4ade80" variant="Bold" />
-            <span className="text-xs text-[#4ade80] font-medium">+9.8%</span>
-            <span className="text-xs text-white/40">vs last period</span>
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.4 }}
-          className="glass rounded-2xl p-6 border border-white/8"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium text-white/60">
-              Avg. Earnings/Day
-            </h3>
-            <DollarCircle size={20} color="#4ade80" variant="Bold" />
-          </div>
-          <p className="text-2xl font-bold text-white">$262</p>
-          <div className="flex items-center gap-1.5 mt-2">
-            <TrendUp size={14} color="#4ade80" variant="Bold" />
-            <span className="text-xs text-[#4ade80] font-medium">+18.2%</span>
-            <span className="text-xs text-white/40">vs last period</span>
-          </div>
-        </motion.div>
-      </div>
-
-      {/* Format Performance */}
+      {/* Heatmap */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.45 }}
+        transition={{ duration: 0.4, delay: 0.3 }}
         className="glass rounded-2xl p-6 border border-white/8"
       >
-        <h2 className="text-base font-semibold text-white mb-4">
-          Performance by Format
-        </h2>
-        <div className="space-y-3">
-          {[
-            { format: "Banner", impressions: 730000, earnings: 3580, color: "#f7931a" },
-            { format: "Native", impressions: 320000, earnings: 1890, color: "#a855f7" },
-            { format: "Video", impressions: 195000, earnings: 1620, color: "#22d3ee" },
-            { format: "Interstitial", impressions: 85000, earnings: 780, color: "#4ade80" },
-          ].map((item) => (
-            <div
-              key={item.format}
-              className="flex items-center justify-between p-3 rounded-xl bg-white/3 border border-white/5"
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: item.color }}
-                />
-                <span className="text-sm font-medium text-white">
-                  {item.format}
-                </span>
-              </div>
-              <div className="flex items-center gap-6">
-                <div className="text-right">
-                  <p className="text-xs text-white/40">Impressions</p>
-                  <p className="text-sm font-medium text-white">
-                    {(item.impressions / 1000).toFixed(0)}K
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-white/40">Earnings</p>
-                  <p className="text-sm font-medium text-[#4ade80]">
-                    ${item.earnings.toLocaleString()}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-white/40">eCPM</p>
-                  <p className="text-sm font-medium text-white">
-                    ${((item.earnings / item.impressions) * 1000).toFixed(2)}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ))}
+        <div className="flex items-center gap-2 mb-1">
+          <Flash size={18} color="#22d3ee" variant="Bold" />
+          <h3 className="text-base font-semibold text-white">
+            Best Hours for Clicks
+          </h3>
         </div>
+        <p className="text-xs text-white/30 mb-5 ml-6">
+          Click volume by hour of day (UTC)
+        </p>
+        {heatmapLoading ? (
+          <div className="h-16 bg-white/5 rounded animate-pulse" />
+        ) : heatmap.every((h) => h.clicks === 0) ? (
+          <p className="text-sm text-white/30 text-center py-6">
+            No click data yet.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            <div className="flex gap-1">
+              {heatmap.map(({ hour, clicks }) => {
+                const max = Math.max(...heatmap.map((h) => h.clicks), 1);
+                const intensity = clicks / max;
+                const bg =
+                  intensity === 0
+                    ? "bg-white/5"
+                    : intensity < 0.33
+                      ? "bg-[#22d3ee]/30"
+                      : intensity < 0.66
+                        ? "bg-[#4ade80]/50"
+                        : "bg-[#4ade80]/80";
+                return (
+                  <div
+                    key={hour}
+                    title={`${hour}:00 — ${clicks} clicks`}
+                    className={`flex-1 h-10 rounded-md ${bg} cursor-default`}
+                  />
+                );
+              })}
+            </div>
+            <div className="flex justify-between text-[10px] text-white/20 px-0.5">
+              <span>12am</span>
+              <span>6am</span>
+              <span>12pm</span>
+              <span>6pm</span>
+              <span>11pm</span>
+            </div>
+          </div>
+        )}
+      </motion.div>
+
+      {/* Top placements table */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.4 }}
+        className="glass rounded-2xl border border-white/8 overflow-hidden"
+      >
+        <div className="flex items-center justify-between px-6 py-4 border-b border-white/8">
+          <div className="flex items-center gap-2">
+            <Flash size={15} color="#4ade80" />
+            <h3 className="text-base font-semibold text-white">
+              Top Performing Placements
+            </h3>
+          </div>
+          {topPlacements.length > 0 && (
+            <button
+              onClick={() =>
+                exportCSV(
+                  topPlacements.map((p) => ({
+                    name: p.name,
+                    format: p.format,
+                    impressions: p.impressions,
+                    clicks: p.clicks,
+                    ctr: p.ctr,
+                    earnings: p.earnings,
+                  })),
+                  "top-placements.csv",
+                )
+              }
+              className="flex items-center gap-1.5 text-xs text-white/30 hover:text-white/60 transition-colors"
+            >
+              <DocumentDownload size={13} color="currentColor" /> Export
+            </button>
+          )}
+        </div>
+        {topLoading ? (
+          <div className="p-6 space-y-3">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="animate-pulse h-3 bg-white/8 rounded" />
+            ))}
+          </div>
+        ) : topPlacements.length === 0 ? (
+          <div className="flex items-center justify-center py-12">
+            <p className="text-sm text-white/30">No placement data yet</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/5">
+                  {[
+                    "#",
+                    "Placement",
+                    "Format",
+                    "Impressions",
+                    "Clicks",
+                    "CTR",
+                    "Earnings",
+                  ].map((h) => (
+                    <th
+                      key={h}
+                      className="px-5 py-3 text-left text-xs font-medium text-white/30 uppercase tracking-wider whitespace-nowrap"
+                    >
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {topPlacements.map((p, i) => (
+                  <tr
+                    key={String(p.placementId)}
+                    className={`border-b border-white/5 hover:bg-white/3 transition-colors ${i % 2 !== 0 ? "bg-white/1" : ""}`}
+                  >
+                    <td className="px-5 py-3.5 text-white/20 font-bold text-xs">
+                      {i + 1}
+                    </td>
+                    <td className="px-5 py-3.5 font-medium text-white max-w-[160px] truncate">
+                      {p.name}
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/5 text-white/40 capitalize">
+                        {p.format}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3.5 text-white/60 tabular-nums">
+                      {p.impressions.toLocaleString()}
+                    </td>
+                    <td className="px-5 py-3.5 text-white/60 tabular-nums">
+                      {p.clicks.toLocaleString()}
+                    </td>
+                    <td className="px-5 py-3.5 font-bold text-[#22d3ee] tabular-nums">
+                      {p.ctr.toFixed(2)}%
+                    </td>
+                    <td className="px-5 py-3.5 font-bold text-[#4ade80] tabular-nums">
+                      ${p.earnings.toFixed(4)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </motion.div>
     </div>
   );
