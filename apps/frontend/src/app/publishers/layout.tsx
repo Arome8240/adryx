@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import PublisherSidebar from "@/components/publishers/PublisherSidebar";
 import PublisherNav from "@/components/publishers/PublisherNav";
+import { WalletProvider } from "@/components/providers/WalletProvider";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function PublishersLayout({
@@ -46,12 +47,14 @@ export default function PublishersLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-[#07070f]">
-      <PublisherSidebar />
-      <div className="flex-1 flex flex-col min-w-0">
-        <PublisherNav />
-        <main className="flex-1 p-6">{children}</main>
+    <WalletProvider>
+      <div className="flex min-h-screen bg-[#07070f]">
+        <PublisherSidebar />
+        <div className="flex-1 flex flex-col min-w-0">
+          <PublisherNav />
+          <main className="flex-1 p-6">{children}</main>
+        </div>
       </div>
-    </div>
+    </WalletProvider>
   );
 }
