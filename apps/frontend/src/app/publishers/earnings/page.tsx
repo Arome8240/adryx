@@ -1,12 +1,12 @@
 "use client";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useWallet, useConnection } from "@solana/wallet-adapter-react";
+import { PublicKey, Transaction } from "@solana/web3.js";
 import {
   DollarCircle,
   TrendUp,
   ArrowDown2,
-  Link21,
   TickCircle,
   CloseCircle,
 } from "iconsax-react";
@@ -17,15 +17,27 @@ import {
   usePublisherEarnings,
 } from "@/hooks/usePublisher";
 import { apiClient } from "@/lib/api-client";
+import {
+  TOKEN_MINTS,
+  TOKEN_COLORS,
+  toRaw,
+  getAssociatedTokenAddress,
+  createTransferInstruction,
+  formatToken,
+  type StablecoinSymbol,
+} from "@/lib/tokens";
 
-function truncateTx(sig: string) {
-  return `${sig.slice(0, 8)}…${sig.slice(-6)}`;
-}
+// Escrow/treasury wallet that holds publisher earnings (would be a PDA in production)
+// For devnet testing this is the backend wallet from /solana/info
+const TREASURY_PLACEHOLDER = "11111111111111111111111111111111"; // system program as placeholder
 
 export default function EarningsPage() {
-  const { publicKey } = useWallet();
+  const { publicKey, sendTransaction } = useWallet();
+  const { connection } = useConnection();
   const { dashboard, isLoading: dashLoading } = usePublisherDashboard();
   const { earningsChart, isLoading: chartLoading } = usePublisherEarnings(30);
+
+  const [selectedToken, setSelectedToken] = useState<StablecoinSymbol>("USDC");
   const [claiming, setClaiming] = useState(false);
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
 
@@ -38,16 +50,72 @@ export default function EarningsPage() {
     if (!publicKey) return showToast("Connect your wallet first", false);
     setClaiming(true);
     try {
-      const result = await apiClient.claimEarnings(publicKey.toString());
-      showToast(`Claimed! Tx: ${result.signature.slice(0, 12)}…`);
-    } catch (err: any) {
-      showToast(err.message, false);
+      // Fetch treasury/escrow wallet from backend
+      const solanaInfo = await apiClient.getSolanaInfo();
+      const treasuryPubkey = new PublicKey(solanaInfo.treasuryPda);
+      const mint = TOKEN_MINTS[selectedToken];
+
+      // Build SPL token transfer: treasury → publisher wallet
+      const treasuryAta = await getAssociatedTokenAddress(
+        mint,
+        treasuryPubkey,
+        true,
+      );
+      const publisherAta = await getAssociatedTokenAddress(mint, publicKey);
+
+      const totalEarnings = parseFloat(dashboard?.totalEarnings ?? "0");
+      const rawAmount = toRaw(totalEarnings);
+
+      const transferIx = createTransferInstruction(
+        treasuryAta,
+        publisherAta,
+        treasuryPubkey, // authority is the treasury PDA — in production signed by the program
+        rawAmount,
+      );
+
+      const tx = new Transaction().add(transferIx);
+      const { blockhash } = await connection.getLatestBlockhash();
+      tx.recentBlockhash = blockhash;
+      tx.feePayer = publicKey;
+
+      showToast("Approve the transaction in your wallet…", true);
+      const signature = await sendTransaction(tx, connection);
+      await connection.confirmTransaction(signature, "confirmed");
+
+      // Record the claim on the backend
+      await apiClient.claimEarnings(
+        publicKey.toString(),
+        selectedToken,
+        signature,
+      );
+      showToast(
+        `Claimed $${formatToken(totalEarnings)} ${selectedToken}! Tx: ${signature.slice(0, 12)}…`,
+      );
+    } catch (e: any) {
+      // In dev the treasury PDA won't have a token account — fall back to simulated claim
+      if (e.message?.includes("User rejected")) {
+        showToast("Transaction cancelled", false);
+      } else {
+        // Simulated claim for dev environment
+        try {
+          const result = await apiClient.claimEarnings(
+            publicKey.toString(),
+            selectedToken,
+          );
+          showToast(
+            `Claimed (simulated) ${selectedToken}! Ref: ${result.signature.slice(0, 16)}…`,
+          );
+        } catch (err: any) {
+          showToast(err.message, false);
+        }
+      }
     } finally {
       setClaiming(false);
     }
   }
 
   const totalEarnings = parseFloat(dashboard?.totalEarnings ?? "0");
+  const tokenColor = TOKEN_COLORS[selectedToken];
 
   return (
     <div className="flex flex-col gap-6 max-w-7xl mx-auto">
@@ -99,20 +167,24 @@ export default function EarningsPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.1 }}
-              className="rounded-2xl bg-[#0d0d1a] border border-[#4ade80]/20 p-5 relative overflow-hidden"
+              className="rounded-2xl bg-[#0d0d1a] border p-5 relative overflow-hidden"
+              style={{ borderColor: `${tokenColor}30` }}
             >
-              <div className="absolute top-0 right-0 w-32 h-32 rounded-full bg-[#4ade80]/5 blur-2xl pointer-events-none" />
+              <div
+                className="absolute top-0 right-0 w-32 h-32 rounded-full blur-2xl pointer-events-none"
+                style={{ backgroundColor: `${tokenColor}10` }}
+              />
               <div className="relative">
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-xs font-semibold text-white/40 uppercase tracking-wider">
                     Total Earnings
                   </p>
-                  <DollarCircle size={18} color="#4ade80" variant="Bold" />
+                  <DollarCircle size={18} color={tokenColor} variant="Bold" />
                 </div>
                 <p className="text-3xl font-bold text-white">
-                  ${totalEarnings.toFixed(2)}
+                  ${formatToken(totalEarnings)}
                 </p>
-                <p className="text-xs text-white/40 mt-1">USDC lifetime</p>
+                <p className="text-xs text-white/40 mt-1">Lifetime</p>
               </div>
             </motion.div>
 
@@ -152,7 +224,7 @@ export default function EarningsPage() {
                   ? (totalEarnings / dashboard.clicks).toFixed(4)
                   : "0.0000"}
               </p>
-              <p className="text-xs text-white/40 mt-1">USDC per click</p>
+              <p className="text-xs text-white/40 mt-1">Per click</p>
             </motion.div>
           </>
         )}
@@ -163,29 +235,59 @@ export default function EarningsPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.25 }}
-        className="glass rounded-2xl p-5 border border-[#4ade80]/15 flex items-center justify-between gap-4 flex-wrap"
+        className="glass rounded-2xl p-5 border flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+        style={{ borderColor: `${tokenColor}25` }}
       >
         <div>
           <p className="text-sm font-semibold text-white">
             Claim Your Earnings
           </p>
           <p className="text-xs text-white/40 mt-0.5">
-            Withdraw accumulated USDC to your connected wallet
+            Withdraw ${formatToken(totalEarnings)} to your connected wallet as{" "}
+            {selectedToken}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+
+        <div className="flex items-center gap-3 flex-wrap">
+          {/* Token selector */}
+          <div className="flex items-center gap-1 p-1 rounded-xl border border-white/10 bg-white/5">
+            {(["USDC", "USDT"] as StablecoinSymbol[]).map((t) => (
+              <button
+                key={t}
+                onClick={() => setSelectedToken(t)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  selectedToken === t
+                    ? "text-white"
+                    : "text-white/40 hover:text-white/70"
+                }`}
+                style={
+                  selectedToken === t
+                    ? {
+                        backgroundColor: `${TOKEN_COLORS[t]}25`,
+                        color: TOKEN_COLORS[t],
+                      }
+                    : {}
+                }
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+
           <WalletButton />
+
           <button
             onClick={handleClaim}
-            disabled={claiming || !publicKey}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#4ade80] hover:bg-[#4ade80]/90 text-black text-sm font-bold disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            disabled={claiming || !publicKey || totalEarnings <= 0}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-black text-sm font-bold disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            style={{ backgroundColor: tokenColor }}
           >
             {claiming ? (
               <span className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
             ) : (
               <DollarCircle size={16} color="black" variant="Bold" />
             )}
-            {claiming ? "Claiming…" : "Claim Earnings"}
+            {claiming ? "Claiming…" : `Claim as ${selectedToken}`}
           </button>
         </div>
       </motion.div>
@@ -201,7 +303,7 @@ export default function EarningsPage() {
           Earnings Trend
         </h3>
         <p className="text-xs text-white/30 mb-5">
-          Daily USDC earnings — last 30 days
+          Daily earnings — last 30 days
         </p>
         {chartLoading ? (
           <div className="h-48 bg-white/5 rounded animate-pulse" />
@@ -213,7 +315,11 @@ export default function EarningsPage() {
           <PerformanceChart
             data={earningsChart}
             lines={[
-              { key: "earnings", color: "#4ade80", label: "Earnings (USDC)" },
+              {
+                key: "earnings",
+                color: tokenColor,
+                label: `Earnings (${selectedToken})`,
+              },
             ]}
             height={200}
           />
