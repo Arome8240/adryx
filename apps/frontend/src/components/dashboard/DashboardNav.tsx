@@ -309,6 +309,8 @@ export default function DashboardNav() {
           </aside>
         </div>
       )}
+
+      <SearchPanel open={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
 }
