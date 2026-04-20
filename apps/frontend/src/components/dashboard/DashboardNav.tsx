@@ -7,7 +7,6 @@ import {
   SearchNormal1,
   Home2,
   Chart,
-  AddCircle,
   PresentionChart,
   EmptyWallet,
   HambergerMenu,
@@ -28,11 +27,6 @@ const navItems = [
     icon: <Chart size={20} />,
   },
   {
-    label: "Create Campaign",
-    href: "/dashboard/create",
-    icon: <AddCircle size={20} />,
-  },
-  {
     label: "Analytics",
     href: "/dashboard/analytics",
     icon: <PresentionChart size={20} />,
@@ -47,7 +41,6 @@ const navItems = [
 const pageTitles: Record<string, string> = {
   "/dashboard": "Overview",
   "/dashboard/campaigns": "Campaigns",
-  "/dashboard/create": "Create Campaign",
   "/dashboard/analytics": "Analytics",
   "/dashboard/wallet": "Wallet",
 };

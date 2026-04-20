@@ -4,7 +4,6 @@ import { usePathname } from "next/navigation";
 import {
   Home2,
   Chart,
-  AddCircle,
   PresentionChart,
   EmptyWallet,
   LogoutCurve,
@@ -23,13 +22,6 @@ const navItems = [
     href: "/dashboard/campaigns",
     icon: (active: boolean) => (
       <Chart size={20} color={active ? "#f7931a" : "#a855f7"} />
-    ),
-  },
-  {
-    label: "Create Campaign",
-    href: "/dashboard/create",
-    icon: (active: boolean) => (
-      <AddCircle size={20} color={active ? "#f7931a" : "#10b981"} />
     ),
   },
   {
