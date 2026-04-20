@@ -245,8 +245,75 @@ export default function AnalyticsPage() {
               Export CSV
             </button>
           )}
+
+          {/* T18 — Compare toggle */}
+          {selectedId && (
+            <button
+              onClick={() => {
+                setCompareMode((v) => !v);
+                setCompareId("");
+              }}
+              className={`px-3 py-2 rounded-xl border text-xs font-medium transition-colors ${
+                compareMode
+                  ? "bg-[#a855f7]/15 border-[#a855f7]/30 text-[#a855f7]"
+                  : "bg-white/5 border-white/10 text-white/50 hover:text-white"
+              }`}
+            >
+              Compare
+            </button>
+          )}
         </div>
       </motion.div>
+
+      {/* T18 — Compare campaign selector */}
+      {compareMode && selectedId && (
+        <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#a855f7]/8 border border-[#a855f7]/20">
+          <span className="text-xs text-[#a855f7] font-semibold shrink-0">
+            Compare with:
+          </span>
+          <div className="relative flex-1 max-w-xs">
+            <select
+              value={compareId}
+              onChange={(e) => setCompareId(e.target.value)}
+              className="w-full appearance-none pl-3 pr-8 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white/70 outline-none cursor-pointer"
+            >
+              <option value="">Select a campaign…</option>
+              {campaigns
+                .filter((c) => c._id !== selectedId)
+                .map((c) => (
+                  <option key={c._id} value={c._id}>
+                    {c.name}
+                  </option>
+                ))}
+            </select>
+            <ArrowDown2
+              size={12}
+              color="#ffffff40"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
+            />
+          </div>
+          {compareId && compareChartData.length > 0 && (
+            <div className="flex items-center gap-3 text-xs shrink-0">
+              <span className="flex items-center gap-1.5">
+                <span className="w-3 h-0.5 rounded bg-[#22d3ee] inline-block" />
+                <span className="text-white/50">
+                  {campaigns
+                    .find((c) => c._id === selectedId)
+                    ?.name?.slice(0, 12)}
+                </span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-3 h-0.5 rounded bg-[#f7931a] inline-block" />
+                <span className="text-white/50">
+                  {campaigns
+                    .find((c) => c._id === compareId)
+                    ?.name?.slice(0, 12)}
+                </span>
+              </span>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Metric cards */}
       {dashboardLoading ? (
@@ -361,6 +428,118 @@ export default function AnalyticsPage() {
           </motion.div>
         </>
       )}
+
+      {/* T18 — Comparison chart */}
+      {compareMode && compareId && compareChartData.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="glass rounded-2xl p-6 border border-[#a855f7]/20"
+        >
+          <div className="flex items-center gap-2 mb-1">
+            <TrendUp size={18} color="#a855f7" variant="Bold" />
+            <h3 className="text-base font-semibold text-white">
+              Campaign Comparison — Clicks
+            </h3>
+          </div>
+          <p className="text-xs text-white/30 mb-6 ml-6">
+            Side-by-side daily clicks
+          </p>
+          <PerformanceChart
+            data={compareChartData}
+            lines={[
+              {
+                key: "clicks_a",
+                color: "#22d3ee",
+                label:
+                  campaigns
+                    .find((c) => c._id === selectedId)
+                    ?.name?.slice(0, 16) ?? "Campaign A",
+              },
+              {
+                key: "clicks_b",
+                color: "#f7931a",
+                label:
+                  campaigns
+                    .find((c) => c._id === compareId)
+                    ?.name?.slice(0, 16) ?? "Campaign B",
+              },
+            ]}
+            height={240}
+          />
+        </motion.div>
+      )}
+
+      {/* T19 — Time-of-day heatmap */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.45 }}
+        className="glass rounded-2xl p-6 border border-white/8"
+      >
+        <div className="flex items-center gap-2 mb-1">
+          <Flash size={18} color="#22d3ee" variant="Bold" />
+          <h3 className="text-base font-semibold text-white">
+            Best Hours to Advertise
+          </h3>
+        </div>
+        <p className="text-xs text-white/30 mb-5 ml-6">
+          Click volume by hour of day (UTC)
+        </p>
+        {heatmapLoading ? (
+          <div className="h-16 bg-white/5 rounded animate-pulse" />
+        ) : heatmap.every((h) => h.clicks === 0) ? (
+          <p className="text-sm text-white/30 text-center py-6">
+            No click data yet for this period.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            <div className="flex gap-1">
+              {heatmap.map(({ hour, clicks }) => {
+                const max = Math.max(...heatmap.map((h) => h.clicks), 1);
+                const intensity = clicks / max;
+                const bg =
+                  intensity === 0
+                    ? "bg-white/5"
+                    : intensity < 0.33
+                      ? "bg-[#3b82f6]/30"
+                      : intensity < 0.66
+                        ? "bg-[#a855f7]/50"
+                        : "bg-[#f7931a]/80";
+                return (
+                  <div
+                    key={hour}
+                    title={`${hour}:00 — ${clicks} clicks`}
+                    className={`flex-1 h-10 rounded-md ${bg} transition-all cursor-default`}
+                  />
+                );
+              })}
+            </div>
+            <div className="flex justify-between text-[10px] text-white/20 px-0.5">
+              <span>12am</span>
+              <span>6am</span>
+              <span>12pm</span>
+              <span>6pm</span>
+              <span>11pm</span>
+            </div>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-[10px] text-white/30">Low</span>
+              <div className="flex gap-1">
+                {[
+                  "bg-white/5",
+                  "bg-[#3b82f6]/30",
+                  "bg-[#a855f7]/50",
+                  "bg-[#f7931a]/80",
+                ].map((c) => (
+                  <span key={c} className={`w-4 h-2 rounded-sm ${c}`} />
+                ))}
+              </div>
+              <span className="text-[10px] text-white/30">High</span>
+            </div>
+          </div>
+        )}
+      </motion.div>
 
       {/* T16 — Top campaigns table */}
       <motion.div
