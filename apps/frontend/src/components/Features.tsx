@@ -4,42 +4,42 @@ import { Chainlink, Flash, Code, Eye, ShieldCross } from "iconsax-react";
 
 const features = [
   {
-    icon: <Chainlink size={24} variant="Bold" color="#f7931a" />,
-    color: "text-[#f7931a]",
-    bg: "bg-[#f7931a]/10",
-    border: "border-[#f7931a]/20",
+    icon: <Chainlink size={20} variant="Bold" />,
+    color: "text-primary-500",
+    bg: "bg-primary-500/10",
+    border: "border-primary-500/20",
     title: "On-Chain Ad Campaigns",
     desc: "Create and manage campaigns directly on Solana. Every spend, every impression — fully auditable.",
   },
   {
-    icon: <Flash size={24} variant="Bold" color="#a855f7" />,
-    color: "text-[#a855f7]",
-    bg: "bg-[#a855f7]/10",
-    border: "border-[#a855f7]/20",
+    icon: <Flash size={20} variant="Bold" />,
+    color: "text-info-500",
+    bg: "bg-info-500/10",
+    border: "border-info-500/20",
     title: "Instant Payouts",
     desc: "Revenue flows directly to your wallet in SOL. No waiting 30 days. No minimum thresholds. Just instant settlement.",
   },
   {
-    icon: <Code size={24} variant="Bold" color="#22d3ee" />,
-    color: "text-[#22d3ee]",
-    bg: "bg-[#22d3ee]/10",
-    border: "border-[#22d3ee]/20",
+    icon: <Code size={20} variant="Bold" />,
+    color: "text-success-500",
+    bg: "bg-success-500/10",
+    border: "border-success-500/20",
     title: "Developer SDK",
     desc: "Drop in our lightweight SDK with a single line of code. Works with React, Vue, vanilla JS, and any mobile framework.",
   },
   {
-    icon: <Eye size={24} variant="Bold" color="#4ade80" />,
-    color: "text-[#4ade80]",
-    bg: "bg-[#4ade80]/10",
-    border: "border-[#4ade80]/20",
+    icon: <Eye size={20} variant="Bold" />,
+    color: "text-warning-500",
+    bg: "bg-warning-500/10",
+    border: "border-warning-500/20",
     title: "Privacy-First Ads",
     desc: "No invasive tracking. No third-party cookies. Contextual targeting that respects your users and complies with regulations.",
   },
   {
-    icon: <ShieldCross size={24} variant="Bold" color="#f472b6" />,
-    color: "text-[#f472b6]",
-    bg: "bg-[#f472b6]/10",
-    border: "border-[#f472b6]/20",
+    icon: <ShieldCross size={20} variant="Bold" />,
+    color: "text-error-500",
+    bg: "bg-error-500/10",
+    border: "border-error-500/20",
     title: "Fraud-Resistant Metrics",
     desc: "On-chain verification makes click fraud and impression stuffing impossible. Every metric is cryptographically proven.",
   },
@@ -47,70 +47,66 @@ const features = [
 
 export default function Features() {
   return (
-    <section id="features" className="relative py-24">
-      <div className="max-w-7xl mx-auto px-6">
+    <section id="features" className="relative py-32">
+      <div className="max-w-6xl mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.4 }}
           className="text-center mb-16"
         >
-          <span className="text-sm font-medium text-[#f7931a] uppercase tracking-widest">
+          <span className="label-small text-primary-500">
             Features
           </span>
-          <h2 className="mt-3 text-4xl md:text-5xl font-bold tracking-tight">
+          <h2 className="heading-2 mt-3">
             Everything you need to{" "}
-            <span className="gradient-text">monetize</span>
+            <span className="text-primary-500">monetize</span>
           </h2>
-          <p className="mt-4 text-white/50 max-w-xl mx-auto">
+          <p className="body-large text-secondary mt-4 max-w-2xl mx-auto">
             Built for developers who demand transparency, speed, and control
             over their revenue.
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {features.map((f, i) => (
             <motion.div
               key={f.title}
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: i * 0.08 }}
-              className={`glass rounded-2xl p-6 border ${f.border} card-hover`}
+              transition={{ duration: 0.3, delay: i * 0.05 }}
+              className="card-linear hover-lift p-6"
             >
               <div
-                className={`w-11 h-11 rounded-xl ${f.bg} flex items-center justify-center ${f.color} mb-4`}
+                className={`w-10 h-10 rounded-lg ${f.bg} flex items-center justify-center ${f.color} mb-4`}
               >
                 {f.icon}
               </div>
-              <h3 className="text-base font-semibold mb-2">{f.title}</h3>
-              <p className="text-white/50 text-sm leading-relaxed">{f.desc}</p>
+              <h3 className="heading-4 mb-2">{f.title}</h3>
+              <p className="body-small text-secondary leading-relaxed">{f.desc}</p>
             </motion.div>
           ))}
 
           {/* Wide CTA card */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="glass rounded-2xl p-6 border border-white/8 card-hover flex flex-col justify-between"
-            style={{
-              background:
-                "linear-gradient(135deg, rgba(247,147,26,0.05), rgba(168,85,247,0.05))",
-            }}
+            transition={{ duration: 0.3, delay: 0.25 }}
+            className="card-linear hover-lift p-6 flex flex-col justify-between bg-gradient-to-br from-primary-500/5 to-transparent"
           >
             <div>
-              <h3 className="text-base font-semibold mb-2">And much more...</h3>
-              <p className="text-white/50 text-sm leading-relaxed">
+              <h3 className="heading-4 mb-2">And much more...</h3>
+              <p className="body-small text-secondary leading-relaxed">
                 Analytics dashboard, A/B testing, multi-chain support, and a
                 growing ecosystem of integrations.
               </p>
             </div>
             <a
-              href="#"
-              className="mt-4 text-sm font-semibold text-[#f7931a] hover:underline"
+              href="/docs"
+              className="mt-4 text-sm font-medium text-primary-500 hover:text-primary-400 transition-colors inline-flex items-center gap-1"
             >
               View full docs →
             </a>

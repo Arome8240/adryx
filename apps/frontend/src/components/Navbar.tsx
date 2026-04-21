@@ -8,7 +8,7 @@ const links = [
   { label: "Features", href: "#features" },
   { label: "How It Works", href: "#how-it-works" },
   { label: "Who It's For", href: "#for-who" },
-  { label: "Docs", href: "#" },
+  { label: "Docs", href: "/docs" },
 ];
 
 export default function Navbar() {
@@ -23,29 +23,31 @@ export default function Navbar() {
 
   return (
     <motion.nav
-      initial={{ y: -20, opacity: 0 }}
+      initial={{ y: -10, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? "glass border-b border-white/10" : "bg-transparent"
+      transition={{ duration: 0.3 }}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${
+        scrolled 
+          ? "bg-dark-bg-primary/80 backdrop-blur-xl border-b border-dark-border" 
+          : "bg-transparent"
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[#f7931a] to-[#a855f7] flex items-center justify-center">
+        <Link href="/" className="flex items-center gap-2.5 hover-lift">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
             <span className="text-white font-bold text-sm">A</span>
           </div>
           <span className="font-bold text-lg tracking-tight">Adryx</span>
         </Link>
 
         {/* Desktop links */}
-        <div className="hidden md:flex items-center gap-8 text-sm text-white/60">
+        <div className="hidden md:flex items-center gap-1 text-sm">
           {links.map((l) => (
             <a
               key={l.label}
               href={l.href}
-              className="hover:text-white transition-colors"
+              className="px-3 py-2 rounded-md text-secondary hover:text-primary hover:bg-dark-bg-tertiary transition-all"
             >
               {l.label}
             </a>
@@ -53,16 +55,16 @@ export default function Navbar() {
         </div>
 
         {/* Desktop CTA */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-2">
           <Link
             href="/publishers"
-            className="text-sm text-white/60 hover:text-white transition-colors"
+            className="btn-ghost text-sm px-4 py-2"
           >
             Publishers
           </Link>
           <Link
             href="/dashboard"
-            className="text-sm font-semibold px-5 py-2 rounded-full bg-linear-to-r from-[#f7931a] to-[#e8820a] text-black hover:opacity-90 transition-opacity"
+            className="btn-primary text-sm px-4 py-2"
           >
             Advertisers
           </Link>
@@ -70,14 +72,14 @@ export default function Navbar() {
 
         {/* Mobile menu toggle */}
         <button
-          className="md:hidden text-white/70 hover:text-white"
+          className="md:hidden text-secondary hover:text-primary transition-colors"
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label="Toggle menu"
         >
           {menuOpen ? (
-            <CloseCircle size={24} color="#f7931a" />
+            <CloseCircle size={24} />
           ) : (
-            <HambergerMenu size={24} color="#f0f0f5" />
+            <HambergerMenu size={24} />
           )}
         </button>
       </div>
@@ -87,29 +89,30 @@ export default function Navbar() {
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="md:hidden glass border-t border-white/10 px-6 py-4 flex flex-col gap-4"
+          transition={{ duration: 0.2 }}
+          className="md:hidden bg-dark-bg-secondary/95 backdrop-blur-xl border-t border-dark-border px-6 py-4 flex flex-col gap-2"
         >
           {links.map((l) => (
             <a
               key={l.label}
               href={l.href}
-              className="text-sm text-white/70 hover:text-white transition-colors"
+              className="px-3 py-2 rounded-md text-sm text-secondary hover:text-primary hover:bg-dark-bg-tertiary transition-all"
               onClick={() => setMenuOpen(false)}
             >
               {l.label}
             </a>
           ))}
-          <div className="flex flex-col gap-2 pt-2 border-t border-white/10">
+          <div className="flex flex-col gap-2 pt-2 mt-2 border-t border-dark-border">
             <Link
               href="/publishers"
-              className="text-sm font-medium px-5 py-2.5 rounded-full bg-white/5 text-white text-center hover:bg-white/10 transition-colors"
+              className="btn-secondary text-sm px-4 py-2.5 text-center"
               onClick={() => setMenuOpen(false)}
             >
               For Publishers
             </Link>
             <Link
               href="/dashboard"
-              className="text-sm font-semibold px-5 py-2.5 rounded-full bg-linear-to-r from-[#f7931a] to-[#e8820a] text-black text-center"
+              className="btn-primary text-sm px-4 py-2.5 text-center"
               onClick={() => setMenuOpen(false)}
             >
               For Advertisers
