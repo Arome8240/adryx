@@ -1,8 +1,13 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
-const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
+const inter = Inter({ 
+  subsets: ["latin"], 
+  variable: "--font-inter",
+  display: 'swap',
+  weight: ['300', '400', '500', '600', '700', '800'],
+});
 
 export const metadata: Metadata = {
   title: "Adryx — Decentralized Ad Network on Solana",
@@ -20,8 +25,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={geist.variable}>
-      <body className="min-h-screen bg-[#07070f] text-[#f0f0f5] overflow-x-hidden">
+    <html lang="en" className={inter.variable}>
+      <body className="min-h-screen antialiased">
         {children}
       </body>
     </html>
