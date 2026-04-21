@@ -77,9 +77,9 @@ export default function Navbar() {
           aria-label="Toggle menu"
         >
           {menuOpen ? (
-            <CloseCircle size={24} />
+            <CloseCircle size={24} color="#f0f0f5" />
           ) : (
-            <HambergerMenu size={24} />
+            <HambergerMenu size={24} color="#f0f0f5" />
           )}
         </button>
       </div>

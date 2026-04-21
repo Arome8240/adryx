@@ -53,7 +53,7 @@ export default function Footer() {
                 aria-label="Documentation"
                 className="w-8 h-8 rounded-md border border-border flex items-center justify-center text-text-tertiary hover:text-text-primary hover:border-border-hover transition-all duration-200"
               >
-                <DocumentText size={16} />
+                <DocumentText size={16} color="#f97316" />
               </Link>
               <a
                 href="https://github.com/adryx/adryx"
@@ -62,7 +62,7 @@ export default function Footer() {
                 aria-label="GitHub"
                 className="w-8 h-8 rounded-md border border-border flex items-center justify-center text-text-tertiary hover:text-text-primary hover:border-border-hover transition-all duration-200"
               >
-                <Code size={16} />
+                <Code size={16} color="#a855f7" />
               </a>
               <a
                 href="https://twitter.com/adryx_io"
@@ -71,7 +71,7 @@ export default function Footer() {
                 aria-label="Twitter"
                 className="w-8 h-8 rounded-md border border-border flex items-center justify-center text-text-tertiary hover:text-text-primary hover:border-border-hover transition-all duration-200"
               >
-                <Global size={16} />
+                <Global size={16} color="#06b6d4" />
               </a>
             </div>
           </motion.div>

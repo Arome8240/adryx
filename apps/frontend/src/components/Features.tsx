@@ -4,7 +4,7 @@ import { Chainlink, Flash, Code, Eye, ShieldCross } from "iconsax-react";
 
 const features = [
   {
-    icon: <Chainlink size={20} variant="Bold" />,
+    icon: <Chainlink size={20} variant="Bold" color="#f97316" />,
     color: "text-primary-500",
     bg: "bg-primary-500/10",
     border: "border-primary-500/20",
@@ -12,7 +12,7 @@ const features = [
     desc: "Create and manage campaigns directly on Solana. Every spend, every impression — fully auditable.",
   },
   {
-    icon: <Flash size={20} variant="Bold" />,
+    icon: <Flash size={20} variant="Bold" color="#06b6d4" />,
     color: "text-info-500",
     bg: "bg-info-500/10",
     border: "border-info-500/20",
@@ -20,7 +20,7 @@ const features = [
     desc: "Revenue flows directly to your wallet in SOL. No waiting 30 days. No minimum thresholds. Just instant settlement.",
   },
   {
-    icon: <Code size={20} variant="Bold" />,
+    icon: <Code size={20} variant="Bold" color="#22c55e" />,
     color: "text-success-500",
     bg: "bg-success-500/10",
     border: "border-success-500/20",
@@ -28,7 +28,7 @@ const features = [
     desc: "Drop in our lightweight SDK with a single line of code. Works with React, Vue, vanilla JS, and any mobile framework.",
   },
   {
-    icon: <Eye size={20} variant="Bold" />,
+    icon: <Eye size={20} variant="Bold" color="#eab308" />,
     color: "text-warning-500",
     bg: "bg-warning-500/10",
     border: "border-warning-500/20",
@@ -36,7 +36,7 @@ const features = [
     desc: "No invasive tracking. No third-party cookies. Contextual targeting that respects your users and complies with regulations.",
   },
   {
-    icon: <ShieldCross size={20} variant="Bold" />,
+    icon: <ShieldCross size={20} variant="Bold" color="#ef4444" />,
     color: "text-error-500",
     bg: "bg-error-500/10",
     border: "border-error-500/20",

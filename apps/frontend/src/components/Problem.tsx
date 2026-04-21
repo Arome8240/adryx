@@ -4,17 +4,17 @@ import { Warning2, Lock, EmojiSad } from "iconsax-react";
 
 const problems = [
   {
-    icon: <Lock size={20} variant="Bold" />,
+    icon: <Lock size={20} variant="Bold" color="#ef4444" />,
     title: "Centralized & Opaque",
     desc: "Web2 ad networks control your data, your payouts, and your audience — with zero transparency into how decisions are made.",
   },
   {
-    icon: <Warning2 size={20} variant="Bold" />,
+    icon: <Warning2 size={20} variant="Bold" color="#ef4444" />,
     title: "Developers Earn Less",
     desc: "Middlemen take the lion's share. Publishers see pennies on the dollar while platforms pocket the rest.",
   },
   {
-    icon: <EmojiSad size={20} variant="Bold" />,
+    icon: <EmojiSad size={20} variant="Bold" color="#ef4444" />,
     title: "dApps Have No Options",
     desc: "Web3 apps are left out entirely. No ad network supports on-chain apps, leaving dApp developers with no monetization path.",
   },

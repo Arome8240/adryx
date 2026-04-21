@@ -4,7 +4,7 @@ import { Code, Briefcase, People } from "iconsax-react";
 
 const audiences = [
   {
-    icon: <Code size={20} variant="Bold" />,
+    icon: <Code size={20} variant="Bold" color="#f97316" />,
     color: "text-primary",
     bg: "bg-primary/10",
     title: "Developers",
@@ -14,7 +14,7 @@ const audiences = [
     cta: "Start Earning",
   },
   {
-    icon: <Briefcase size={20} variant="Bold" />,
+    icon: <Briefcase size={20} variant="Bold" color="#a855f7" />,
     color: "text-purple-500",
     bg: "bg-purple-500/10",
     title: "Advertisers",
@@ -28,7 +28,7 @@ const audiences = [
     cta: "Launch Campaign",
   },
   {
-    icon: <People size={20} variant="Bold" />,
+    icon: <People size={20} variant="Bold" color="#22c55e" />,
     color: "text-green-500",
     bg: "bg-green-500/10",
     title: "Users",

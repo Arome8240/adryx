@@ -60,7 +60,7 @@ export default function Hero() {
             href="/dashboard"
             className="btn-secondary inline-flex items-center justify-center gap-2 px-6 py-3 text-sm hover-lift"
           >
-            <Play size={16} variant="Bold" />
+            <Play size={16} variant="Bold" color="#f0f0f5" />
             Launch Campaign
           </a>
         </motion.div>

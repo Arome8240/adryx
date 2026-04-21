@@ -34,7 +34,7 @@ export default function CTA() {
               className="btn-primary"
             >
               Get Started Free
-              <ArrowRight size={16} />
+              <ArrowRight size={16} color="#000000" />
             </motion.a>
             <motion.a
               href="/dashboard"
@@ -42,7 +42,7 @@ export default function CTA() {
               whileTap={{ scale: 0.98 }}
               className="btn-secondary"
             >
-              <DocumentText size={16} />
+              <DocumentText size={16} color="#f0f0f5" />
               Launch Campaign
             </motion.a>
           </div>

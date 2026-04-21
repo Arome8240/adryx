@@ -4,21 +4,21 @@ import { ShieldTick, Global, Repeat } from "iconsax-react";
 
 const pillars = [
   {
-    icon: <ShieldTick size={20} variant="Bold" />,
+    icon: <ShieldTick size={20} variant="Bold" color="#f97316" />,
     bg: "bg-primary/10",
     text: "text-primary",
     title: "Decentralized",
     desc: "No single point of control. Campaigns, payouts, and metrics live on the Solana blockchain — immutable and auditable by anyone.",
   },
   {
-    icon: <Global size={20} variant="Bold" />,
+    icon: <Global size={20} variant="Bold" color="#a855f7" />,
     bg: "bg-purple-500/10",
     text: "text-purple-500",
     title: "Cross-Platform",
     desc: "One SDK for Web2 websites, mobile apps, and Web3 dApps. Reach every developer, every platform, every user.",
   },
   {
-    icon: <Repeat size={20} variant="Bold" />,
+    icon: <Repeat size={20} variant="Bold" color="#06b6d4" />,
     bg: "bg-cyan-500/10",
     text: "text-cyan-500",
     title: "Transparent",

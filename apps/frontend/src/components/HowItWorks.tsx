@@ -4,7 +4,7 @@ import { Additem, Code1, Monitor, DollarCircle } from "iconsax-react";
 
 const steps = [
   {
-    icon: <Additem size={20} variant="Bold" />,
+    icon: <Additem size={20} variant="Bold" color="#f97316" />,
     color: "text-primary",
     bg: "bg-primary/10",
     step: "01",
@@ -12,7 +12,7 @@ const steps = [
     desc: "Set your budget, targeting, and creative assets. Campaign parameters are written to Solana — immutable and verifiable.",
   },
   {
-    icon: <Code1 size={20} variant="Bold" />,
+    icon: <Code1 size={20} variant="Bold" color="#a855f7" />,
     color: "text-purple-500",
     bg: "bg-purple-500/10",
     step: "02",
@@ -20,7 +20,7 @@ const steps = [
     desc: "Drop in a single script tag or npm package. Works with any framework — React, Next.js, Vue, or plain HTML.",
   },
   {
-    icon: <Monitor size={20} variant="Bold" />,
+    icon: <Monitor size={20} variant="Bold" color="#06b6d4" />,
     color: "text-cyan-500",
     bg: "bg-cyan-500/10",
     step: "03",
@@ -28,7 +28,7 @@ const steps = [
     desc: "Relevant, privacy-respecting ads are served to your users. Every impression is logged on-chain for full transparency.",
   },
   {
-    icon: <DollarCircle size={20} variant="Bold" />,
+    icon: <DollarCircle size={20} variant="Bold" color="#22c55e" />,
     color: "text-green-500",
     bg: "bg-green-500/10",
     step: "04",
