@@ -21,26 +21,26 @@ import SearchPanel from "./SearchPanel";
 import NotificationsPanel from "./NotificationsPanel";
 
 const navItems = [
-  { label: "Overview", href: "/dashboard", icon: <Home2 size={18} color="#a1a1aa" /> },
+  { label: "Overview", href: "/dashboard", icon: <Home2 size={20} /> },
   {
     label: "Campaigns",
     href: "/dashboard/campaigns",
-    icon: <Chart size={18} color="#a1a1aa" />,
+    icon: <Chart size={20} />,
   },
   {
     label: "Analytics",
     href: "/dashboard/analytics",
-    icon: <PresentionChart size={18} color="#a1a1aa" />,
+    icon: <PresentionChart size={20} />,
   },
   {
     label: "Wallet",
     href: "/dashboard/wallet",
-    icon: <EmptyWallet size={18} color="#a1a1aa" />,
+    icon: <EmptyWallet size={20} />,
   },
   {
     label: "Settings",
     href: "/dashboard/settings",
-    icon: <Setting2 size={18} color="#a1a1aa" />,
+    icon: <Setting2 size={20} />,
   },
 ];
 
@@ -112,29 +112,29 @@ export default function DashboardNav() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 flex items-center justify-between px-6 py-3 bg-bg-secondary/80 backdrop-blur-md border-b border-border">
+      <header className="sticky top-0 z-40 flex items-center justify-between px-6 py-4 bg-[#0d0d1a]/80 backdrop-blur-md border-b border-white/8">
         <div className="flex items-center gap-3">
           <button
-            className="md:hidden text-text-secondary hover:text-text-primary transition-colors"
+            className="md:hidden text-white/60 hover:text-white"
             onClick={() => setMobileOpen(true)}
             aria-label="Open menu"
           >
-            <HambergerMenu size={20} color="#a1a1aa" />
+            <HambergerMenu size={22} color="#f0f0f5" />
           </button>
-          <h1 className="heading-4">
+          <h1 className="text-base font-semibold text-white">
             {pageTitles[pathname] ?? "Dashboard"}
           </h1>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <button
             onClick={() => setSearchOpen(true)}
-            className="w-8 h-8 rounded-md border border-border flex items-center justify-center text-text-tertiary hover:text-text-primary hover:border-border-hover transition-all duration-200"
+            className="w-9 h-9 rounded-xl glass border border-white/10 flex items-center justify-center text-white/50 hover:text-white transition-colors"
             aria-label="Search"
           >
-            <SearchNormal1 size={14} color="#a1a1aa" />
+            <SearchNormal1 size={16} color="#a855f7" />
           </button>
-          <kbd className="hidden lg:flex items-center gap-1 px-2 py-1 rounded-md border border-border label-xs text-text-tertiary font-mono select-none">
+          <kbd className="hidden lg:flex items-center gap-1 px-2 py-1 rounded-lg border border-white/10 text-[10px] text-white/25 font-mono select-none">
             ⌘K
           </kbd>
 
@@ -145,12 +145,12 @@ export default function DashboardNav() {
                 setNotifOpen((v) => !v);
                 setProfileOpen(false);
               }}
-              className="relative w-8 h-8 rounded-md border border-border flex items-center justify-center text-text-tertiary hover:text-text-primary hover:border-border-hover transition-all duration-200"
+              className="relative w-9 h-9 rounded-xl glass border border-white/10 flex items-center justify-center text-white/50 hover:text-white transition-colors"
               aria-label="Notifications"
             >
-              <Notification size={14} color="#f97316" />
+              <Notification size={16} color="#f7931a" />
               {notifCount > 0 && (
-                <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-primary" />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#f7931a]" />
               )}
             </button>
             <NotificationsPanel
@@ -160,7 +160,7 @@ export default function DashboardNav() {
           </div>
 
           <div
-            className="relative pl-2 border-l border-border"
+            className="relative pl-2 border-l border-white/10"
             ref={dropdownRef}
           >
             <button
@@ -171,36 +171,36 @@ export default function DashboardNav() {
               className="flex items-center gap-2 hover:opacity-80 transition-opacity"
               aria-label="Profile menu"
             >
-              <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-xs font-semibold text-white">
+              <div className="w-8 h-8 rounded-full bg-linear-to-br from-[#f7931a] to-[#a855f7] flex items-center justify-center text-xs font-bold text-white">
                 {user ? getInitial(user.name) : "?"}
               </div>
               <div className="hidden sm:flex flex-col items-start">
-                <span className="label-sm text-text-primary leading-tight max-w-[120px] truncate">
+                <span className="text-sm font-medium text-white/90 leading-tight max-w-[120px] truncate">
                   {user?.name ?? "Loading..."}
                 </span>
-                <span className="label-xs text-text-tertiary capitalize leading-tight">
+                <span className="text-[10px] text-white/40 capitalize leading-tight">
                   {user?.role ?? ""}
                 </span>
               </div>
             </button>
 
             {profileOpen && (
-              <div className="absolute right-0 top-full mt-2 w-60 rounded-lg bg-bg-tertiary border border-border shadow-xl overflow-hidden">
-                <div className="px-4 py-3 border-b border-border">
+              <div className="absolute right-0 top-full mt-2 w-60 rounded-2xl bg-[#13131f] border border-white/10 shadow-xl shadow-black/40 overflow-hidden">
+                <div className="px-4 py-3 border-b border-white/8">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-sm font-semibold text-white shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-[#f7931a] to-[#a855f7] flex items-center justify-center text-sm font-bold text-white shrink-0">
                       {user ? getInitial(user.name) : "?"}
                     </div>
                     <div className="min-w-0">
-                      <p className="label-sm text-text-primary truncate">
+                      <p className="text-sm font-semibold text-white truncate">
                         {user?.name}
                       </p>
                       {user?.email && (
-                        <p className="label-xs text-text-tertiary truncate">
+                        <p className="text-xs text-white/40 truncate">
                           {user.email}
                         </p>
                       )}
-                      <span className="inline-block mt-1 badge badge-primary">
+                      <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded-md bg-[#f7931a]/15 text-[#f7931a] text-[10px] font-semibold capitalize">
                         {user?.role}
                       </span>
                     </div>
@@ -209,14 +209,14 @@ export default function DashboardNav() {
                   {user?.walletAddress && (
                     <button
                       onClick={handleCopyWallet}
-                      className="mt-2 w-full flex items-center justify-between gap-2 px-2 py-1.5 rounded-md bg-bg-secondary hover:bg-bg-primary transition-colors duration-200"
+                      className="mt-2 w-full flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
                     >
-                      <span className="label-xs text-text-secondary font-mono">
+                      <span className="text-xs text-white/50 font-mono">
                         {truncateWallet(user.walletAddress)}
                       </span>
                       <Copy
                         size={12}
-                        color={copied ? "#22c55e" : "#a1a1aa"}
+                        color={copied ? "#4ade80" : "#ffffff80"}
                       />
                     </button>
                   )}
@@ -225,7 +225,7 @@ export default function DashboardNav() {
                 <div className="p-2">
                   <button
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-md body-sm text-text-secondary hover:text-error-500 hover:bg-error-500/10 transition-all duration-200"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-white/60 hover:text-[#f87171] hover:bg-[#f87171]/10 transition-all"
                   >
                     <LogoutCurve size={16} color="currentColor" />
                     Sign out
@@ -243,36 +243,36 @@ export default function DashboardNav() {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setMobileOpen(false)}
           />
-          <aside className="absolute left-0 top-0 bottom-0 w-64 bg-bg-secondary border-r border-border flex flex-col">
-            <div className="px-4 py-4 border-b border-border flex items-center justify-between">
-              <Link href="/" className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center">
+          <aside className="absolute left-0 top-0 bottom-0 w-64 bg-[#0d0d1a] border-r border-white/8 flex flex-col">
+            <div className="px-6 py-5 border-b border-white/8 flex items-center justify-between">
+              <Link href="/" className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[#f7931a] to-[#a855f7] flex items-center justify-center">
                   <span className="text-white font-bold text-sm">A</span>
                 </div>
-                <span className="font-semibold text-base">Adryx</span>
+                <span className="font-bold text-base">Adryx</span>
               </Link>
               <button onClick={() => setMobileOpen(false)}>
-                <CloseCircle size={20} color="#ef4444" />
+                <CloseCircle size={22} color="#f87171" />
               </button>
             </div>
 
             {user && (
-              <div className="px-4 py-3 border-b border-border flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-sm font-semibold text-white shrink-0">
+              <div className="px-4 py-3 border-b border-white/8 flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-linear-to-br from-[#f7931a] to-[#a855f7] flex items-center justify-center text-sm font-bold text-white shrink-0">
                   {getInitial(user.name)}
                 </div>
                 <div className="min-w-0">
-                  <p className="label-sm text-text-primary truncate">
+                  <p className="text-sm font-semibold text-white truncate">
                     {user.name}
                   </p>
-                  <span className="label-xs text-primary capitalize">
+                  <span className="text-[10px] text-[#f7931a] capitalize">
                     {user.role}
                   </span>
                 </div>
               </div>
             )}
 
-            <nav className="flex-1 px-2 py-3 flex flex-col gap-0.5">
+            <nav className="flex-1 px-3 py-4 flex flex-col gap-1">
               {navItems.map((item) => {
                 const active = pathname === item.href;
                 return (
@@ -280,13 +280,15 @@ export default function DashboardNav() {
                     key={item.href}
                     href={item.href}
                     onClick={() => setMobileOpen(false)}
-                    className={`flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                       active
-                        ? "bg-primary/10 text-primary"
-                        : "text-text-secondary hover:text-text-primary hover:bg-bg-tertiary"
+                        ? "bg-[#f7931a]/15 text-[#f7931a]"
+                        : "text-white/50 hover:text-white hover:bg-white/5"
                     }`}
                   >
-                    <span>
+                    <span
+                      className={active ? "text-[#f7931a]" : "text-white/40"}
+                    >
                       {item.icon}
                     </span>
                     {item.label}
@@ -295,12 +297,12 @@ export default function DashboardNav() {
               })}
             </nav>
 
-            <div className="px-2 py-3 border-t border-border">
+            <div className="px-3 py-4 border-t border-white/8">
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium text-text-tertiary hover:text-error-500 hover:bg-error-500/10 transition-all duration-200"
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/40 hover:text-[#f87171] hover:bg-[#f87171]/10 transition-all"
               >
-                <LogoutCurve size={18} color="currentColor" />
+                <LogoutCurve size={20} color="currentColor" />
                 Sign out
               </button>
             </div>

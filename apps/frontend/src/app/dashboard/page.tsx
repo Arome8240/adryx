@@ -22,10 +22,10 @@ import {
 import PerformanceChart from "@/components/dashboard/PerformanceChart";
 
 const ACTIVITY_COLORS: Record<string, { dot: string; label: string }> = {
-  active: { dot: "bg-success-500", label: "Funded & activated" },
-  paused: { dot: "bg-warning-500", label: "Paused" },
-  draft: { dot: "bg-text-tertiary", label: "Created" },
-  completed: { dot: "bg-purple-500", label: "Completed" },
+  active: { dot: "bg-emerald-400", label: "Funded & activated" },
+  paused: { dot: "bg-yellow-400", label: "Paused" },
+  draft: { dot: "bg-white/30", label: "Created" },
+  completed: { dot: "bg-[#a855f7]", label: "Completed" },
 };
 
 function StatCard({
@@ -42,21 +42,21 @@ function StatCard({
   accent: string;
 }) {
   return (
-    <div className="card">
-      <div className="flex items-center justify-between mb-3">
-        <p className="label-xs text-text-tertiary">
+    <div className="rounded-2xl bg-[#0d0d1a] border border-white/8 p-5 flex flex-col gap-3">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold text-white/40 uppercase tracking-wider">
           {label}
         </p>
         <div
-          className="w-8 h-8 rounded-lg flex items-center justify-center"
+          className="w-8 h-8 rounded-xl flex items-center justify-center"
           style={{ backgroundColor: `${accent}18` }}
         >
           {icon}
         </div>
       </div>
       <div>
-        <p className="heading-3">{value}</p>
-        <p className="label-xs text-text-tertiary mt-1">{sub}</p>
+        <p className="text-2xl font-bold text-white">{value}</p>
+        <p className="text-xs text-white/40 mt-0.5">{sub}</p>
       </div>
     </div>
   );
@@ -64,10 +64,10 @@ function StatCard({
 
 function SkeletonCard() {
   return (
-    <div className="card animate-pulse space-y-3">
-      <div className="h-3 bg-bg-tertiary rounded w-1/3" />
-      <div className="h-7 bg-bg-tertiary rounded w-1/2" />
-      <div className="h-3 bg-bg-secondary rounded w-2/3" />
+    <div className="rounded-2xl bg-[#0d0d1a] border border-white/8 p-5 animate-pulse space-y-3">
+      <div className="h-3 bg-white/8 rounded w-1/3" />
+      <div className="h-7 bg-white/8 rounded w-1/2" />
+      <div className="h-3 bg-white/5 rounded w-2/3" />
     </div>
   );
 }
@@ -115,19 +115,19 @@ export default function OverviewPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="heading-2">
+          <h1 className="text-xl font-bold text-white">
             {greeting}
             {user?.name ? `, ${user.name.split(" ")[0]}` : ""}.
           </h1>
-          <p className="body-sm text-text-secondary mt-1">
+          <p className="text-sm text-white/40 mt-0.5">
             Here's what's happening with your campaigns.
           </p>
         </div>
         <button
           onClick={() => router.push("/dashboard/create")}
-          className="btn-primary"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#f7931a] hover:bg-[#f7931a]/90 text-white text-sm font-semibold transition-colors"
         >
-          <AddCircle size={16} color="#000000" variant="Bold" />
+          <AddCircle size={16} color="white" />
           New Campaign
         </button>
       </div>
@@ -145,29 +145,29 @@ export default function OverviewPage() {
             label="Campaigns"
             value={dashboard.totalCampaigns}
             sub={`${dashboard.activeCampaigns} active`}
-            icon={<Chart size={16} color="#a855f7" variant="Bold" />}
+            icon={<Chart size={16} color="#a855f7" />}
             accent="#a855f7"
           />
           <StatCard
             label="Total Budget"
             value={`${dashboard.totalBudget.toFixed(2)} USDC`}
             sub={`${dashboard.totalSpent.toFixed(2)} USDC spent`}
-            icon={<EmptyWallet size={16} color="#f97316" variant="Bold" />}
-            accent="#f97316"
+            icon={<EmptyWallet size={16} color="#f7931a" />}
+            accent="#f7931a"
           />
           <StatCard
             label="Impressions"
             value={dashboard.impressions.toLocaleString()}
             sub={`${dashboard.clicks.toLocaleString()} clicks`}
-            icon={<MouseCircle size={16} color="#06b6d4" variant="Bold" />}
-            accent="#06b6d4"
+            icon={<MouseCircle size={16} color="#3b82f6" />}
+            accent="#3b82f6"
           />
           <StatCard
             label="CTR"
             value={`${dashboard.ctr}%`}
             sub={`Avg CPC: ${dashboard.avgCpc} USDC`}
-            icon={<PercentageCircle size={16} color="#22c55e" variant="Bold" />}
-            accent="#22c55e"
+            icon={<PercentageCircle size={16} color="#4ade80" />}
+            accent="#4ade80"
           />
         </div>
       ) : null}
@@ -178,44 +178,44 @@ export default function OverviewPage() {
           {
             label: "New Campaign",
             desc: "Launch a new ad campaign",
-            icon: <AddCircle size={18} color="#f97316" variant="Bold" />,
-            accent: "#f97316",
+            icon: <AddCircle size={20} color="#f7931a" />,
+            accent: "#f7931a",
             href: "/dashboard/create",
           },
           {
             label: "Campaigns",
             desc: "Manage existing campaigns",
-            icon: <Chart size={18} color="#a855f7" variant="Bold" />,
+            icon: <Chart size={20} color="#a855f7" />,
             accent: "#a855f7",
             href: "/dashboard/campaigns",
           },
           {
             label: "Analytics",
             desc: "View performance reports",
-            icon: <TrendUp size={18} color="#06b6d4" variant="Bold" />,
-            accent: "#06b6d4",
+            icon: <TrendUp size={20} color="#3b82f6" />,
+            accent: "#3b82f6",
             href: "/dashboard/analytics",
           },
         ].map((action) => (
           <button
             key={action.href}
             onClick={() => router.push(action.href)}
-            className="flex items-center gap-3 px-4 py-3 card hover:border-border-hover transition-all duration-200 text-left group"
+            className="flex items-center gap-4 px-4 py-4 rounded-2xl bg-[#0d0d1a] border border-white/8 hover:border-white/15 transition-colors text-left group"
           >
             <div
-              className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+              className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
               style={{ backgroundColor: `${action.accent}15` }}
             >
               {action.icon}
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="label-sm text-text-primary">{action.label}</p>
-              <p className="label-xs text-text-tertiary">{action.desc}</p>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-white">{action.label}</p>
+              <p className="text-xs text-white/40">{action.desc}</p>
             </div>
             <ArrowRight
               size={14}
-              color="#a1a1aa"
-              className="ml-auto shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+              color="#ffffff20"
+              className="ml-auto shrink-0"
             />
           </button>
         ))}
@@ -223,25 +223,25 @@ export default function OverviewPage() {
 
       {/* T01 — Spending velocity + T02 — Budget health */}
       {campaigns.filter((c) => c.status === "active").length > 0 && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {/* T01 Velocity chart */}
-          <div className="card">
+          <div className="rounded-2xl bg-[#0d0d1a] border border-white/8 p-5">
             <div className="flex items-center gap-2 mb-4">
-              <TrendUp size={16} color="#f97316" variant="Bold" />
-              <p className="label-sm text-text-primary">
+              <TrendUp size={15} color="#f7931a" />
+              <p className="text-sm font-semibold text-white">
                 Daily Burn Rate
               </p>
-              <span className="label-xs text-text-tertiary ml-auto">USDC / day</span>
+              <span className="text-xs text-white/30 ml-auto">USDC / day</span>
             </div>
             {velocityData.length === 0 ? (
-              <p className="body-sm text-text-tertiary text-center py-8">
+              <p className="text-xs text-white/30 text-center py-8">
                 No spend data yet
               </p>
             ) : (
               <PerformanceChart
                 data={velocityData}
                 lines={[
-                  { key: "dailyBurn", color: "#f97316", label: "USDC/day" },
+                  { key: "dailyBurn", color: "#f7931a", label: "USDC/day" },
                 ]}
                 height={160}
               />
@@ -249,10 +249,10 @@ export default function OverviewPage() {
           </div>
 
           {/* T02 Budget health */}
-          <div className="card">
+          <div className="rounded-2xl bg-[#0d0d1a] border border-white/8 p-5">
             <div className="flex items-center gap-2 mb-4">
-              <EmptyWallet size={16} color="#a855f7" variant="Bold" />
-              <p className="label-sm text-text-primary">Budget Health</p>
+              <EmptyWallet size={15} color="#a855f7" />
+              <p className="text-sm font-semibold text-white">Budget Health</p>
             </div>
             <div className="space-y-3">
               {campaigns
@@ -264,23 +264,23 @@ export default function OverviewPage() {
                       ? Math.min((c.spent / c.budget) * 100, 100)
                       : 0;
                   const color =
-                    pct >= 85 ? "#ef4444" : pct >= 60 ? "#f97316" : "#22c55e";
+                    pct >= 85 ? "#f87171" : pct >= 60 ? "#f7931a" : "#4ade80";
                   return (
                     <div key={c._id}>
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="label-xs text-text-secondary truncate max-w-[140px]">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs text-white/60 truncate max-w-[140px]">
                           {c.name}
                         </span>
                         <span
-                          className="label-xs font-semibold tabular-nums"
+                          className="text-xs font-semibold tabular-nums"
                           style={{ color }}
                         >
                           {pct.toFixed(0)}%
                         </span>
                       </div>
-                      <div className="w-full h-1.5 rounded-full bg-bg-tertiary overflow-hidden">
+                      <div className="w-full h-1.5 rounded-full bg-white/5 overflow-hidden">
                         <div
-                          className="h-full rounded-full transition-all duration-200"
+                          className="h-full rounded-full transition-all"
                           style={{ width: `${pct}%`, backgroundColor: color }}
                         />
                       </div>
@@ -293,17 +293,17 @@ export default function OverviewPage() {
       )}
 
       {/* Bottom two-column grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* T04 — Top performing campaigns */}
-        <div className="card p-0 overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+        <div className="rounded-2xl bg-[#0d0d1a] border border-white/8 overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-white/8">
             <div className="flex items-center gap-2">
-              <Flash size={16} color="#f97316" variant="Bold" />
-              <p className="label-sm text-text-primary">Top Campaigns</p>
+              <Flash size={15} color="#f7931a" />
+              <p className="text-sm font-semibold text-white">Top Campaigns</p>
             </div>
             <button
               onClick={() => router.push("/dashboard/analytics")}
-              className="label-xs text-primary hover:text-primary-600 transition-colors"
+              className="text-xs text-[#a855f7] hover:text-[#c084fc] transition-colors"
             >
               Full analytics →
             </button>
@@ -313,18 +313,18 @@ export default function OverviewPage() {
             <div className="p-5 space-y-3">
               {[...Array(3)].map((_, i) => (
                 <div key={i} className="animate-pulse flex items-center gap-3">
-                  <div className="w-7 h-7 rounded-lg bg-bg-tertiary shrink-0" />
+                  <div className="w-7 h-7 rounded-lg bg-white/5 shrink-0" />
                   <div className="flex-1 space-y-1.5">
-                    <div className="h-3 bg-bg-tertiary rounded w-1/2" />
-                    <div className="h-2 bg-bg-secondary rounded w-1/3" />
+                    <div className="h-3 bg-white/8 rounded w-1/2" />
+                    <div className="h-2 bg-white/5 rounded w-1/3" />
                   </div>
-                  <div className="h-3 bg-bg-tertiary rounded w-12" />
+                  <div className="h-3 bg-white/8 rounded w-12" />
                 </div>
               ))}
             </div>
           ) : topCampaigns.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 gap-2">
-              <p className="body-sm text-text-tertiary">No campaign data yet</p>
+              <p className="text-sm text-white/30">No campaign data yet</p>
             </div>
           ) : (
             <ul>
@@ -334,25 +334,25 @@ export default function OverviewPage() {
                   onClick={() =>
                     router.push(`/dashboard/analytics?campaign=${c.campaignId}`)
                   }
-                  className={`flex items-center gap-3 px-5 py-3 cursor-pointer hover:bg-bg-tertiary transition-colors duration-200 ${i !== 0 ? "border-t border-border" : ""}`}
+                  className={`flex items-center gap-3 px-5 py-3 cursor-pointer hover:bg-white/3 transition-colors ${i !== 0 ? "border-t border-white/5" : ""}`}
                 >
-                  <span className="label-xs font-semibold text-text-tertiary w-4 shrink-0">
+                  <span className="text-xs font-bold text-white/20 w-4 shrink-0">
                     {i + 1}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <p className="label-sm text-text-primary truncate">
+                    <p className="text-sm font-medium text-white truncate">
                       {c.name}
                     </p>
-                    <p className="label-xs text-text-tertiary">
+                    <p className="text-xs text-white/30">
                       {c.impressions.toLocaleString()} impr ·{" "}
                       {c.clicks.toLocaleString()} clicks
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="label-sm font-semibold text-success-500">
+                    <p className="text-sm font-bold text-emerald-400">
                       {c.ctr.toFixed(2)}%
                     </p>
-                    <p className="label-xs text-text-tertiary">CTR</p>
+                    <p className="text-[10px] text-white/30">CTR</p>
                   </div>
                 </li>
               ))}
@@ -361,17 +361,17 @@ export default function OverviewPage() {
         </div>
 
         {/* T03 — Activity feed */}
-        <div className="card p-0 overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+        <div className="rounded-2xl bg-[#0d0d1a] border border-white/8 overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-white/8">
             <div className="flex items-center gap-2">
-              <Clock size={16} color="#a855f7" variant="Bold" />
-              <p className="label-sm text-text-primary">
+              <Clock size={15} color="#a855f7" />
+              <p className="text-sm font-semibold text-white">
                 Recent Activity
               </p>
             </div>
             <button
               onClick={() => router.push("/dashboard/campaigns")}
-              className="label-xs text-primary hover:text-primary-600 transition-colors"
+              className="text-xs text-[#a855f7] hover:text-[#c084fc] transition-colors"
             >
               All campaigns →
             </button>
@@ -381,17 +381,17 @@ export default function OverviewPage() {
             <div className="p-5 space-y-3">
               {[...Array(4)].map((_, i) => (
                 <div key={i} className="animate-pulse flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-bg-tertiary shrink-0" />
+                  <div className="w-2 h-2 rounded-full bg-white/10 shrink-0" />
                   <div className="flex-1 space-y-1.5">
-                    <div className="h-3 bg-bg-tertiary rounded w-2/3" />
-                    <div className="h-2 bg-bg-secondary rounded w-1/3" />
+                    <div className="h-3 bg-white/8 rounded w-2/3" />
+                    <div className="h-2 bg-white/5 rounded w-1/3" />
                   </div>
                 </div>
               ))}
             </div>
           ) : activity.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 gap-2">
-              <p className="body-sm text-text-tertiary">No activity yet</p>
+              <p className="text-sm text-white/30">No activity yet</p>
             </div>
           ) : (
             <ul className="p-3 space-y-1">
@@ -402,17 +402,17 @@ export default function OverviewPage() {
                   <li
                     key={String(item.campaignId) + i}
                     onClick={() => router.push("/dashboard/campaigns")}
-                    className="flex items-start gap-3 px-3 py-2.5 rounded-md hover:bg-bg-tertiary cursor-pointer transition-colors duration-200"
+                    className="flex items-start gap-3 px-3 py-2.5 rounded-xl hover:bg-white/3 cursor-pointer transition-colors"
                   >
                     <span
                       className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${ac.dot}`}
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="body-sm text-text-secondary truncate">
-                        <span className="font-medium text-text-primary">{item.name}</span>
-                        <span className="text-text-tertiary"> — {ac.label}</span>
+                      <p className="text-sm text-white/80 truncate">
+                        <span className="font-medium">{item.name}</span>
+                        <span className="text-white/40"> — {ac.label}</span>
                       </p>
-                      <p className="label-xs text-text-tertiary mt-0.5">
+                      <p className="text-xs text-white/30 mt-0.5">
                         {item.budget.toFixed(2)} USDC budget ·{" "}
                         {timeAgo(item.updatedAt)}
                       </p>
