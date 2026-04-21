@@ -33,8 +33,8 @@ export default function DashboardLayout({
 
   if (!hydrated || isLoading) {
     return (
-      <div className="flex min-h-screen bg-[#07070f] items-center justify-center">
-        <div className="text-white">Loading...</div>
+      <div className="flex min-h-screen bg-bg-primary items-center justify-center">
+        <div className="text-text-primary">Loading...</div>
       </div>
     );
   }
@@ -45,7 +45,7 @@ export default function DashboardLayout({
 
   return (
     <WalletProvider>
-      <div className="flex min-h-screen bg-[#07070f]">
+      <div className="flex min-h-screen bg-bg-primary">
         <Sidebar />
         <div className="flex-1 flex flex-col min-w-0">
           <DashboardNav />
