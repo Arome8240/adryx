@@ -26,8 +26,7 @@ const links = {
 
 export default function Footer() {
   return (
-    <footer className="relative border-t border-white/8 pt-16 pb-8 overflow-hidden">
-      <div className="absolute inset-0 bg-linear-to-t from-[#a855f7]/3 to-transparent pointer-events-none" />
+    <footer className="relative border-t border-border pt-16 pb-8 overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 relative">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-12">
           {/* Brand */}
@@ -35,44 +34,44 @@ export default function Footer() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.4 }}
             className="col-span-2 md:col-span-1"
           >
-            <div className="flex items-center gap-2.5 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[#f7931a] to-[#a855f7] flex items-center justify-center">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center">
                 <span className="text-white font-bold text-sm">A</span>
               </div>
-              <span className="font-bold text-lg">Adryx</span>
+              <span className="font-semibold text-base">Adryx</span>
             </div>
-            <p className="text-sm text-white/40 leading-relaxed max-w-xs">
+            <p className="body-sm text-text-tertiary max-w-xs mb-4">
               The decentralized advertising network for Web2 and Web3.
               Transparent, instant, and built on Solana.
             </p>
-            <div className="flex items-center gap-3 mt-5">
+            <div className="flex items-center gap-2">
               <Link
                 href="/docs"
                 aria-label="Documentation"
-                className="w-9 h-9 rounded-lg glass border border-white/10 flex items-center justify-center text-white/50 hover:text-white transition-colors"
+                className="w-8 h-8 rounded-md border border-border flex items-center justify-center text-text-tertiary hover:text-text-primary hover:border-border-hover transition-all duration-200"
               >
-                <DocumentText size={16} color="#f7931a" />
+                <DocumentText size={16} />
               </Link>
               <a
                 href="https://github.com/adryx/adryx"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="GitHub"
-                className="w-9 h-9 rounded-lg glass border border-white/10 flex items-center justify-center text-white/50 hover:text-white transition-colors"
+                className="w-8 h-8 rounded-md border border-border flex items-center justify-center text-text-tertiary hover:text-text-primary hover:border-border-hover transition-all duration-200"
               >
-                <Code size={16} color="#a855f7" />
+                <Code size={16} />
               </a>
               <a
                 href="https://twitter.com/adryx_io"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Twitter"
-                className="w-9 h-9 rounded-lg glass border border-white/10 flex items-center justify-center text-white/50 hover:text-white transition-colors"
+                className="w-8 h-8 rounded-md border border-border flex items-center justify-center text-text-tertiary hover:text-text-primary hover:border-border-hover transition-all duration-200"
               >
-                <Global size={16} color="#22d3ee" />
+                <Global size={16} />
               </a>
             </div>
           </motion.div>
@@ -84,12 +83,12 @@ export default function Footer() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: (i + 1) * 0.08 }}
+              transition={{ duration: 0.4, delay: (i + 1) * 0.05 }}
             >
-              <h4 className="text-xs font-semibold text-white/30 uppercase tracking-widest mb-4">
+              <h4 className="label-xs text-text-tertiary mb-3">
                 {group}
               </h4>
-              <ul className="flex flex-col gap-2.5">
+              <ul className="flex flex-col gap-2">
                 {items.map((item) => (
                   <li key={item.name}>
                     {item.href.startsWith('http') ? (
@@ -97,14 +96,14 @@ export default function Footer() {
                         href={item.href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-white/50 hover:text-white transition-colors"
+                        className="body-sm text-text-secondary hover:text-text-primary transition-colors duration-200"
                       >
                         {item.name}
                       </a>
                     ) : (
                       <Link
                         href={item.href}
-                        className="text-sm text-white/50 hover:text-white transition-colors"
+                        className="body-sm text-text-secondary hover:text-text-primary transition-colors duration-200"
                       >
                         {item.name}
                       </Link>
@@ -116,15 +115,15 @@ export default function Footer() {
           ))}
         </div>
 
-        <div className="border-t border-white/8 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-white/30">
+        <div className="border-t border-border pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p className="label-xs text-text-tertiary">
             &copy; {new Date().getFullYear()} Adryx. All rights reserved.
           </p>
-          <div className="flex items-center gap-4 text-xs text-white/30">
-            <Link href="/privacy" className="hover:text-white/60 transition-colors">
+          <div className="flex items-center gap-4">
+            <Link href="/privacy" className="label-xs text-text-tertiary hover:text-text-secondary transition-colors duration-200">
               Privacy Policy
             </Link>
-            <Link href="/terms" className="hover:text-white/60 transition-colors">
+            <Link href="/terms" className="label-xs text-text-tertiary hover:text-text-secondary transition-colors duration-200">
               Terms of Service
             </Link>
           </div>
