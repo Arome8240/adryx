@@ -11,30 +11,16 @@ async function bootstrap() {
   const apiPrefix = process.env.API_PREFIX || 'api/v1';
   app.setGlobalPrefix(apiPrefix);
 
-  // CORS — must be before helmet
-  const allowedOrigins = (
-    process.env.CORS_ORIGIN ||
-    process.env.FRONTEND_URL ||
-    'http://localhost:3000'
-  )
-    .split(',')
-    .map((o) => o.trim());
-
+  // CORS — open to all origins
   app.enableCors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
-        return callback(null, true);
-      }
-      return callback(new Error(`CORS: origin ${origin} not allowed`), false);
-    },
+    origin: true,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
-  // Security — after CORS so helmet doesn't strip CORS headers
-  app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+  // Security — after CORS
+  app.use(helmet({ crossOriginResourcePolicy: false }));
 
   // Validation
   app.useGlobalPipes(
