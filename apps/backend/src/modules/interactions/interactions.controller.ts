@@ -5,8 +5,14 @@ import {
   Body,
   Param,
   Query,
+  Req,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
-import type { Request } from 'express';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UserRole } from '../../common/enums';
 import { InteractionsService } from './interactions.service';
 import { InteractionType } from '../../common/enums';
 
@@ -14,41 +20,51 @@ import { InteractionType } from '../../common/enums';
 export class InteractionsController {
   constructor(private readonly interactionsService: InteractionsService) {}
 
+  /** Public — called by the ad SDK on publisher sites */
   @Post('impression')
   async recordImpression(
-    @Body() body: { campaignId: string; placementId: string; userIp?: string; userAgent?: string },
+    @Body() body: { campaignId: string; placementId: string },
+    @Req() req: any,
   ) {
-    return await this.interactionsService.recordImpression(
+    const userIp =
+      req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
+      req.socket?.remoteAddress ||
+      '';
+    const userAgent = req.headers['user-agent'] || '';
+
+    return this.interactionsService.recordImpression(
       body.campaignId,
       body.placementId,
-      body.userIp || '',
-      body.userAgent || '',
+      userIp,
+      userAgent,
     );
   }
 
+  /** Public — called by the ad SDK when user clicks an ad */
   @Post('click')
   async recordClick(
     @Body()
-    body: {
-      campaignId: string;
-      placementId: string;
-      publisherWallet: string;
-      userIp?: string;
-      userAgent?: string;
-    },
+    body: { campaignId: string; placementId: string; publisherWallet: string },
+    @Req() req: any,
   ) {
-    return await this.interactionsService.recordClick(
+    const userIp =
+      req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
+      req.socket?.remoteAddress ||
+      '';
+    const userAgent = req.headers['user-agent'] || '';
+
+    return this.interactionsService.recordClick(
       body.campaignId,
       body.placementId,
       body.publisherWallet,
-      body.userIp || '',
-      body.userAgent || '',
+      userIp,
+      userAgent,
     );
   }
 
   @Get(':id')
   async getInteraction(@Param('id') id: string) {
-    return await this.interactionsService.getInteraction(id);
+    return this.interactionsService.getInteraction(id);
   }
 
   @Get('campaign/:campaignId')
@@ -56,10 +72,7 @@ export class InteractionsController {
     @Param('campaignId') campaignId: string,
     @Query('type') type?: InteractionType,
   ) {
-    return await this.interactionsService.getCampaignInteractions(
-      campaignId,
-      type,
-    );
+    return this.interactionsService.getCampaignInteractions(campaignId, type);
   }
 
   @Get('placement/:placementId')
@@ -67,9 +80,19 @@ export class InteractionsController {
     @Param('placementId') placementId: string,
     @Query('type') type?: InteractionType,
   ) {
-    return await this.interactionsService.getPlacementInteractions(
-      placementId,
-      type,
-    );
+    return this.interactionsService.getPlacementInteractions(placementId, type);
+  }
+
+  /** Publisher earnings — requires auth */
+  @Get('earnings/publisher')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.PUBLISHER)
+  async getPublisherEarnings(@Request() req: any) {
+    return this.interactionsService.getPublisherEarnings(req.user.userId);
+  }
+
+  @Get('earnings/placement/:placementId')
+  async getPlacementEarnings(@Param('placementId') placementId: string) {
+    return this.interactionsService.getPlacementEarnings(placementId);
   }
 }

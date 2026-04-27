@@ -204,3 +204,24 @@ export function usePublisherHeatmap(days = 30) {
 
   return { heatmap, isLoading };
 }
+
+// Real-time earnings breakdown (pending vs claimed)
+export function usePublisherEarningsBreakdown() {
+  const [earnings, setEarnings] = useState<{
+    totalEarnings: number;
+    totalClicks: number;
+    pendingEarnings: number;
+    claimedEarnings: number;
+  } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    apiClient
+      .getPublisherEarningsBreakdown()
+      .then(setEarnings)
+      .catch(() => setEarnings(null))
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  return { earnings, isLoading };
+}

@@ -15,6 +15,7 @@ import WalletButton from "@/components/dashboard/WalletButton";
 import {
   usePublisherDashboard,
   usePublisherEarnings,
+  usePublisherEarningsBreakdown,
 } from "@/hooks/usePublisher";
 import { apiClient } from "@/lib/api-client";
 import {
@@ -36,6 +37,7 @@ export default function EarningsPage() {
   const { connection } = useConnection();
   const { dashboard, isLoading: dashLoading } = usePublisherDashboard();
   const { earningsChart, isLoading: chartLoading } = usePublisherEarnings(30);
+  const { earnings: breakdown } = usePublisherEarningsBreakdown();
 
   const [selectedToken, setSelectedToken] = useState<StablecoinSymbol>("USDC");
   const [claiming, setClaiming] = useState(false);
@@ -246,6 +248,17 @@ export default function EarningsPage() {
             Withdraw ${formatToken(totalEarnings)} to your connected wallet as{" "}
             {selectedToken}
           </p>
+          {breakdown && (
+            <div className="flex items-center gap-3 mt-2">
+              <span className="text-xs text-[#4ade80] font-semibold">
+                ${formatToken(breakdown.pendingEarnings)} pending
+              </span>
+              <span className="text-white/20">·</span>
+              <span className="text-xs text-white/40">
+                ${formatToken(breakdown.claimedEarnings)} claimed
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">

@@ -378,6 +378,51 @@ class ApiClient {
       treasuryPda: string;
     }>("/solana/info");
   }
+
+  // Tracking — called by ad SDK (no auth required)
+  async recordImpression(campaignId: string, placementId: string) {
+    return this.request<{ interactionId: string; type: string }>(
+      "/interactions/impression",
+      {
+        method: "POST",
+        body: JSON.stringify({ campaignId, placementId }),
+      },
+    );
+  }
+
+  async recordClick(
+    campaignId: string,
+    placementId: string,
+    publisherWallet: string,
+  ) {
+    return this.request<{
+      interactionId: string;
+      type: string;
+      txHash?: string;
+      paid: boolean;
+    }>("/interactions/click", {
+      method: "POST",
+      body: JSON.stringify({ campaignId, placementId, publisherWallet }),
+    });
+  }
+
+  // Publisher earnings breakdown
+  async getPublisherEarningsBreakdown() {
+    return this.request<{
+      totalEarnings: number;
+      totalClicks: number;
+      pendingEarnings: number;
+      claimedEarnings: number;
+    }>("/interactions/earnings/publisher");
+  }
+
+  async getPlacementEarnings(placementId: string) {
+    return this.request<{
+      placementId: string;
+      earnings: number;
+      clicks: number;
+    }>(`/interactions/earnings/placement/${placementId}`);
+  }
 }
 
 export const apiClient = new ApiClient(API_BASE_URL);
