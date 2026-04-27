@@ -297,24 +297,32 @@ export default function CreateCampaignPage() {
 
           <div className="grid grid-cols-2 gap-3">
             <Field label="Start Date">
-              <input
-                name="startDate"
-                type="date"
-                value={formData.startDate}
-                onChange={handleChange}
-                required
-                className={inputCls}
-              />
+              <div className="relative">
+                <input
+                  name="startDate"
+                  type="date"
+                  value={formData.startDate}
+                  onChange={handleChange}
+                  required
+                  min={new Date().toISOString().split("T")[0]}
+                  className={`${inputCls} cursor-pointer [color-scheme:dark]`}
+                />
+              </div>
             </Field>
             <Field label="End Date">
-              <input
-                name="endDate"
-                type="date"
-                value={formData.endDate}
-                onChange={handleChange}
-                required
-                className={inputCls}
-              />
+              <div className="relative">
+                <input
+                  name="endDate"
+                  type="date"
+                  value={formData.endDate}
+                  onChange={handleChange}
+                  required
+                  min={
+                    formData.startDate || new Date().toISOString().split("T")[0]
+                  }
+                  className={`${inputCls} cursor-pointer [color-scheme:dark]`}
+                />
+              </div>
             </Field>
           </div>
         </div>
