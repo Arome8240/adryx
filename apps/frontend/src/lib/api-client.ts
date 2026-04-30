@@ -377,6 +377,12 @@ class ApiClient {
     return this.request<any[]>(`/analytics/campaign/${id}?days=${days}`);
   }
 
+  async getAllCampaignsAnalytics(days: number = 30) {
+    return this.request<any[]>(
+      `/analytics/advertiser/all-campaigns?days=${days}`,
+    );
+  }
+
   async getTopCampaigns(limit: number = 10) {
     return this.request<any[]>(`/analytics/top-campaigns?limit=${limit}`);
   }

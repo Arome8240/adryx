@@ -281,6 +281,35 @@ export class AnalyticsService {
     return interactions;
   }
 
+  async getAllCampaignsAnalytics(advertiserId: string, days: number = 30) {
+    const campaigns = await this.campaignModel.find({ advertiserId });
+    const campaignIds = campaigns.map((c) => c._id);
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    const interactions = await this.interactionModel.aggregate([
+      {
+        $match: {
+          campaignId: { $in: campaignIds },
+          createdAt: { $gte: startDate },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            date: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+            type: '$type',
+          },
+          count: { $sum: 1 },
+          totalReward: { $sum: '$reward' },
+        },
+      },
+      { $sort: { '_id.date': 1 } },
+    ]);
+
+    return interactions;
+  }
+
   async getCampaignHourlyHeatmap(advertiserId: string, days: number = 30) {
     const campaigns = await this.campaignModel.find({ advertiserId });
     const campaignIds = campaigns.map((c) => c._id);

@@ -67,20 +67,18 @@ export function useCampaignAnalytics(
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!campaignId) {
-      setAnalytics([]);
-      setIsLoading(false);
-      return;
-    }
-
     const fetchAnalytics = async () => {
       try {
         setIsLoading(true);
-        const data = await apiClient.getCampaignAnalytics(campaignId, days);
+        // If no campaign selected, fetch aggregate across all campaigns
+        const data = campaignId
+          ? await apiClient.getCampaignAnalytics(campaignId, days)
+          : await apiClient.getAllCampaignsAnalytics(days);
         setAnalytics(data);
         setError(null);
       } catch (err: any) {
         setError(err.message);
+        setAnalytics([]);
       } finally {
         setIsLoading(false);
       }

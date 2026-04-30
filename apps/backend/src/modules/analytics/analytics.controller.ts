@@ -112,6 +112,15 @@ export class AnalyticsController {
     );
   }
 
+  @Get('advertiser/all-campaigns')
+  @Roles(UserRole.ADVERTISER)
+  async getAllCampaignsAnalytics(@Request() req, @Query('days') days?: number) {
+    return await this.analyticsService.getAllCampaignsAnalytics(
+      req.user.userId,
+      days ? parseInt(days.toString()) : 30,
+    );
+  }
+
   @Get('site/:id')
   async getSiteAnalytics(
     @Param('id') id: string,
