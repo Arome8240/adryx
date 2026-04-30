@@ -7,7 +7,7 @@ import { TickCircle, Eye, EyeSlash } from "iconsax-react";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, register, isAuthenticated, isLoading } = useAuth();
+  const { login, register, isAuthenticated, isLoading, user } = useAuth();
 
   const [mode, setMode] = useState<"login" | "register">("login");
   const [formData, setFormData] = useState({
@@ -21,17 +21,17 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
-    if (isAuthenticated) {
-      router.push("/dashboard");
+    if (isAuthenticated && user) {
+      router.push(user.role === "publisher" ? "/publishers" : "/dashboard");
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, user, router]);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     try {
       await login(formData.email, formData.password);
-      router.push("/dashboard");
+      // redirect handled by useEffect above once user is set
     } catch (err: any) {
       setError(err.message || "Failed to login");
     }
@@ -48,7 +48,7 @@ export default function LoginPage() {
         role: formData.role,
       });
       setSuccess("Account created! Redirecting…");
-      router.push("/dashboard");
+      // redirect handled by useEffect once user is set
     } catch (err: any) {
       setError(err.message || "Failed to register");
     }
