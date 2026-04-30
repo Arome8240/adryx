@@ -254,10 +254,14 @@ export class AnalyticsService {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
+    // Convert string to ObjectId so the $match hits the index correctly
+    const { Types } = await import('mongoose');
+    const campaignObjectId = new Types.ObjectId(campaignId);
+
     const interactions = await this.interactionModel.aggregate([
       {
         $match: {
-          campaignId,
+          campaignId: campaignObjectId,
           createdAt: { $gte: startDate },
         },
       },
@@ -271,9 +275,7 @@ export class AnalyticsService {
           totalReward: { $sum: '$reward' },
         },
       },
-      {
-        $sort: { '_id.date': 1 },
-      },
+      { $sort: { '_id.date': 1 } },
     ]);
 
     return interactions;
