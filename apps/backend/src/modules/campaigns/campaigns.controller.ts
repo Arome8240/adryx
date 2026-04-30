@@ -67,6 +67,21 @@ export class CampaignsController {
     await this.campaignsService.remove(id, req.user.userId);
   }
 
+  @Post(':id/topup')
+  @Roles(UserRole.ADVERTISER)
+  async topUpCampaign(
+    @Param('id') id: string,
+    @Request() req,
+    @Body() body: { additionalUsdc: number; txSignature: string },
+  ) {
+    return await this.campaignsService.topUpCampaign(
+      id,
+      req.user.userId,
+      body.additionalUsdc,
+      body.txSignature,
+    );
+  }
+
   @Post(':id/duplicate')
   @Roles(UserRole.ADVERTISER)
   async duplicateCampaign(@Param('id') id: string, @Request() req) {

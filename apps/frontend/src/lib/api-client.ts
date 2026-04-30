@@ -309,6 +309,18 @@ class ApiClient {
     });
   }
 
+  async topUpCampaign(id: string, additionalUsdc: number, txSignature: string) {
+    return this.request<{
+      campaignId: string;
+      addedUsdc: number;
+      newBudget: number;
+      txSignature: string;
+    }>(`/campaigns/${id}/topup`, {
+      method: "POST",
+      body: JSON.stringify({ additionalUsdc, txSignature }),
+    });
+  }
+
   async pauseCampaign(id: string) {
     return this.request<any>(`/campaigns/${id}/pause`, {
       method: "POST",

@@ -88,6 +88,9 @@ export default function CampaignsPage() {
   const [fundingId, setFundingId] = useState<string | null>(null);
   const [fundingAmount, setFundingAmount] = useState("");
   const [isFunding, setIsFunding] = useState(false);
+  const [topUpId, setTopUpId] = useState<string | null>(null);
+  const [topUpAmount, setTopUpAmount] = useState("");
+  const [isTopUp, setIsTopUp] = useState(false);
 
   const [editingCampaign, setEditingCampaign] = useState<any | null>(null);
   const [editForm, setEditForm] = useState<any>({});
@@ -201,6 +204,60 @@ export default function CampaignsPage() {
       );
     } finally {
       setIsFunding(false);
+    }
+  }
+
+  // Top-up
+  async function handleTopUp() {
+    if (!publicKey) return showToast("Connect your wallet first", false);
+    const amount = parseFloat(topUpAmount);
+    if (!topUpId || isNaN(amount) || amount <= 0)
+      return showToast("Enter a valid amount", false);
+    setIsTopUp(true);
+    try {
+      const solanaInfo = await apiClient.getSolanaInfo();
+      const programId = new PublicKey(solanaInfo.programId);
+      const [escrowPda] = PublicKey.findProgramAddressSync(
+        [Buffer.from("campaign"), publicKey.toBuffer(), Buffer.from(topUpId)],
+        programId,
+      );
+      const senderAta = await getAssociatedTokenAddress(
+        USDC_MINT_DEVNET,
+        publicKey,
+      );
+      const escrowAta = await getAssociatedTokenAddress(
+        USDC_MINT_DEVNET,
+        escrowPda,
+        true,
+      );
+      const rawAmount = usdcToRaw(amount);
+      const transferIx = createTransferInstruction(
+        senderAta,
+        escrowAta,
+        publicKey,
+        rawAmount,
+      );
+      const tx = new Transaction().add(transferIx);
+      const { blockhash } = await connection.getLatestBlockhash();
+      tx.recentBlockhash = blockhash;
+      tx.feePayer = publicKey;
+      showToast("Approve the transaction in your wallet…", true);
+      const signature = await sendTransaction(tx, connection);
+      await connection.confirmTransaction(signature, "confirmed");
+      await apiClient.topUpCampaign(topUpId, amount, signature);
+      await refetch();
+      showToast(`Added $${amount.toFixed(2)} USDC to campaign!`);
+      setTopUpId(null);
+      setTopUpAmount("");
+    } catch (e: any) {
+      showToast(
+        e.message?.includes("User rejected")
+          ? "Transaction cancelled"
+          : (e.message ?? "Failed"),
+        false,
+      );
+    } finally {
+      setIsTopUp(false);
     }
   }
 
@@ -573,6 +630,14 @@ export default function CampaignsPage() {
                       <Pause size={13} color="currentColor" /> Pause
                     </button>
                   )}
+                  {(c.status === "active" || c.status === "paused") && (
+                    <button
+                      onClick={() => setTopUpId(c._id)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#4ade80]/10 hover:bg-[#4ade80]/20 text-[#4ade80] text-xs font-semibold transition-colors"
+                    >
+                      <EmptyWallet size={13} color="currentColor" /> Top Up
+                    </button>
+                  )}
                   {c.status === "paused" && (
                     <button
                       onClick={() => handleResume(c._id)}
@@ -751,6 +816,60 @@ export default function CampaignsPage() {
                 className="flex-1 px-4 py-2.5 rounded-xl bg-[#f7931a] hover:bg-[#f7931a]/90 text-white text-sm font-semibold disabled:opacity-40 transition-colors"
               >
                 {isSaving ? "Saving…" : "Save Changes"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Top-up Modal — R05 */}
+      {topUpId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setTopUpId(null)}
+          />
+          <div className="relative w-full max-w-sm rounded-2xl bg-[#13131f] border border-white/10 shadow-2xl p-6">
+            <h2 className="text-base font-bold text-white mb-1">
+              Top Up Campaign
+            </h2>
+            <p className="text-xs text-white/40 mb-5">
+              Add more USDC budget to this active campaign.
+            </p>
+            {!publicKey && (
+              <div className="mb-4 px-3 py-2.5 rounded-xl bg-yellow-400/10 border border-yellow-400/20 text-yellow-400 text-xs">
+                Connect your wallet to top up.
+              </div>
+            )}
+            <label className="block text-xs font-medium text-white/50 mb-1.5">
+              Additional Amount (USDC)
+            </label>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              value={topUpAmount}
+              onChange={(e) => setTopUpAmount(e.target.value)}
+              placeholder="0.00"
+              className="w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-white/20 outline-none focus:border-[#4ade80]/50 transition-colors mb-5"
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setTopUpId(null);
+                  setTopUpAmount("");
+                }}
+                disabled={isTopUp}
+                className="flex-1 px-4 py-2.5 rounded-xl border border-white/10 text-white/60 text-sm hover:bg-white/5 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleTopUp}
+                disabled={isTopUp || !publicKey}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-[#4ade80] hover:bg-[#4ade80]/90 text-black text-sm font-bold disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                {isTopUp ? "Processing…" : "Top Up"}
               </button>
             </div>
           </div>

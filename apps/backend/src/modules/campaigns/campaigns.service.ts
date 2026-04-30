@@ -19,6 +19,41 @@ export class CampaignsService {
     private readonly paymentService: PaymentService,
   ) {}
 
+  async topUpCampaign(
+    id: string,
+    advertiserId: string,
+    additionalUsdc: number,
+    txSignature: string,
+  ) {
+    const campaign = await this.campaignModel.findOne({
+      _id: id,
+      advertiserId,
+    });
+    if (!campaign) throw new NotFoundException(`Campaign ${id} not found`);
+
+    if (
+      campaign.status !== CampaignStatus.ACTIVE &&
+      campaign.status !== CampaignStatus.PAUSED
+    ) {
+      throw new BadRequestException(
+        'Only active or paused campaigns can be topped up',
+      );
+    }
+
+    const updated = await this.campaignModel.findByIdAndUpdate(
+      id,
+      { $inc: { budget: additionalUsdc } },
+      { new: true },
+    );
+
+    return {
+      campaignId: id,
+      addedUsdc: additionalUsdc,
+      newBudget: updated!.budget,
+      txSignature,
+    };
+  }
+
   async duplicateCampaign(id: string, advertiserId: string): Promise<Campaign> {
     const source = await this.campaignModel.findOne({ _id: id, advertiserId });
     if (!source) throw new NotFoundException(`Campaign ${id} not found`);
