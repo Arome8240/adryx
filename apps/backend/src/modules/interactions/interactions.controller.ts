@@ -9,6 +9,7 @@ import {
   UseGuards,
   Request,
 } from '@nestjs/common';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -17,11 +18,13 @@ import { InteractionsService } from './interactions.service';
 import { InteractionType } from '../../common/enums';
 
 @Controller('interactions')
+@UseGuards(ThrottlerGuard)
 export class InteractionsController {
   constructor(private readonly interactionsService: InteractionsService) {}
 
   /** Public — called by the ad SDK on publisher sites */
   @Post('impression')
+  @Throttle({ default: { ttl: 60000, limit: 120 } }) // 2 impressions/sec per IP
   async recordImpression(
     @Body() body: { campaignId: string; placementId: string },
     @Req() req: any,
@@ -42,6 +45,7 @@ export class InteractionsController {
 
   /** Public — called by the ad SDK when user clicks an ad */
   @Post('click')
+  @Throttle({ default: { ttl: 60000, limit: 30 } }) // 30 clicks/min per IP
   async recordClick(
     @Body()
     body: { campaignId: string; placementId: string; publisherWallet: string },
