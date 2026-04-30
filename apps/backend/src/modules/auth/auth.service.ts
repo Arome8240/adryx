@@ -150,7 +150,10 @@ export class AuthService {
 
   async refreshToken(userId: string) {
     const user = await this.validateUser(userId);
-    return this.generateTokens(user);
+    // Rotate: issue fresh tokens on every refresh call
+    const tokens = await this.generateTokens(user);
+    this.logger.log(`Tokens rotated for user: ${user._id}`);
+    return tokens;
   }
 
   async updateProfile(userId: string, dto: UpdateProfileDto) {
