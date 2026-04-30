@@ -66,3 +66,7 @@ CampaignSchema.virtual('interactions', {
 // Enable virtuals in JSON
 CampaignSchema.set('toJSON', { virtuals: true });
 CampaignSchema.set('toObject', { virtuals: true });
+
+// Indexes
+CampaignSchema.index({ advertiserId: 1, status: 1 });
+CampaignSchema.index({ advertiserId: 1, createdAt: -1 });

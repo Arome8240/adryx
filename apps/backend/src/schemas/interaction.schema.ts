@@ -49,8 +49,15 @@ InteractionSchema.virtual('placement', {
   justOne: true,
 });
 
-// Add indexes for performance
-InteractionSchema.index({ campaignId: 1, placementId: 1, type: 1, createdAt: -1 });
+// Indexes for performance
+// Compound index for analytics queries (most common access pattern)
+InteractionSchema.index({ campaignId: 1, type: 1, createdAt: -1 });
+// Placement-based queries (publisher earnings, stats)
+InteractionSchema.index({ placementId: 1, type: 1, createdAt: -1 });
+// Fraud detection: duplicate click check by IP + placement
+InteractionSchema.index({ placementId: 1, userIp: 1, type: 1, createdAt: -1 });
+// Unpaid clicks retry queue
+InteractionSchema.index({ type: 1, reward: 1, solanaTxHash: 1 });
 
 // Enable virtuals in JSON
 InteractionSchema.set('toJSON', { virtuals: true });
