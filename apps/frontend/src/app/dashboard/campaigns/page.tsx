@@ -752,9 +752,15 @@ export default function CampaignsPage() {
             onClick={() => setEditingCampaign(null)}
           />
           <div className="relative w-full max-w-lg rounded-2xl bg-[#13131f] border border-white/10 shadow-2xl p-6 max-h-[90vh] overflow-y-auto">
-            <h2 className="text-base font-bold text-white mb-5">
+            <h2 className="text-base font-bold text-white mb-2">
               Edit Campaign
             </h2>
+            {editingCampaign?.status === "active" && (
+              <p className="text-xs text-yellow-400/80 bg-yellow-400/8 border border-yellow-400/20 rounded-xl px-3 py-2 mb-4">
+                Campaign is active — budget and dates cannot be changed. Only
+                name, description, URLs, and format can be updated.
+              </p>
+            )}
             <div className="space-y-4">
               {[
                 { label: "Name", key: "name", type: "text" },
