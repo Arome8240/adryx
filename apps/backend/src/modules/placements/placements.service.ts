@@ -82,27 +82,23 @@ export class PlacementsService {
 
   async generateCode(id: string): Promise<string> {
     const placement = await this.findOne(id);
+    const sdkUrl = `${process.env.FRONTEND_URL || 'https://adryx.vercel.app'}/sdk/adryx.js`;
 
-    // Generate integration code
-    const code = `
-<!-- Adryx Ad Placement -->
+    const code = `<!-- Adryx Ad Placement: ${placement.name} -->
 <div id="adryx-placement-${id}"></div>
+<script src="${sdkUrl}" data-adryx async></script>
 <script>
-  (function() {
-    var script = document.createElement('script');
-    script.src = '${process.env.FRONTEND_URL || 'http://localhost:3000'}/sdk/adryx.js';
-    script.async = true;
-    script.onload = function() {
-      Adryx.init({
-        placementId: '${id}',
-        format: '${placement.format}',
-        publisherWallet: '${placement.publisherId}'
-      });
-    };
-    document.head.appendChild(script);
-  })();
-</script>
-    `.trim();
+  window.addEventListener('load', function() {
+    Adryx.init({
+      placementId: '${id}',
+      format: '${placement.format}',
+      publisherWallet: '${placement.publisherId}',
+      // campaignId: 'CAMPAIGN_ID',   // optional: pin to a specific campaign
+      // creativeUrl: 'https://...',  // optional: override creative
+      // targetUrl: 'https://...',    // optional: override click destination
+    });
+  });
+</script>`.trim();
 
     return code;
   }
