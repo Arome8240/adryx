@@ -589,7 +589,7 @@ export default function CampaignsPage() {
                   >
                     <TrendUp size={13} color="currentColor" /> Stats
                   </button>
-                  {c.status === "draft" && (
+                  {c.status !== "completed" && (
                     <button
                       onClick={() => openEdit(c)}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/50 hover:text-white text-xs font-semibold transition-colors"
@@ -912,7 +912,7 @@ export default function CampaignsPage() {
                 >
                   <TrendUp size={13} color="currentColor" /> Analytics
                 </button>
-                {detailCampaign.status === "draft" && (
+                {detailCampaign.status !== "completed" && (
                   <button
                     onClick={() => {
                       openEdit(detailCampaign);
