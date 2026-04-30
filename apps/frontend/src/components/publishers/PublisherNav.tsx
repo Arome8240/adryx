@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -18,6 +18,10 @@ import {
   TickCircle,
 } from "iconsax-react";
 import { useAuth } from "@/hooks/useAuth";
+import {
+  usePublisherDashboard,
+  usePublisherEarningsBreakdown,
+} from "@/hooks/usePublisher";
 
 const navItems = [
   { label: "Overview", href: "/publishers", icon: Home2, color: "#4ade80" },
@@ -84,6 +88,8 @@ export default function PublisherNav() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
+  const { dashboard } = usePublisherDashboard();
+  const { earnings: breakdown } = usePublisherEarningsBreakdown();
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -117,24 +123,54 @@ export default function PublisherNav() {
     setTimeout(() => setCopied(false), 1500);
   }
 
-  // Read notification prefs from localStorage to show active count
-  const notifPrefs = (() => {
+  // Read notification prefs from localStorage
+  const notifPrefs = useMemo(() => {
     if (typeof window === "undefined") return null;
     try {
       return JSON.parse(localStorage.getItem(NOTIF_KEY) ?? "null");
     } catch {
       return null;
     }
-  })();
-  const activeNotifCount = notifPrefs
-    ? [
-        notifPrefs.earningsAlert,
-        notifPrefs.payoutAlert,
-        notifPrefs.lowFillRate,
-        notifPrefs.newCampaignMatch,
-        notifPrefs.weeklyReport,
-      ].filter(Boolean).length
-    : 0;
+  }, []);
+
+  // Generate real alerts from live data + preferences
+  const alerts = useMemo(() => {
+    const items: { color: string; title: string; desc: string }[] = [];
+
+    if (breakdown && breakdown.pendingEarnings > 0 && notifPrefs?.payoutAlert) {
+      items.push({
+        color: "#4ade80",
+        title: "Earnings ready to claim",
+        desc: `$${breakdown.pendingEarnings.toFixed(2)} USDC pending payout`,
+      });
+    }
+
+    if (notifPrefs?.earningsAlert && dashboard) {
+      const ctr = parseFloat(dashboard.ctr);
+      if (ctr === 0 && dashboard.impressions > 0) {
+        items.push({
+          color: "#f87171",
+          title: "Zero clicks today",
+          desc: `${dashboard.impressions.toLocaleString()} impressions but no clicks — check your creatives`,
+        });
+      }
+    }
+
+    if (notifPrefs?.lowFillRate && dashboard && dashboard.totalPlacements > 0) {
+      const fillRate = dashboard.impressions > 0 ? 100 : 0;
+      if (fillRate < (notifPrefs.fillRateThreshold ?? 50)) {
+        items.push({
+          color: "#f87171",
+          title: "Low fill rate",
+          desc: `Fill rate below ${notifPrefs.fillRateThreshold}% — add more placements`,
+        });
+      }
+    }
+
+    return items;
+  }, [breakdown, dashboard, notifPrefs]);
+
+  const activeNotifCount = alerts.length;
 
   return (
     <>
@@ -189,64 +225,40 @@ export default function PublisherNav() {
                   </Link>
                 </div>
                 <div className="p-4 space-y-3">
-                  {notifPrefs?.earningsAlert && (
-                    <div className="flex items-start gap-3 p-3 rounded-xl bg-[#4ade80]/8">
-                      <span className="w-2 h-2 rounded-full bg-[#4ade80] mt-1.5 shrink-0" />
-                      <div>
-                        <p className="text-xs font-semibold text-white">
-                          Earnings alerts on
-                        </p>
-                        <p className="text-xs text-white/40 mt-0.5">
-                          Alert when daily earnings exceed $
-                          {notifPrefs.earningsThreshold} USDC
-                        </p>
-                      </div>
+                  {alerts.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-4 gap-2">
+                      <TickCircle size={24} color="#ffffff20" />
+                      <p className="text-xs text-white/30">All caught up</p>
+                      <Link
+                        href="/publishers/settings"
+                        onClick={() => setNotifOpen(false)}
+                        className="text-xs text-[#4ade80] hover:text-[#4ade80]/80 transition-colors"
+                      >
+                        Configure alerts →
+                      </Link>
                     </div>
-                  )}
-                  {notifPrefs?.payoutAlert && (
-                    <div className="flex items-start gap-3 p-3 rounded-xl bg-[#f7931a]/8">
-                      <span className="w-2 h-2 rounded-full bg-[#f7931a] mt-1.5 shrink-0" />
-                      <div>
-                        <p className="text-xs font-semibold text-white">
-                          Payout notifications on
-                        </p>
-                        <p className="text-xs text-white/40 mt-0.5">
-                          You'll be notified when earnings are ready to claim
-                        </p>
+                  ) : (
+                    alerts.map((alert, i) => (
+                      <div
+                        key={i}
+                        className="flex items-start gap-3 p-3 rounded-xl"
+                        style={{ backgroundColor: `${alert.color}12` }}
+                      >
+                        <span
+                          className="w-2 h-2 rounded-full mt-1.5 shrink-0"
+                          style={{ backgroundColor: alert.color }}
+                        />
+                        <div>
+                          <p className="text-xs font-semibold text-white">
+                            {alert.title}
+                          </p>
+                          <p className="text-xs text-white/40 mt-0.5">
+                            {alert.desc}
+                          </p>
+                        </div>
                       </div>
-                    </div>
+                    ))
                   )}
-                  {notifPrefs?.lowFillRate && (
-                    <div className="flex items-start gap-3 p-3 rounded-xl bg-[#f87171]/8">
-                      <span className="w-2 h-2 rounded-full bg-[#f87171] mt-1.5 shrink-0" />
-                      <div>
-                        <p className="text-xs font-semibold text-white">
-                          Fill rate warning on
-                        </p>
-                        <p className="text-xs text-white/40 mt-0.5">
-                          Alert when fill rate drops below{" "}
-                          {notifPrefs.fillRateThreshold}%
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                  {!notifPrefs?.earningsAlert &&
-                    !notifPrefs?.payoutAlert &&
-                    !notifPrefs?.lowFillRate && (
-                      <div className="flex flex-col items-center justify-center py-4 gap-2">
-                        <TickCircle size={24} color="#ffffff20" />
-                        <p className="text-xs text-white/30">
-                          No active notifications
-                        </p>
-                        <Link
-                          href="/publishers/settings"
-                          onClick={() => setNotifOpen(false)}
-                          className="text-xs text-[#4ade80] hover:text-[#4ade80]/80 transition-colors"
-                        >
-                          Configure in Settings →
-                        </Link>
-                      </div>
-                    )}
                 </div>
               </div>
             )}
