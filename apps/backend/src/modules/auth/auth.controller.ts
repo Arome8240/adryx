@@ -15,6 +15,7 @@ import { LoginDto } from './dto/login.dto';
 import { WalletLoginDto } from './dto/wallet-login.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { ForgotPasswordDto, ResetPasswordDto } from './dto/reset-password.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Controller('auth')
@@ -62,5 +63,17 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async changePassword(@Request() req, @Body() dto: ChangePasswordDto) {
     return await this.authService.changePassword(req.user.userId, dto);
+  }
+
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return await this.authService.forgotPassword(dto);
+  }
+
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    return await this.authService.resetPassword(dto);
   }
 }

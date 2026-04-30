@@ -18,6 +18,8 @@ import { LoginDto } from './dto/login.dto';
 import { WalletLoginDto } from './dto/wallet-login.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { ForgotPasswordDto, ResetPasswordDto } from './dto/reset-password.dto';
+import { randomBytes } from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -181,6 +183,52 @@ export class AuthService {
     user.password = await bcrypt.hash(dto.newPassword, 10);
     await user.save();
     return { message: 'Password updated successfully' };
+  }
+
+  async forgotPassword(dto: ForgotPasswordDto) {
+    const user = await this.userModel.findOne({ email: dto.email });
+    // Always return success to prevent email enumeration
+    if (!user || !user.password) {
+      return { message: 'If that email exists, a reset link has been sent.' };
+    }
+
+    const token = randomBytes(32).toString('hex');
+    const expiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    await this.userModel.findByIdAndUpdate(user._id, {
+      resetToken: token,
+      resetTokenExpiry: expiry,
+    });
+
+    // In production, send an email here. For now, return the token in dev.
+    this.logger.log(`Password reset token for ${dto.email}: ${token}`);
+
+    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${token}`;
+    this.logger.log(`Reset URL: ${resetUrl}`);
+
+    return {
+      message: 'If that email exists, a reset link has been sent.',
+      // Only expose token in development
+      ...(process.env.NODE_ENV !== 'production' && { token, resetUrl }),
+    };
+  }
+
+  async resetPassword(dto: ResetPasswordDto) {
+    const user = await this.userModel.findOne({
+      resetToken: dto.token,
+      resetTokenExpiry: { $gt: new Date() },
+    });
+
+    if (!user) {
+      throw new BadRequestException('Invalid or expired reset token');
+    }
+
+    user.password = await bcrypt.hash(dto.newPassword, 10);
+    (user as any).resetToken = undefined;
+    (user as any).resetTokenExpiry = undefined;
+    await user.save();
+
+    return { message: 'Password reset successfully. You can now log in.' };
   }
 
   private async generateTokens(user: UserDocument) {

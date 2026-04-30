@@ -32,6 +32,12 @@ export class User {
   @Prop({ default: 'UTC' })
   timezone: string;
 
+  @Prop()
+  resetToken: string;
+
+  @Prop()
+  resetTokenExpiry: Date;
+
   // Virtual fields for relations (populated)
   campaigns: Types.ObjectId[];
   sites: Types.ObjectId[];
