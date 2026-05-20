@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -45,7 +45,7 @@ function exportCSV(data: any[], filename: string) {
   URL.revokeObjectURL(url);
 }
 
-export default function AnalyticsPage() {
+function AnalyticsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const urlCampaignId = searchParams.get("campaign");
@@ -666,5 +666,13 @@ export default function AnalyticsPage() {
         )}
       </motion.div>
     </div>
+  );
+}
+
+export default function AnalyticsPage() {
+  return (
+    <Suspense>
+      <AnalyticsContent />
+    </Suspense>
   );
 }
