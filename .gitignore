@@ -13,3 +13,4 @@ build/
 # Render deployment secrets
 .render-secrets
 render-secrets.txt
+target/
