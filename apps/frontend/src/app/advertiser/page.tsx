@@ -18,16 +18,24 @@ const STATUS_TONE: Record<string, string> = {
   ended: 'neutral',
 };
 
-export function CampaignTable({ rows }: { rows: typeof CAMPAIGNS }) {
+interface CampaignTableProps {
+  rows: typeof CAMPAIGNS;
+  selected?: string[];
+  onToggle?: (id: string) => void;
+}
+
+export function CampaignTable({ rows, selected, onToggle }: CampaignTableProps) {
   const router = useRouter();
   return (
     <div className="table-wrap">
       <table className="table">
         <thead>
           <tr>
+            <th></th>
             <th>Campaign</th>
             <th>Status</th>
             <th>Spent / Budget</th>
+            <th>Pacing</th>
             <th>Impressions</th>
             <th>CTR</th>
             <th>eCPM</th>
@@ -38,11 +46,37 @@ export function CampaignTable({ rows }: { rows: typeof CAMPAIGNS }) {
         <tbody>
           {rows.map(c => {
             const pct = c.budget > 0 ? (c.spent / c.budget) * 100 : 0;
+            const pacingColor =
+              pct >= 85
+                ? 'var(--c-bad)'
+                : pct < 5
+                ? 'var(--c-warn)'
+                : 'var(--c-ok)';
+            const isChecked = selected?.includes(c.id) ?? false;
             return (
-              <tr key={c.id} style={{ cursor: 'pointer' }} onClick={() => router.push(`/advertiser/campaigns/${c.id}`)}>
+              <tr
+                key={c.id}
+                style={{ cursor: 'pointer' }}
+                onClick={() => router.push(`/advertiser/campaigns/${c.id}`)}
+              >
+                <td onClick={e => e.stopPropagation()}>
+                  <input
+                    type="checkbox"
+                    checked={isChecked}
+                    onChange={(_e: React.ChangeEvent<HTMLInputElement>) => onToggle?.(c.id)}
+                  />
+                </td>
                 <td>
                   <div style={{ fontWeight: 530 }}>{c.name}</div>
-                  <div style={{ fontSize: 12, color: 'var(--c-fg-4)', display: 'flex', gap: 6, marginTop: 2 }}>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: 'var(--c-fg-4)',
+                      display: 'flex',
+                      gap: 6,
+                      marginTop: 2,
+                    }}
+                  >
                     <span className="t-mono">{c.id}</span>
                     {c.geos.map(g => (
                       <span
@@ -91,6 +125,17 @@ export function CampaignTable({ rows }: { rows: typeof CAMPAIGNS }) {
                     />
                   </div>
                 </td>
+                <td>
+                  <div
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      background: pacingColor,
+                      display: 'inline-block',
+                    }}
+                  />
+                </td>
                 <td className="t-mono" style={{ fontSize: 13.5 }}>
                   {fmtNum(c.imps)}
                 </td>
@@ -100,14 +145,32 @@ export function CampaignTable({ rows }: { rows: typeof CAMPAIGNS }) {
                   <Sparkline data={c.spark} width={72} height={24} />
                 </td>
                 <td>
-                  <button
-                    className="btn btn-ghost btn-icon btn-sm"
-                    onClick={e => {
-                      e.stopPropagation();
-                    }}
-                  >
-                    <Icons.more size={14} />
-                  </button>
+                  <div style={{ display: 'flex', gap: 4 }} onClick={e => e.stopPropagation()}>
+                    <button
+                      className="btn btn-ghost btn-icon btn-sm"
+                      title={c.status === 'active' ? 'Pause' : 'Play'}
+                      onClick={e => e.stopPropagation()}
+                    >
+                      {c.status === 'active' ? (
+                        <Icons.pause size={14} />
+                      ) : (
+                        <Icons.play size={14} />
+                      )}
+                    </button>
+                    <button
+                      className="btn btn-ghost btn-icon btn-sm"
+                      title="Duplicate"
+                      onClick={e => e.stopPropagation()}
+                    >
+                      <Icons.copy size={14} />
+                    </button>
+                    <button
+                      className="btn btn-ghost btn-icon btn-sm"
+                      onClick={e => e.stopPropagation()}
+                    >
+                      <Icons.more size={14} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             );
@@ -127,6 +190,7 @@ const STAT_CARDS = [
   { label: 'Impressions', value: '8.41M', delta: '+12.0%', up: true, spark: [12,16,20,22,26,28,32,36,40,42,46,50] },
   { label: 'Avg CTR', value: '1.62%', delta: '+0.18pp', up: true, spark: [10,12,14,13,15,14,16,15,17,16,18,19] },
   { label: 'Avg eCPM', value: '$3.21', delta: '−2.1%', up: false, spark: [22,21,20,21,19,20,18,19,17,18,16,15] },
+  { label: 'Active campaigns', value: '3', delta: '2 paused', up: true, spark: [3,3,4,4,3,4,4,3,4,3,3,3] },
 ];
 
 const GEO_ROWS = [
@@ -177,7 +241,15 @@ export default function AdvertiserOverview() {
       />
       <div className="app-body page-enter" style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
         {/* Greeting row */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: 16,
+          }}
+        >
           <div>
             <h1 className="t-h1" style={{ marginBottom: 6 }}>Good evening, Marina.</h1>
             <p className="muted" style={{ fontSize: 15 }}>
@@ -196,21 +268,23 @@ export default function AdvertiserOverview() {
           />
         </div>
 
-        {/* 4 stat cards */}
+        {/* 5 stat cards */}
         <div className="grid-4">
           {STAT_CARDS.map(s => (
-            <div key={s.label} className="stat">
-              <div className="stat-label">{s.label}</div>
-              <div className="stat-value">{s.value}</div>
-              <div className="stat-meta">
-                <span className={s.up ? 'delta-up' : 'delta-down'}>{s.delta}</span>
-                <span>vs prev period</span>
+            <div key={s.label} className="stat" style={{ position: 'relative' }}>
+              <div style={{ position: 'absolute', top: 14, right: 14 }}>
                 <Sparkline
                   data={s.spark}
                   width={60}
                   height={20}
                   color={s.up ? 'var(--c-ok)' : 'var(--c-bad)'}
                 />
+              </div>
+              <div className="stat-label">{s.label}</div>
+              <div className="stat-value">{s.value}</div>
+              <div className="stat-meta">
+                <span className={s.up ? 'delta-up' : 'delta-down'}>{s.delta}</span>
+                <span>vs prev period</span>
               </div>
             </div>
           ))}
@@ -219,15 +293,39 @@ export default function AdvertiserOverview() {
         {/* Performance + Geo */}
         <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 20 }}>
           <div className="card card-pad">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 16,
+              }}
+            >
               <h3 className="t-h4">Performance</h3>
               <div style={{ display: 'flex', gap: 12, fontSize: 12.5, color: 'var(--c-fg-4)' }}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                  <span style={{ width: 12, height: 2, background: 'var(--c-acc)', display: 'inline-block', borderRadius: 1 }} />
+                  <span
+                    style={{
+                      width: 12,
+                      height: 2,
+                      background: 'var(--c-acc)',
+                      display: 'inline-block',
+                      borderRadius: 1,
+                    }}
+                  />
                   This period
                 </span>
                 <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                  <span style={{ width: 12, height: 2, background: 'var(--c-line-3)', display: 'inline-block', borderRadius: 1, borderStyle: 'dashed' }} />
+                  <span
+                    style={{
+                      width: 12,
+                      height: 2,
+                      background: 'var(--c-line-3)',
+                      display: 'inline-block',
+                      borderRadius: 1,
+                      borderStyle: 'dashed',
+                    }}
+                  />
                   Previous
                 </span>
               </div>
@@ -243,10 +341,15 @@ export default function AdvertiserOverview() {
             />
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 14 }}>
               {GEO_ROWS.map(g => (
-                <div key={g.country} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13.5 }}>
+                <div
+                  key={g.country}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13.5 }}
+                >
                   <span style={{ fontSize: 16 }}>{g.flag}</span>
                   <span style={{ flex: 1 }}>{g.country}</span>
-                  <span className="t-mono" style={{ color: 'var(--c-fg-3)' }}>{fmtNum(g.imps)}</span>
+                  <span className="t-mono" style={{ color: 'var(--c-fg-3)' }}>
+                    {fmtNum(g.imps)}
+                  </span>
                   <span
                     style={{
                       width: 36,
@@ -265,7 +368,14 @@ export default function AdvertiserOverview() {
 
         {/* Recent campaigns */}
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 14,
+            }}
+          >
             <h3 className="t-h3">Recent campaigns</h3>
             <Link href="/advertiser/campaigns" className="link" style={{ fontSize: 13.5 }}>
               View all
@@ -282,21 +392,42 @@ export default function AdvertiserOverview() {
           </div>
           <div className="card card-pad">
             <h3 className="t-h4" style={{ marginBottom: 14 }}>Account activity</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
               {ACTIVITY.map((a, i) => (
-                <div key={i} style={{ display: 'flex', gap: 10, fontSize: 13.5 }}>
+                <div key={i} style={{ display: 'flex', gap: 12 }}>
+                  {/* Left: vertical line + dot */}
                   <div
                     style={{
-                      width: 6,
-                      height: 6,
-                      borderRadius: '50%',
-                      background: 'var(--c-acc)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      width: 20,
                       flexShrink: 0,
-                      marginTop: 6,
                     }}
-                  />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ color: 'var(--c-fg-2)', lineHeight: 1.4 }}>{a.msg}</div>
+                  >
+                    <div
+                      style={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        background: 'var(--c-acc)',
+                        flexShrink: 0,
+                      }}
+                    />
+                    {i < ACTIVITY.length - 1 && (
+                      <div
+                        style={{
+                          width: 2,
+                          flex: 1,
+                          background: 'var(--c-line)',
+                          marginTop: 4,
+                        }}
+                      />
+                    )}
+                  </div>
+                  {/* Right: content */}
+                  <div style={{ paddingBottom: 16, flex: 1 }}>
+                    <div style={{ fontSize: 13.5 }}>{a.msg}</div>
                     <div style={{ fontSize: 12, color: 'var(--c-fg-4)', marginTop: 2 }}>{a.time}</div>
                   </div>
                 </div>

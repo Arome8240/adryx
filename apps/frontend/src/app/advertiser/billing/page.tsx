@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { Button, Badge, Modal, Field, Input, Select, Icons } from '@/components/ui';
+import { Button, Badge, Modal, Field, Input, Icons } from '@/components/ui';
 import { Topbar } from '@/components/layouts/AppShell';
 
 const TRANSACTIONS = [
@@ -20,7 +20,19 @@ const PAYMENT_METHODS = [
 
 export default function BillingPage() {
   const [depositOpen, setDepositOpen] = useState(false);
+  const [depositStep, setDepositStep] = useState<'amount' | 'confirm' | 'done'>('amount');
   const [depositAmt, setDepositAmt] = useState('1000');
+  const [txFilter, setTxFilter] = useState('all');
+  const [alertBalance, setAlertBalance] = useState(true);
+  const [autoFund, setAutoFund] = useState(false);
+
+  const handleDepositClose = () => {
+    setDepositOpen(false);
+    setDepositStep('amount');
+    setDepositAmt('1000');
+  };
+
+  const filteredTx = TRANSACTIONS.filter(tx => txFilter === 'all' || tx.type === txFilter);
 
   return (
     <>
@@ -68,16 +80,56 @@ export default function BillingPage() {
               ))}
             </div>
           </div>
+
+          {/* Monthly budget usage bar */}
+          <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,.15)' }}>
+            <div style={{ fontSize: 12.5, opacity: .7, marginBottom: 6 }}>Monthly budget usage</div>
+            <div style={{ height: 6, borderRadius: 3, background: 'rgba(255,255,255,.15)', overflow: 'hidden', marginBottom: 6 }}>
+              <div style={{ height: '100%', width: '68%', borderRadius: 3, background: 'rgba(255,255,255,.7)' }} />
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, opacity: .6 }}>
+              <span>68% used · $24,140 of $35,000</span>
+              <span>Burning ~$340/day</span>
+            </div>
+          </div>
+
           <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
-            <Button variant="outline" size="sm" onClick={() => setDepositOpen(true)}
-              style={{ background: 'rgba(255,255,255,.12)', borderColor: 'rgba(255,255,255,.2)', color: '#fff' }}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setDepositOpen(true)}
+              style={{ background: 'rgba(255,255,255,.12)', borderColor: 'rgba(255,255,255,.2)', color: '#fff' }}
+            >
               <Icons.plus size={14} /> Deposit USDC
             </Button>
-            <Button variant="ghost" size="sm"
-              style={{ color: 'rgba(255,255,255,.7)' }}>
+            <Button variant="ghost" size="sm" style={{ color: 'rgba(255,255,255,.7)' }}>
               <Icons.refresh size={14} /> Auto-fund settings
             </Button>
           </div>
+        </div>
+
+        {/* Budget alerts card */}
+        <div className="card card-pad">
+          <h3 className="t-h4" style={{ marginBottom: 16 }}>Budget alerts</h3>
+          {[
+            { id: 'alert1', label: 'Notify when balance drops below $1,000', sub: 'Email + in-app notification', state: alertBalance, set: setAlertBalance },
+            { id: 'alert2', label: 'Auto-fund when balance < $500', sub: 'Add $2,000 USDC automatically', state: autoFund, set: setAutoFund },
+          ].map(alert => (
+            <div key={alert.id} style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid var(--c-line)' }}>
+              <div>
+                <div style={{ fontWeight: 520, fontSize: 14 }}>{alert.label}</div>
+                <div style={{ fontSize: 13, color: 'var(--c-fg-4)', marginTop: 2 }}>{alert.sub}</div>
+              </div>
+              <label style={{ cursor: 'pointer', marginLeft: 16, flexShrink: 0 }}>
+                <input
+                  type="checkbox"
+                  checked={alert.state}
+                  onChange={e => alert.set(e.target.checked)}
+                  style={{ accentColor: 'var(--c-acc)', width: 16, height: 16 }}
+                />
+              </label>
+            </div>
+          ))}
         </div>
 
         {/* Payment methods */}
@@ -88,7 +140,7 @@ export default function BillingPage() {
               <Icons.plus size={14} /> Add method
             </Button>
           </div>
-          <div style={{ padding: '0' }}>
+          <div>
             {PAYMENT_METHODS.map(pm => (
               <div
                 key={pm.id}
@@ -104,9 +156,7 @@ export default function BillingPage() {
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 530, fontSize: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
                     {pm.label}
-                    {pm.primary && (
-                      <Badge tone="acc">Primary</Badge>
-                    )}
+                    {pm.primary && <Badge tone="acc">Primary</Badge>}
                   </div>
                   <div style={{ fontSize: 13, color: 'var(--c-fg-4)', marginTop: 2 }}>{pm.sub}</div>
                 </div>
@@ -116,14 +166,78 @@ export default function BillingPage() {
           </div>
         </div>
 
-        {/* Transactions */}
+        {/* Invoices */}
+        <div className="card">
+          <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--c-line)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h3 className="t-h4">Invoices</h3>
+          </div>
+          <div className="table-wrap" style={{ border: 'none', borderRadius: 0 }}>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Period</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { period: 'May 2026', amount: 24140.80, status: 'pending' },
+                  { period: 'Apr 2026', amount: 18420.40, status: 'paid' },
+                  { period: 'Mar 2026', amount: 15840.20, status: 'paid' },
+                ].map(inv => (
+                  <tr key={inv.period}>
+                    <td>{inv.period}</td>
+                    <td style={{ fontWeight: 520 }}>${inv.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                    <td>
+                      <Badge tone={inv.status === 'paid' ? 'ok' : 'warn'} dot>
+                        {inv.status.charAt(0).toUpperCase() + inv.status.slice(1)}
+                      </Badge>
+                    </td>
+                    <td>
+                      <button className="btn btn-ghost btn-sm" style={{ gap: 4, fontSize: 12 }}>
+                        <Icons.download size={12} /> PDF
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Transaction history */}
         <div>
-          <h3 className="t-h4" style={{ marginBottom: 14 }}>Transaction history</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <h3 className="t-h4">Transaction history</h3>
+            <div style={{ display: 'flex', gap: 4 }}>
+              {['all', 'deposit', 'spend', 'refund'].map(f => (
+                <button
+                  key={f}
+                  onClick={() => setTxFilter(f)}
+                  style={{
+                    padding: '3px 10px',
+                    borderRadius: 999,
+                    fontSize: 12,
+                    cursor: 'pointer',
+                    border: '1px solid',
+                    borderColor: txFilter === f ? 'var(--c-acc)' : 'var(--c-line)',
+                    background: txFilter === f ? 'var(--c-acc-soft)' : 'transparent',
+                    color: txFilter === f ? 'var(--c-acc-ink)' : 'var(--c-fg-3)',
+                  }}
+                >
+                  {f.charAt(0).toUpperCase() + f.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="table-wrap">
             <table className="table">
               <thead>
                 <tr>
                   <th>ID</th>
+                  <th></th>
                   <th>Description</th>
                   <th>Date</th>
                   <th>Amount</th>
@@ -132,16 +246,21 @@ export default function BillingPage() {
                 </tr>
               </thead>
               <tbody>
-                {TRANSACTIONS.map(tx => (
+                {filteredTx.map(tx => (
                   <tr key={tx.id}>
                     <td className="t-mono" style={{ fontSize: 12.5, color: 'var(--c-fg-4)' }}>{tx.id}</td>
+                    <td>
+                      {tx.type === 'deposit' ? <Icons.plus size={14} style={{ color: 'var(--c-ok)' }} /> :
+                       tx.type === 'refund' ? <Icons.refresh size={14} style={{ color: 'var(--c-acc)' }} /> :
+                       <Icons.minus size={14} style={{ color: 'var(--c-fg-4)' }} />}
+                    </td>
                     <td style={{ fontSize: 13.5 }}>{tx.desc}</td>
                     <td style={{ fontSize: 13, color: 'var(--c-fg-3)' }}>{tx.date}</td>
                     <td
                       style={{
                         fontSize: 13.5,
                         fontWeight: 530,
-                        color: tx.amount > 0 ? 'var(--c-ok)' : tx.type === 'spend' ? 'var(--c-fg)' : 'var(--c-ok)',
+                        color: tx.amount > 0 ? 'var(--c-ok)' : 'var(--c-fg)',
                       }}
                     >
                       {tx.amount > 0 ? '+' : ''}${Math.abs(tx.amount).toFixed(2)}
@@ -162,50 +281,106 @@ export default function BillingPage() {
         </div>
       </div>
 
-      {/* Deposit modal */}
+      {/* Deposit modal — 3-step */}
       <Modal
         open={depositOpen}
-        onClose={() => setDepositOpen(false)}
+        onClose={handleDepositClose}
         title="Deposit USDC"
         footer={
-          <>
-            <Button variant="ghost" onClick={() => setDepositOpen(false)}>Cancel</Button>
-            <Button variant="primary" onClick={() => setDepositOpen(false)}>
-              Deposit ${Number(depositAmt).toLocaleString()} USDC
-            </Button>
-          </>
+          depositStep === 'amount' ? (
+            <>
+              <Button variant="ghost" onClick={handleDepositClose}>Cancel</Button>
+              <Button variant="primary" onClick={() => setDepositStep('confirm')}>
+                Continue
+              </Button>
+            </>
+          ) : depositStep === 'confirm' ? (
+            <>
+              <Button variant="ghost" onClick={() => setDepositStep('amount')}>Back</Button>
+              <Button variant="primary" onClick={() => setDepositStep('done')}>
+                Confirm deposit
+              </Button>
+            </>
+          ) : (
+            <Button variant="primary" onClick={handleDepositClose}>Done</Button>
+          )
         }
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-          <Field label="Amount (USDC)">
-            <div className="input-group">
-              <span className="addon">$</span>
-              <input
-                className="input"
-                type="number"
-                value={depositAmt}
-                onChange={e => setDepositAmt(e.target.value)}
-                min={10}
-              />
-              <span className="addon">USDC</span>
+        {depositStep === 'amount' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+            <Field label="Amount (USDC)">
+              <div className="input-group">
+                <span className="addon">$</span>
+                <input
+                  className="input"
+                  type="number"
+                  value={depositAmt}
+                  onChange={e => setDepositAmt(e.target.value)}
+                  min={10}
+                />
+                <span className="addon">USDC</span>
+              </div>
+            </Field>
+            <Field label="Source wallet">
+              <Input value="0x8f4a...2c91 (Base)" readOnly />
+            </Field>
+            <div
+              style={{
+                padding: '12px 14px',
+                borderRadius: 8,
+                background: 'var(--c-bg-2)',
+                border: '1px solid var(--c-line)',
+                fontSize: 13,
+                color: 'var(--c-fg-3)',
+              }}
+            >
+              Funds will be available for campaigns immediately after on-chain confirmation (typically ~15 seconds on Base).
             </div>
-          </Field>
-          <Field label="Source wallet">
-            <Input value="0x8f4a...2c91 (Base)" readOnly />
-          </Field>
-          <div
-            style={{
-              padding: '12px 14px',
-              borderRadius: 8,
-              background: 'var(--c-bg-2)',
-              border: '1px solid var(--c-line)',
-              fontSize: 13,
-              color: 'var(--c-fg-3)',
-            }}
-          >
-            Funds will be available for campaigns immediately after on-chain confirmation (typically ~15 seconds on Base).
           </div>
-        </div>
+        )}
+
+        {depositStep === 'confirm' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {[
+              { label: 'Amount', v: `$${Number(depositAmt).toFixed(2)} USDC` },
+              { label: 'Source wallet', v: '0x8f4a...2c91 (Base)' },
+              { label: 'Network fee', v: '~$0.02' },
+              { label: 'You receive', v: `$${(Number(depositAmt) - 0.02).toFixed(2)} USDC` },
+            ].map(r => (
+              <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
+                <span className="muted">{r.label}</span>
+                <span style={{ fontWeight: 520 }}>{r.v}</span>
+              </div>
+            ))}
+            <div style={{
+              padding: '12px 14px', borderRadius: 8,
+              background: 'var(--c-acc-soft)',
+              border: '1px solid rgba(37,99,235,.12)',
+              fontSize: 13, color: 'var(--c-acc-ink)',
+              display: 'flex', gap: 8, alignItems: 'flex-start',
+            }}>
+              <Icons.shield size={14} style={{ flexShrink: 0, marginTop: 1 }} />
+              Funds held in escrow — released to publishers per verified impression.
+            </div>
+          </div>
+        )}
+
+        {depositStep === 'done' && (
+          <div style={{ textAlign: 'center', padding: '24px 0' }}>
+            <div style={{
+              width: 56, height: 56, borderRadius: '50%',
+              background: 'var(--c-ok-soft)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              margin: '0 auto 16px',
+            }}>
+              <Icons.check size={24} style={{ color: 'var(--c-ok)' }} />
+            </div>
+            <div style={{ fontWeight: 560, fontSize: 16, marginBottom: 8 }}>Deposit initiated</div>
+            <div style={{ fontSize: 13.5, color: 'var(--c-fg-3)', lineHeight: 1.5 }}>
+              ${Number(depositAmt).toFixed(2)} USDC will be available within 15 seconds of on-chain confirmation.
+            </div>
+          </div>
+        )}
       </Modal>
     </>
   );

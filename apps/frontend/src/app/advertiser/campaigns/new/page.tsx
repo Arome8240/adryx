@@ -1,7 +1,8 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button, Badge, Card, Field, Input, Select, Icons } from '@/components/ui';
+import { Button, Badge, Field, Input, Select, Icons } from '@/components/ui';
+import { Sparkline } from '@/components/ui';
 import { Topbar } from '@/components/layouts/AppShell';
 
 const STEPS = ['Basics', 'Targeting', 'Creative', 'Budget', 'Review'];
@@ -12,11 +13,24 @@ const OBJECTIVES = [
   { id: 'conversions', label: 'Conversions', desc: 'Optimize for actions and sign-ups', icon: '🎯' },
 ];
 
-const GEO_TAGS = ['US', 'CA', 'UK', 'DE'];
-
 const AUDIENCES = [
-  'Crypto natives', 'DeFi users', 'NFT collectors', 'ENS holders',
-  'Farcaster active', 'DevTools readers', 'Climate-tech', 'L2 power users',
+  { name: 'Crypto natives', reach: '4.2M reach' },
+  { name: 'DeFi users', reach: '2.1M reach' },
+  { name: 'NFT collectors', reach: '1.4M reach' },
+  { name: 'ENS holders', reach: '2.8M reach' },
+  { name: 'Farcaster active', reach: '540K reach' },
+  { name: 'DevTools readers', reach: '1.2M reach' },
+  { name: 'Climate-tech', reach: '420K reach' },
+  { name: 'L2 power users', reach: '860K reach' },
+];
+
+const GEO_REGIONS = [
+  { id: 'global', label: 'Global', flag: '🌐' },
+  { id: 'na', label: 'North America', flag: '🌎' },
+  { id: 'eu', label: 'Europe', flag: '🌍' },
+  { id: 'apac', label: 'Asia-Pacific', flag: '🌏' },
+  { id: 'latam', label: 'LatAm', flag: '🌎' },
+  { id: 'mena', label: 'MENA', flag: '🌍' },
 ];
 
 const FORMATS = [
@@ -29,15 +43,19 @@ const FORMATS = [
 export default function NewCampaignPage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
+  const [geoRegions, setGeoRegions] = useState<string[]>(['global']);
   const [form, setForm] = useState({
     name: '',
     objective: 'traffic',
+    category: 'crypto',
     schedule: 'asap',
-    geos: [...GEO_TAGS],
     audiences: [] as string[],
     format: 'mpu',
     budget: '2000',
     bid: '3.50',
+    dailyCap: '',
+    startDate: '',
+    endDate: '',
     spendCap: 'daily',
     payment: 'usdc',
     landingUrl: '',
@@ -46,9 +64,7 @@ export default function NewCampaignPage() {
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
 
   const toggleAudience = (a: string) =>
-    set('audiences', form.audiences.includes(a) ? form.audiences.filter(x => x !== a) : [...form.audiences, a]);
-
-  const removeGeo = (g: string) => set('geos', form.geos.filter(x => x !== g));
+    set('audiences', form.audiences.includes(a) ? form.audiences.filter((x: string) => x !== a) : [...form.audiences, a]);
 
   const canContinue = step < STEPS.length - 1;
   const isLast = step === STEPS.length - 1;
@@ -84,52 +100,42 @@ export default function NewCampaignPage() {
         {/* Step rail */}
         <div className="card card-pad" style={{ position: 'sticky', top: 72 }}>
           <div className="t-eyebrow-n" style={{ marginBottom: 12 }}>Progress</div>
-          {STEPS.map((s, i) => (
-            <button
-              key={s}
-              onClick={() => i < step && setStep(i)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                width: '100%',
-                padding: '9px 10px',
-                borderRadius: 7,
-                border: 0,
-                background: i === step ? 'var(--c-acc-soft)' : 'transparent',
-                cursor: i <= step ? 'pointer' : 'default',
-                textAlign: 'left',
-                marginBottom: 2,
-              }}
-            >
-              <span
+          {STEPS.map((s, i) => {
+            const done = i < step;
+            const active = i === step;
+            return (
+              <button
+                key={s}
+                onClick={() => done && setStep(i)}
                 style={{
-                  width: 22,
-                  height: 22,
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 11,
-                  fontWeight: 560,
-                  flexShrink: 0,
-                  background: i < step ? 'var(--c-ok)' : i === step ? 'var(--c-acc)' : 'var(--c-bg-3)',
-                  color: i <= step ? '#fff' : 'var(--c-fg-4)',
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  width: '100%', padding: '9px 10px', borderRadius: 7, border: 0,
+                  background: active ? 'var(--c-acc-soft)' : 'transparent',
+                  cursor: done ? 'pointer' : 'default',
+                  textAlign: 'left',
+                  marginBottom: 2,
                 }}
               >
-                {i < step ? '✓' : i + 1}
-              </span>
-              <span
-                style={{
-                  fontSize: 13.5,
-                  fontWeight: i === step ? 540 : 400,
-                  color: i === step ? 'var(--c-acc-ink)' : i < step ? 'var(--c-fg)' : 'var(--c-fg-4)',
-                }}
-              >
-                {s}
-              </span>
-            </button>
-          ))}
+                {/* Circle */}
+                <div style={{
+                  width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: done ? 'var(--c-ok-soft)' : active ? 'var(--c-acc)' : 'var(--c-bg-3)',
+                  border: done ? 'none' : active ? 'none' : '1px solid var(--c-line-2)',
+                  fontSize: 11, fontWeight: 600,
+                  color: done ? 'var(--c-ok)' : active ? '#fff' : 'var(--c-fg-4)',
+                }}>
+                  {done ? <Icons.check size={12} /> : i + 1}
+                </div>
+                <span style={{
+                  fontSize: 13, fontWeight: active ? 560 : 430,
+                  color: active ? 'var(--c-acc-ink)' : done ? 'var(--c-fg-3)' : 'var(--c-fg-4)',
+                }}>
+                  {s}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Center: step content */}
@@ -144,9 +150,18 @@ export default function NewCampaignPage() {
               <Field label="Campaign name" required>
                 <Input
                   value={form.name}
-                  onChange={e => set('name', e.target.value)}
+                  onChange={(e: any) => set('name', e.target.value)}
                   placeholder="e.g. Q3 Product Launch"
                 />
+              </Field>
+              <Field label="Category">
+                <Select value={form.category} onChange={(e: any) => set('category', e.target.value)}>
+                  <option value="crypto">Crypto / DeFi</option>
+                  <option value="nft">NFT &amp; Digital Art</option>
+                  <option value="developer">Developer Tools</option>
+                  <option value="news">News &amp; Media</option>
+                  <option value="other">Other</option>
+                </Select>
               </Field>
               <div>
                 <div className="field-label" style={{ marginBottom: 10 }}>Objective</div>
@@ -159,7 +174,7 @@ export default function NewCampaignPage() {
                         padding: '14px 12px',
                         borderRadius: 8,
                         border: `2px solid ${form.objective === o.id ? 'var(--c-acc)' : 'var(--c-line-2)'}`,
-                        background: form.objective === o.id ? 'var(--c-acc-soft)' : '#fff',
+                        background: form.objective === o.id ? 'var(--c-acc-soft)' : 'var(--c-bg)',
                         cursor: 'pointer',
                         textAlign: 'left',
                         transition: 'all .12s',
@@ -207,71 +222,46 @@ export default function NewCampaignPage() {
               </div>
               <div>
                 <div className="field-label" style={{ marginBottom: 8 }}>Geographies</div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                  {form.geos.map(g => (
-                    <span
-                      key={g}
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 6,
-                        height: 28,
-                        padding: '0 10px',
-                        borderRadius: 999,
-                        background: 'var(--c-acc-soft)',
-                        color: 'var(--c-acc-ink)',
-                        fontSize: 13,
-                        fontWeight: 510,
-                        border: '1px solid rgba(37,99,235,.2)',
-                      }}
-                    >
-                      {g}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, marginTop: 8 }}>
+                  {GEO_REGIONS.map(g => {
+                    const on = geoRegions.includes(g.id);
+                    return (
                       <button
-                        onClick={() => removeGeo(g)}
-                        style={{ background: 'none', border: 0, padding: 0, cursor: 'pointer', color: 'var(--c-acc)', display: 'flex' }}
+                        key={g.id}
+                        onClick={() => setGeoRegions(prev => prev.includes(g.id) ? prev.filter(x => x !== g.id) : [...prev, g.id])}
+                        style={{
+                          padding: '8px 10px', borderRadius: 8, border: '1px solid',
+                          borderColor: on ? 'var(--c-acc)' : 'var(--c-line)',
+                          background: on ? 'var(--c-acc-soft)' : 'transparent',
+                          cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
+                        }}
                       >
-                        <Icons.x size={12} />
+                        <span style={{ fontSize: 16 }}>{g.flag}</span>
+                        <span style={{ fontSize: 12.5, fontWeight: on ? 550 : 430, color: on ? 'var(--c-acc-ink)' : 'var(--c-fg-3)' }}>{g.label}</span>
+                        {on && <Icons.check size={11} style={{ marginLeft: 'auto', color: 'var(--c-acc)' }} />}
                       </button>
-                    </span>
-                  ))}
-                  <button
-                    className="btn btn-outline btn-sm"
-                    onClick={() => {
-                      const c = prompt('Add country code (e.g. FR)');
-                      if (c) set('geos', [...form.geos, c.toUpperCase()]);
-                    }}
-                  >
-                    <Icons.plus size={12} /> Add country
-                  </button>
+                    );
+                  })}
                 </div>
               </div>
               <div>
                 <div className="field-label" style={{ marginBottom: 8 }}>Audience cohorts</div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                  {AUDIENCES.map(a => (
-                    <label
-                      key={a}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 10,
-                        padding: '9px 12px',
-                        borderRadius: 7,
-                        border: `1px solid ${form.audiences.includes(a) ? 'var(--c-acc)' : 'var(--c-line-2)'}`,
-                        background: form.audiences.includes(a) ? 'var(--c-acc-soft)' : '#fff',
-                        cursor: 'pointer',
-                        fontSize: 13.5,
-                      }}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={form.audiences.includes(a)}
-                        onChange={() => toggleAudience(a)}
-                        style={{ accentColor: 'var(--c-acc)' }}
-                      />
-                      {a}
-                    </label>
-                  ))}
+                  {AUDIENCES.map(a => {
+                    const on = form.audiences.includes(a.name);
+                    return (
+                      <button key={a.name} onClick={() => toggleAudience(a.name)} style={{
+                        padding: '10px 12px', borderRadius: 8, border: '1px solid',
+                        borderColor: on ? 'var(--c-acc)' : 'var(--c-line)',
+                        background: on ? 'var(--c-acc-soft)' : 'var(--c-bg)',
+                        cursor: 'pointer', textAlign: 'left',
+                        transition: 'all .12s',
+                      }}>
+                        <div style={{ fontWeight: on ? 560 : 500, fontSize: 13, color: on ? 'var(--c-acc-ink)' : 'var(--c-fg)', marginBottom: 3 }}>{a.name}</div>
+                        <div style={{ fontSize: 11.5, color: 'var(--c-fg-4)' }}>{a.reach}</div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
               <Field label="Brand safety level">
@@ -303,61 +293,35 @@ export default function NewCampaignPage() {
                 <h2 className="t-h3" style={{ marginBottom: 4 }}>Creative</h2>
                 <p className="muted" style={{ fontSize: 14 }}>Upload your ad assets and configure format.</p>
               </div>
-              <div>
-                <div className="field-label" style={{ marginBottom: 8 }}>Ad format</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10 }}>
-                  {FORMATS.map(f => (
-                    <button
-                      key={f.id}
-                      onClick={() => set('format', f.id)}
-                      style={{
-                        padding: '12px 10px',
-                        borderRadius: 8,
-                        border: `2px solid ${form.format === f.id ? 'var(--c-acc)' : 'var(--c-line-2)'}`,
-                        background: form.format === f.id ? 'var(--c-acc-soft)' : '#fff',
-                        cursor: 'pointer',
-                        textAlign: 'center',
-                        transition: 'all .12s',
-                      }}
-                    >
-                      <div
-                        style={{
-                          height: 32,
-                          background: form.format === f.id ? 'var(--c-acc)' : 'var(--c-bg-3)',
-                          borderRadius: 4,
-                          marginBottom: 8,
-                          opacity: 0.6,
-                        }}
-                      />
-                      <div style={{ fontWeight: 530, fontSize: 13, color: 'var(--c-fg)' }}>{f.label}</div>
-                      <div style={{ fontSize: 11.5, color: 'var(--c-fg-4)', marginTop: 2 }}>{f.size}</div>
-                    </button>
-                  ))}
-                </div>
+              {/* Upload zone */}
+              <div className="empty" style={{ border: '2px dashed var(--c-line-2)', borderRadius: 10, padding: 32, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, cursor: 'pointer', marginBottom: 20 }}>
+                <Icons.download size={28} style={{ color: 'var(--c-fg-4)' }} />
+                <div style={{ fontWeight: 530, fontSize: 14 }}>Drop your creative here or browse</div>
+                <div className="muted" style={{ fontSize: 12.5 }}>PNG · JPG · GIF · WebP · max 2 MB</div>
+                <Button variant="outline" size="sm">Browse files</Button>
               </div>
-              {/* File drop zone */}
-              <div
-                style={{
-                  border: '2px dashed var(--c-line-2)',
-                  borderRadius: 10,
-                  padding: '36px 20px',
-                  textAlign: 'center',
-                  background: 'var(--c-bg-2)',
-                  cursor: 'pointer',
-                }}
-                onClick={() => {}}
-              >
-                <Icons.download
-                  size={28}
-                  style={{ color: 'var(--c-fg-4)', margin: '0 auto 10px', display: 'block' }}
-                />
-                <div style={{ fontWeight: 530, marginBottom: 4 }}>Drop files here or click to upload</div>
-                <div className="muted" style={{ fontSize: 13 }}>PNG, JPG, GIF, WebP — max 2MB</div>
+              {/* Format selector */}
+              <div className="t-eyebrow-n" style={{ marginBottom: 10 }}>Ad format</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 10 }}>
+                {FORMATS.map(f => {
+                  const active = form.format === f.id;
+                  return (
+                    <button key={f.id} onClick={() => set('format', f.id)} style={{
+                      padding: '12px 14px', borderRadius: 8, border: '1px solid',
+                      borderColor: active ? 'var(--c-acc)' : 'var(--c-line)',
+                      background: active ? 'var(--c-acc-soft)' : 'var(--c-bg)',
+                      cursor: 'pointer', textAlign: 'left',
+                    }}>
+                      <div style={{ fontWeight: active ? 560 : 500, fontSize: 13.5, color: active ? 'var(--c-acc-ink)' : 'var(--c-fg)', marginBottom: 2 }}>{f.label}</div>
+                      <div style={{ fontSize: 12, color: 'var(--c-fg-4)', fontFamily: 'var(--f-mono)' }}>{f.size}</div>
+                    </button>
+                  );
+                })}
               </div>
               <Field label="Landing URL" required>
                 <Input
                   value={form.landingUrl}
-                  onChange={e => set('landingUrl', e.target.value)}
+                  onChange={(e: any) => set('landingUrl', e.target.value)}
                   placeholder="https://yoursite.com/landing"
                   type="url"
                 />
@@ -380,7 +344,7 @@ export default function NewCampaignPage() {
                       className="input"
                       type="number"
                       value={form.budget}
-                      onChange={e => set('budget', e.target.value)}
+                      onChange={(e: any) => set('budget', e.target.value)}
                       min={100}
                     />
                   </div>
@@ -392,12 +356,39 @@ export default function NewCampaignPage() {
                       className="input"
                       type="number"
                       value={form.bid}
-                      onChange={e => set('bid', e.target.value)}
+                      onChange={(e: any) => set('bid', e.target.value)}
                       step={0.1}
                     />
                   </div>
                 </Field>
               </div>
+              <Field label="Daily spend cap">
+                <div className="input-group">
+                  <span className="addon">$</span>
+                  <input className="input" type="number" value={form.dailyCap} placeholder="e.g. 100" onChange={(e: any) => set('dailyCap', e.target.value)} />
+                  <span className="addon">/ day</span>
+                </div>
+              </Field>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <Field label="Start date">
+                  <input className="input" type="date" defaultValue="2026-06-01" onChange={(e: any) => set('startDate', e.target.value)} />
+                </Field>
+                <Field label="End date">
+                  <input className="input" type="date" defaultValue="2026-06-30" onChange={(e: any) => set('endDate', e.target.value)} />
+                </Field>
+              </div>
+              {/* Projected reach estimate */}
+              {form.budget && (
+                <div style={{ padding: '12px 14px', borderRadius: 8, background: 'var(--c-bg-2)', border: '1px solid var(--c-line)', marginTop: 4 }}>
+                  <div style={{ fontSize: 12.5, color: 'var(--c-fg-4)', marginBottom: 4 }}>Estimated reach</div>
+                  <div style={{ fontSize: 15, fontWeight: 540 }}>
+                    ~{Math.round(Number(form.budget) / 3.2 / 1000)}K – {Math.round(Number(form.budget) / 2.8 / 1000)}K impressions
+                  </div>
+                  <div className="muted" style={{ fontSize: 12.5, marginTop: 2 }}>
+                    Based on avg eCPM $3.00 · {form.budget ? Math.ceil(Number(form.budget) / (form.dailyCap ? Number(form.dailyCap) : Number(form.budget))) : 30} days
+                  </div>
+                </div>
+              )}
               <div>
                 <div className="field-label" style={{ marginBottom: 8 }}>Spend cap</div>
                 {[
@@ -413,7 +404,7 @@ export default function NewCampaignPage() {
                       padding: '10px 12px',
                       borderRadius: 7,
                       border: `1px solid ${form.spendCap === opt.id ? 'var(--c-acc)' : 'var(--c-line-2)'}`,
-                      background: form.spendCap === opt.id ? 'var(--c-acc-soft)' : '#fff',
+                      background: form.spendCap === opt.id ? 'var(--c-acc-soft)' : 'var(--c-bg)',
                       cursor: 'pointer',
                       marginBottom: 8,
                       fontSize: 13.5,
@@ -449,7 +440,7 @@ export default function NewCampaignPage() {
                       padding: '10px 12px',
                       borderRadius: 7,
                       border: `1px solid ${form.payment === opt.id ? 'var(--c-acc)' : 'var(--c-line-2)'}`,
-                      background: form.payment === opt.id ? 'var(--c-acc-soft)' : '#fff',
+                      background: form.payment === opt.id ? 'var(--c-acc-soft)' : 'var(--c-bg)',
                       cursor: 'pointer',
                       marginBottom: 8,
                       fontSize: 13.5,
@@ -483,44 +474,22 @@ export default function NewCampaignPage() {
                   Confirm your campaign details before submission.
                 </p>
               </div>
-              <dl className="dl" style={{ lineHeight: 1.6 }}>
-                <dt>Name</dt>
-                <dd>{form.name || '—'}</dd>
-                <dt>Objective</dt>
-                <dd style={{ textTransform: 'capitalize' }}>{form.objective}</dd>
-                <dt>Schedule</dt>
-                <dd>{form.schedule === 'asap' ? 'Start immediately after review' : 'Scheduled'}</dd>
-                <dt>Geographies</dt>
-                <dd>{form.geos.join(', ') || '—'}</dd>
-                <dt>Audiences</dt>
-                <dd>{form.audiences.length > 0 ? form.audiences.join(', ') : 'All'}</dd>
-                <dt>Ad format</dt>
-                <dd style={{ textTransform: 'capitalize' }}>{form.format}</dd>
-                <dt>Landing URL</dt>
-                <dd className="t-mono" style={{ fontSize: 13 }}>{form.landingUrl || '—'}</dd>
-                <dt>Budget</dt>
-                <dd>${Number(form.budget).toLocaleString()}</dd>
-                <dt>Max CPM bid</dt>
-                <dd>${form.bid}</dd>
-                <dt>Payment</dt>
-                <dd>{form.payment === 'usdc' ? 'USDC treasury wallet' : 'Visa ····4242'}</dd>
+              <dl className="dl">
+                <dt>Campaign name</dt><dd>{form.name || '—'}</dd>
+                <dt>Objective</dt><dd>{OBJECTIVES.find(o => o.id === form.objective)?.label || '—'}</dd>
+                <dt>Category</dt><dd>{form.category === 'crypto' ? 'Crypto / DeFi' : form.category === 'nft' ? 'NFT & Digital Art' : form.category === 'developer' ? 'Developer Tools' : form.category === 'news' ? 'News & Media' : 'Other'}</dd>
+                <dt>Audiences</dt><dd>{form.audiences.length > 0 ? form.audiences.join(', ') : 'All audiences'}</dd>
+                <dt>Geographies</dt><dd>{geoRegions.join(', ') || 'Global'}</dd>
+                <dt>Ad format</dt><dd>{FORMATS.find(f => f.id === form.format)?.label || '—'}</dd>
+                <dt>Total budget</dt><dd>${Number(form.budget).toLocaleString()} USDC</dd>
+                <dt>Daily cap</dt><dd>{form.dailyCap ? `$${form.dailyCap}/day` : 'No cap'}</dd>
+                <dt>Landing URL</dt><dd className="t-mono" style={{ fontSize: 13 }}>{form.landingUrl || '—'}</dd>
               </dl>
-              <div
-                style={{
-                  display: 'flex',
-                  gap: 10,
-                  padding: '14px',
-                  borderRadius: 8,
-                  background: 'var(--c-ok-soft)',
-                  border: '1px solid rgba(21,128,61,.15)',
-                  fontSize: 13.5,
-                  color: 'var(--c-ok)',
-                }}
-              >
-                <Icons.shield size={16} style={{ flexShrink: 0, marginTop: 1 }} />
-                <div>
-                  <span style={{ fontWeight: 540 }}>Escrow protection: </span>
-                  Budget is held in escrow and only released to publishers after verified impressions.
+              {/* Escrow notice */}
+              <div style={{ marginTop: 20, padding: '14px 16px', borderRadius: 8, background: 'var(--c-acc-soft)', border: '1px solid rgba(37,99,235,.15)', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                <Icons.shield size={16} style={{ color: 'var(--c-acc)', flexShrink: 0, marginTop: 1 }} />
+                <div style={{ fontSize: 13, color: 'var(--c-acc-ink)', lineHeight: 1.5 }}>
+                  <strong>On-chain escrow.</strong> Funds will be held in a smart contract and released to publishers per verified impression. Unspent funds are returned automatically.
                 </div>
               </div>
             </div>
@@ -578,7 +547,7 @@ export default function NewCampaignPage() {
               <div
                 style={{
                   padding: '10px 12px',
-                  background: '#fff',
+                  background: 'var(--c-bg)',
                   borderBottom: '1px solid var(--c-line)',
                   display: 'flex',
                   alignItems: 'center',
@@ -626,6 +595,20 @@ export default function NewCampaignPage() {
                 </div>
               ))}
             </div>
+            {/* Projected daily spend sparkline */}
+            {form.budget && (
+              <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--c-line)' }}>
+                <div style={{ fontSize: 12.5, color: 'var(--c-fg-4)', marginBottom: 8 }}>Projected daily spend</div>
+                <Sparkline
+                  data={Array.from({ length: 30 }, (_: any, i: number) => Math.min(Number(form.dailyCap) || Number(form.budget) / 30, (Number(form.budget) / 30) * (0.8 + Math.sin(i / 4) * 0.2)))}
+                  width={240} height={48} color="var(--c-acc)"
+                />
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--c-fg-4)', marginTop: 4 }}>
+                  <span>Day 1</span>
+                  <span>Day 30</span>
+                </div>
+              </div>
+            )}
           </div>
           <div
             style={{
