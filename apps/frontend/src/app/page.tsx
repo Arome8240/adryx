@@ -331,7 +331,7 @@ export default function ComingSoonPage() {
       >
         <span>© 2026 Adryx</span>
         <span style={{ opacity: 0.4 }}>·</span>
-        <a href="mailto:hello@adryx.io" style={{ color: 'var(--c-fg-4)' }}>hello@adryx.io</a>
+        <a href="mailto:hello@adryx.xyz" style={{ color: 'var(--c-fg-4)' }}>hello@adryx.xyz</a>
       </footer>
     </div>
   );
