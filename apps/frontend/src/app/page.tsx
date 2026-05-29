@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Globe, Megaphone, Check, ArrowRight } from 'lucide-react';
 
 function BrandLogo() {
   return (
@@ -52,9 +53,7 @@ function WaitlistForm() {
             margin: '0 auto 14px',
           }}
         >
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <path d="M5 11l4 4 8-8" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <Check size={22} color="#fff" strokeWidth={2.5} />
         </div>
         <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 6, color: 'var(--c-fg)' }}>
           You&apos;re on the list!
@@ -98,7 +97,9 @@ function WaitlistForm() {
               textTransform: 'capitalize',
             }}
           >
-            {r === 'publisher' ? '🌐 Publisher' : '📣 Advertiser'}
+            {r === 'publisher'
+              ? <><Globe size={14} style={{ display: 'inline', marginRight: 6 }} />Publisher</>
+              : <><Megaphone size={14} style={{ display: 'inline', marginRight: 6 }} />Advertiser</>}
           </button>
         ))}
       </div>
