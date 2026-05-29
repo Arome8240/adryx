@@ -121,7 +121,7 @@ function WaitlistForm() {
           className="btn btn-primary"
           style={{ whiteSpace: 'nowrap', opacity: (!role || loading) ? 0.5 : 1 }}
         >
-          {loading ? 'Joining…' : 'Join waitlist'}
+          {loading ? 'Joining…' : <><span>Join waitlist</span><ArrowRight size={14} style={{ marginLeft: 6 }} /></>}
         </button>
       </div>
 
@@ -228,10 +228,9 @@ export default function ComingSoonPage() {
             'Zero setup fees',
           ].map(t => (
             <span key={t} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <circle cx="7" cy="7" r="7" fill="var(--c-acc-soft)" />
-                <path d="M4.5 7l2 2 3-3" stroke="var(--c-acc)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <span style={{ width: 18, height: 18, borderRadius: '50%', background: 'var(--c-acc-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Check size={10} color="var(--c-acc)" strokeWidth={2.5} />
+              </span>
               {t}
             </span>
           ))}
