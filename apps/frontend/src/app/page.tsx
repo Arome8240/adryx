@@ -1,146 +1,355 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Globe, Megaphone, Check, X, ArrowRight, Moon, Sun } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
-/* ─── Dark mode hook ──────────────────────────────────────────────── */
-function useDarkMode() {
-  const [dark, setDark] = useState(false);
-
-  useEffect(() => {
-    const saved = localStorage.getItem('adryx-theme');
-    const sysDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const isDark = saved === 'dark' || (!saved && sysDark);
-    setDark(isDark);
-    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-  }, []);
-
-  function toggle() {
-    const next = !dark;
-    document.documentElement.classList.add('theme-transitioning');
-    document.documentElement.setAttribute('data-theme', next ? 'dark' : 'light');
-    localStorage.setItem('adryx-theme', next ? 'dark' : 'light');
-    setDark(next);
-    setTimeout(() => document.documentElement.classList.remove('theme-transitioning'), 300);
+/* ─── Celina dark-first CSS overrides ────────────────────────────── */
+const STYLES = `
+  :root, [data-theme="dark"], [data-theme] {
+    --c-acc:       #EBFF45;
+    --c-acc-soft:  rgba(235,255,69,.12);
+    --c-acc-ink:   #0e0e00;
+    --c-bg:        #08080a;
+    --c-bg-2:      #0f0f13;
+    --c-bg-3:      #171719;
+    --c-fg:        #f5f5f5;
+    --c-fg-2:      rgba(245,245,245,.72);
+    --c-fg-3:      rgba(245,245,245,.5);
+    --c-fg-4:      rgba(245,245,245,.3);
+    --c-line:      rgba(255,255,255,.08);
+    --c-line-2:    rgba(255,255,255,.12);
+    --c-line-3:    rgba(255,255,255,.18);
+    --c-ok:        #4ade80;
+    --c-bad:       #f87171;
+    --c-warn:      #fbbf24;
+    --c-card:      rgba(255,255,255,.025);
   }
 
-  return { dark, toggle };
-}
-
-/* ─── Waitlist form ───────────────────────────────────────────────── */
-function WaitlistForm() {
-  const [email, setEmail] = useState('');
-  const [role, setRole] = useState<'publisher' | 'advertiser' | ''>('');
-  const [done, setDone] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (!email || !role) return;
-    setLoading(true);
-    setTimeout(() => { setLoading(false); setDone(true); }, 900);
+  nav.c-nav {
+    position: sticky; top: 0; z-index: 40;
+    background: rgba(8,8,10,.72);
+    backdrop-filter: saturate(180%) blur(16px);
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    transition: background .2s, border-color .2s;
   }
+  nav.c-nav.scrolled { background: rgba(8,8,10,.92); border-color: rgba(255,255,255,.12); }
+  .c-nav-link { color: rgba(245,245,245,.55); font-size: 13px; font-weight: 500; padding: 6px 10px; border-radius: 7px; transition: color .1s, background .1s; text-decoration: none; }
+  .c-nav-link:hover { color: #f5f5f5; background: rgba(255,255,255,.07); }
 
-  if (done) {
-    return (
-      <div style={{
-        textAlign: 'center', padding: '32px 28px',
-        background: 'var(--c-ok-soft)', border: '1px solid rgba(34,197,94,.2)',
-        borderRadius: 14, maxWidth: 420, margin: '0 auto',
-        animation: 'fadeIn 0.4s ease both',
-      }}>
-        <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'var(--c-ok)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
-          <Check size={24} color="#fff" strokeWidth={2.5} />
-        </div>
-        <div style={{ fontWeight: 620, fontSize: 16, marginBottom: 6 }}>You&apos;re on the list!</div>
-        <p style={{ fontSize: 14, color: 'var(--c-fg-3)', lineHeight: 1.5, margin: 0 }}>
-          We&apos;ll reach out to <strong>{email}</strong> when early access opens for {role === 'publisher' ? 'publishers' : 'advertisers'}.
-        </p>
-      </div>
-    );
-  }
+  .c-brand { font-size: 17px; font-weight: 700; letter-spacing: -.02em; color: #f5f5f5; display: inline-flex; align-items: center; gap: 7px; text-decoration: none; }
+  .c-mark  { width: 9px; height: 9px; border-radius: 2px; background: #EBFF45; display: inline-block; }
 
+  .c-btn-y { background: #EBFF45; color: #0e0e00; border: none; border-radius: 10px; padding: 12px 24px; font-size: 14px; font-weight: 620; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: transform .12s, box-shadow .12s; white-space: nowrap; text-decoration: none; font-family: inherit; }
+  .c-btn-y:hover { transform: translateY(-1.5px); box-shadow: 0 0 0 3px rgba(235,255,69,.28); }
+  .c-btn-y.lg { padding: 14px 30px; font-size: 15px; border-radius: 11px; }
+  .c-btn-ghost { background: transparent; color: rgba(245,245,245,.75); border: 1px solid rgba(255,255,255,.14); border-radius: 10px; padding: 11px 20px; font-size: 14px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: background .12s, border-color .12s; text-decoration: none; font-family: inherit; }
+  .c-btn-ghost:hover { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.22); }
+  .c-btn-ghost.lg { padding: 13px 26px; font-size: 15px; border-radius: 11px; }
+
+  .c-card { position: relative; overflow: hidden; border-radius: 16px; border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.025); padding: 24px; transition: transform .15s, border-color .15s, box-shadow .15s; }
+  .c-card:hover { transform: translateY(-2px); border-color: rgba(235,255,69,.4); box-shadow: 0 8px 32px rgba(0,0,0,.45); }
+  .c-card .accent-bar { position: absolute; left: 0; top: 0; height: 100%; width: 3px; background: #EBFF45; opacity: 0; transition: opacity .15s; }
+  .c-card:hover .accent-bar { opacity: 1; }
+
+  .c-eyebrow { display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(235,255,69,.28); background: rgba(235,255,69,.08); border-radius: 99px; padding: 5px 14px; font-size: 12px; font-weight: 560; color: rgba(235,255,69,.9); letter-spacing: .05em; }
+  .c-dot { width: 7px; height: 7px; border-radius: 50%; background: #EBFF45; animation: cdot 2.2s ease-in-out infinite; flex-shrink: 0; }
+  @keyframes cdot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
+
+  .c-badge     { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 560; padding: 3px 10px; border-radius: 99px; }
+  .c-badge-ok  { background: rgba(74,222,128,.1); color: #4ade80; border: 1px solid rgba(74,222,128,.25); }
+  .c-badge-acc { background: rgba(235,255,69,.1); color: #EBFF45; border: 1px solid rgba(235,255,69,.22); }
+  .c-badge-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+  .c-stat-val { font-size: 40px; font-weight: 660; letter-spacing: -0.04em; color: #f5f5f5; margin-bottom: 6px; }
+  .c-stat-lbl { font-size: 13px; color: rgba(245,245,245,.38); letter-spacing: .01em; }
+
+  .c-wrap  { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+  .c-row   { display: flex; align-items: center; flex-wrap: wrap; }
+  .c-col   { display: flex; flex-direction: column; }
+  .c-between { justify-content: space-between; }
+
+  .c-grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 20px; }
+  .c-grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
+  .c-grid-2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 20px; }
+  @media (max-width: 900px) { .c-grid-4{grid-template-columns:repeat(2,1fr)} .c-grid-3{grid-template-columns:repeat(2,1fr)} }
+  @media (max-width: 640px) { .c-grid-4{grid-template-columns:1fr} .c-grid-2{grid-template-columns:1fr} .c-grid-3{grid-template-columns:1fr} }
+
+  .c-section       { padding: 96px 0; }
+  .c-section-tight { padding: 64px 0; }
+
+  .c-display-xl { font-size: clamp(42px,6vw,68px); font-weight: 680; letter-spacing: -.04em; line-height: 1.08; color: #f5f5f5; margin: 0; }
+  .c-display    { font-size: clamp(30px,4vw,44px); font-weight: 660; letter-spacing: -.03em; line-height: 1.15; color: #f5f5f5; margin: 0; }
+  .c-h1  { font-size: clamp(24px,3vw,32px); font-weight: 640; letter-spacing: -.025em; line-height: 1.2; color: #f5f5f5; margin: 0; }
+  .c-h3  { font-size: 17px; font-weight: 600; letter-spacing: -.015em; color: #f5f5f5; margin: 0; }
+  .c-h4  { font-size: 15px; font-weight: 600; letter-spacing: -.01em;  color: #f5f5f5; margin: 0; }
+  .c-body-lg { font-size: 17px; line-height: 1.7; color: rgba(245,245,245,.68); margin: 0; }
+  .c-body    { font-size: 15px; line-height: 1.7; color: rgba(245,245,245,.68); margin: 0; }
+  .c-sm      { font-size: 13px; line-height: 1.6; color: rgba(245,245,245,.55); }
+  .c-xs      { font-size: 12px; color: rgba(245,245,245,.45); }
+  .c-label   { font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: rgba(245,245,245,.38); }
+  .c-mono    { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: rgba(245,245,245,.55); }
+  .c-muted   { color: rgba(245,245,245,.45); }
+
+  .c-code { background: #0d0d11; border: 1px solid rgba(255,255,255,.07); border-radius: 10px; padding: 16px 18px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 1.75; overflow-x: auto; }
+  .tk-c { color: rgba(245,245,245,.3); }
+  .tk-k { color: #EBFF45; }
+  .tk-s { color: #a8d8a8; }
+  .tk-n { color: rgba(245,245,245,.65); }
+
+  .c-logo-strip { display: flex; flex-wrap: wrap; justify-content: center; gap: 36px; }
+  .c-logo-strip span { font-size: 13px; font-weight: 580; color: rgba(245,245,245,.22); letter-spacing: .07em; text-transform: uppercase; }
+
+  .c-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .c-table th { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: rgba(245,245,245,.32); padding: 10px 14px; text-align: left; border-bottom: 1px solid rgba(255,255,255,.07); }
+  .c-table td { padding: 11px 14px; border-bottom: 1px solid rgba(255,255,255,.05); color: rgba(245,245,245,.75); }
+  .c-table tr:hover td { background: rgba(255,255,255,.025); }
+
+  .c-bar-track { height: 6px; background: rgba(255,255,255,.07); border-radius: 3px; overflow: hidden; }
+  .c-bar-fill  { height: 100%; border-radius: 3px; background: #EBFF45; transition: width 1s; }
+  .c-bar-muted { background: rgba(255,255,255,.14); }
+
+  .c-avatar { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 620; flex-shrink: 0; background: rgba(235,255,69,.12); color: #EBFF45; border: 1px solid rgba(235,255,69,.2); }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+  .fade-up-1 { animation: fadeUp .65s cubic-bezier(.22,1,.36,1) .1s both; }
+  .fade-up-2 { animation: fadeUp .65s cubic-bezier(.22,1,.36,1) .2s both; }
+  .fade-up-3 { animation: fadeUp .65s cubic-bezier(.22,1,.36,1) .35s both; }
+  .fade-up-4 { animation: fadeUp .65s cubic-bezier(.22,1,.36,1) .5s both; }
+`;
+
+/* ─── Brand ────────────────────────────────────────────────────────── */
+function BrandLogo() {
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 420, margin: '0 auto', width: '100%' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-        {(['publisher', 'advertiser'] as const).map(r => (
-          <button key={r} type="button" onClick={() => setRole(r)} style={{
-            padding: '11px 14px', borderRadius: 10,
-            border: `2px solid ${role === r ? 'var(--c-acc)' : 'var(--c-line-2)'}`,
-            background: role === r ? 'var(--c-acc-soft)' : 'transparent',
-            cursor: 'pointer', fontWeight: 520, fontSize: 14,
-            color: role === r ? 'var(--c-acc-ink)' : 'var(--c-fg-3)',
-            transition: 'all .14s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-          }}>
-            {r === 'publisher' ? <><Globe size={14} /><span>Publisher</span></> : <><Megaphone size={14} /><span>Advertiser</span></>}
-          </button>
-        ))}
-      </div>
-      <div style={{ display: 'flex', gap: 8 }}>
-        <input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="you@company.com" className="input" style={{ flex: 1, fontSize: 14 }} />
-        <button type="submit" disabled={loading || !role} className="btn btn-primary" style={{ whiteSpace: 'nowrap', gap: 6, opacity: (!role || loading) ? 0.5 : 1, transition: 'opacity .15s' }}>
-          {loading ? 'Joining…' : <><span>Join waitlist</span><ArrowRight size={14} /></>}
-        </button>
-      </div>
-      <p style={{ fontSize: 12.5, color: 'var(--c-fg-4)', textAlign: 'center', margin: 0 }}>No spam. Early access means early payouts.</p>
-    </form>
+    <Link href="/" className="c-brand">
+      <span className="c-mark" />
+      Adryx
+    </Link>
   );
 }
 
-/* ─── How it works ────────────────────────────────────────────────── */
-function HowItWorks() {
-  const steps = [
+/* ─── TopNav ───────────────────────────────────────────────────────── */
+function TopNav() {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const fn = () => setScrolled(window.scrollY > 16);
+    window.addEventListener('scroll', fn, { passive: true });
+    return () => window.removeEventListener('scroll', fn);
+  }, []);
+
+  return (
+    <nav className={`c-nav${scrolled ? ' scrolled' : ''}`}>
+      <div className="c-wrap c-row c-between" style={{ height: 60 }}>
+        <BrandLogo />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          {['Product', 'Publishers', 'Advertisers', 'Docs', 'Pricing'].map(l => (
+            <Link key={l} href={`/${l.toLowerCase()}`} className="c-nav-link">{l}</Link>
+          ))}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Link href="/login"  className="c-btn-ghost" style={{ padding: '8px 16px', fontSize: 13 }}>Sign in</Link>
+          <Link href="/signup" className="c-btn-y"     style={{ padding: '8px 18px', fontSize: 13 }}>Get started</Link>
+        </div>
+      </div>
+    </nav>
+  );
+}
+
+/* ─── Hero product mock ────────────────────────────────────────────── */
+function HeroProductMock() {
+  const pts = [0,18,10,35,22,28,30,45,40,38,50,52,60,44,70,62,80,55,90,68,100,60];
+  const xs = pts.filter((_,i) => i%2===0);
+  const ys = pts.filter((_,i) => i%2!==0);
+  const W = 320, H = 80;
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+  const sx = (x: number) => (x/100)*W;
+  const sy = (y: number) => H - ((y-minY)/(maxY-minY))*(H*0.8) - H*0.1;
+  const line = xs.map((x,i) => `${sx(x)},${sy(ys[i])}`).join(' ');
+  const area = `M${sx(xs[0])},${H} `+xs.map((x,i)=>`L${sx(x)},${sy(ys[i])}`).join(' ')+` L${sx(xs[xs.length-1])},${H} Z`;
+
+  return (
+    <div style={{ marginTop: 52, border: '1px solid rgba(255,255,255,.1)', borderRadius: 16, overflow: 'hidden', maxWidth: 720, marginLeft: 'auto', marginRight: 'auto', background: 'rgba(255,255,255,.025)', boxShadow: '0 32px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.07)' }}>
+      <div style={{ background: '#0f0f13', borderBottom: '1px solid rgba(255,255,255,.07)', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ width:10, height:10, borderRadius:'50%', background:'#ff5f57', display:'inline-block' }} />
+        <span style={{ width:10, height:10, borderRadius:'50%', background:'#febc2e', display:'inline-block' }} />
+        <span style={{ width:10, height:10, borderRadius:'50%', background:'#28c840', display:'inline-block' }} />
+        <span style={{ flex:1, background:'rgba(255,255,255,.04)', border:'1px solid rgba(255,255,255,.07)', borderRadius:6, height:22, marginLeft:8, display:'flex', alignItems:'center', paddingLeft:8, fontSize:11, color:'rgba(245,245,245,.3)', fontFamily:'monospace' }}>
+          app.adryx.io/publishers
+        </span>
+      </div>
+      <div style={{ padding: '20px 24px' }}>
+        <div className="c-row c-between" style={{ marginBottom: 16 }}>
+          <div>
+            <div style={{ fontSize:12, color:'rgba(245,245,245,.38)', marginBottom:3 }}>This week&apos;s earnings</div>
+            <div style={{ fontSize:28, fontWeight:660, letterSpacing:'-0.03em', color:'#f5f5f5' }}>$12,847.20</div>
+          </div>
+          <span className="c-badge c-badge-ok"><span className="c-badge-dot" /> Settled</span>
+        </div>
+        <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ display:'block', marginBottom:16 }}>
+          <defs>
+            <linearGradient id="hGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#EBFF45" stopOpacity="0.2" />
+              <stop offset="100%" stopColor="#EBFF45" stopOpacity="0.01" />
+            </linearGradient>
+          </defs>
+          <path d={area} fill="url(#hGrad)" />
+          <polyline points={line} fill="none" stroke="#EBFF45" strokeWidth="1.75" strokeLinejoin="round" strokeLinecap="round" />
+        </svg>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:12 }}>
+          {[{label:'Impressions',value:'1.84M'},{label:'CTR',value:'1.92%'},{label:'eCPM',value:'$6.97'}].map(m => (
+            <div key={m.label} style={{ background:'rgba(255,255,255,.03)', border:'1px solid rgba(255,255,255,.07)', borderRadius:8, padding:'10px 12px' }}>
+              <div style={{ fontSize:11, color:'rgba(245,245,245,.35)', marginBottom:3 }}>{m.label}</div>
+              <div style={{ fontSize:16, fontWeight:580, letterSpacing:'-0.01em', color:'#f5f5f5' }}>{m.value}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Hero ─────────────────────────────────────────────────────────── */
+function Hero() {
+  const router = useRouter();
+  return (
+    <section className="c-section" style={{ textAlign:'center', paddingTop:88, paddingBottom:72, background:'#08080a', position:'relative', overflow:'hidden' }}>
+      <div style={{ position:'absolute', top:-120, left:'50%', transform:'translateX(-50%)', width:600, height:400, background:'radial-gradient(ellipse,rgba(235,255,69,.07) 0%,transparent 70%)', pointerEvents:'none' }} />
+      <div className="c-wrap c-col" style={{ alignItems:'center', gap:0 }}>
+        <div className="c-eyebrow fade-up-1" style={{ marginBottom:28 }}>
+          <span className="c-dot" />
+          New · USDC payouts now on Base
+        </div>
+        <h1 className="c-display-xl fade-up-2" style={{ maxWidth:780, marginBottom:22 }}>
+          Internet advertising,<br />settled in stablecoins.
+        </h1>
+        <p className="c-body-lg fade-up-3" style={{ maxWidth:520, marginBottom:36 }}>
+          Adryx connects publishers and advertisers through a transparent, on-chain ad marketplace.
+          Every impression attested. Every payout in USDC.
+        </p>
+        <div style={{ display:'flex', gap:14, marginBottom:28 }} className="fade-up-4">
+          <button onClick={() => router.push('/signup')} className="c-btn-y lg">Start earning</button>
+          <button onClick={() => router.push('/signup?role=advertiser')} className="c-btn-ghost lg">Run a campaign</button>
+        </div>
+        <div style={{ display:'flex', gap:28, justifyContent:'center', flexWrap:'wrap', fontSize:13, color:'rgba(245,245,245,.45)' }}>
+          {['No credit card required','Weekly USDC payouts','On-chain attestations'].map(t => (
+            <span key={t} style={{ display:'flex', alignItems:'center', gap:7 }}>
+              <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="7.5" fill="rgba(235,255,69,.15)"/><path d="M4.5 7.5l2 2 4-4" stroke="#EBFF45" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              {t}
+            </span>
+          ))}
+        </div>
+        <HeroProductMock />
+      </div>
+    </section>
+  );
+}
+
+/* ─── LogoBar ──────────────────────────────────────────────────────── */
+function LogoBar() {
+  const brands = ['Mirror','Layer3','Farcaster','Lens','Zora','Stargate','Optimism','Polygon','Linea'];
+  return (
+    <div style={{ borderTop:'1px solid rgba(255,255,255,.07)', borderBottom:'1px solid rgba(255,255,255,.07)', padding:'36px 0', background:'#0f0f13' }}>
+      <div className="c-wrap" style={{ textAlign:'center' }}>
+        <p className="c-label" style={{ marginBottom:22 }}>Trusted by builders shipping the open internet</p>
+        <div className="c-logo-strip">{brands.map(b => <span key={b}>{b}</span>)}</div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── SplitSection ─────────────────────────────────────────────────── */
+function SplitSection() {
+  const cards = [
     {
-      n: '01', title: 'Publisher embeds Adryx',
-      icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M5 5l-3 4 3 4M13 5l3 4-3 4M10 3l-2 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>,
-      desc: 'One async script tag — no frameworks, no bundle impact.',
+      label: 'Publishers',
+      icon: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.5" stroke="currentColor" strokeWidth="1.5"/><ellipse cx="10" cy="10" rx="4" ry="8.5" stroke="currentColor" strokeWidth="1.5"/><path d="M1.5 10h17" stroke="currentColor" strokeWidth="1.5"/></svg>,
+      headline: 'Get paid for the attention your site earns',
+      bullets: ['Embed one script tag — done','Real-time earnings dashboard','Weekly USDC payouts, on-chain','Human-verified impressions only'],
+      primary: { label:'See publisher app', href:'/publishers' },
+      secondary: { label:'Get the snippet', href:'/publishers/integrate' },
     },
     {
-      n: '02', title: 'Auction runs in 38ms',
-      icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2v4M9 12v4M5 6L2.5 3.5M13 12l2.5 2.5M2 9h4M12 9h4M5 12L2.5 14.5M13 6l2.5-2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>,
-      desc: 'Second-price auction selects the winning bid in real-time.',
-    },
-    {
-      n: '03', title: 'Impression is attested',
-      icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2C5 2 2 5 2 9s3 7 7 7 7-3 7-7-3-7-7-7z" stroke="currentColor" strokeWidth="1.5" /><path d="M6 9l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>,
-      desc: 'Human verification proof is written on-chain. Fraudulent bots earn nothing.',
-    },
-    {
-      n: '04', title: 'USDC settles weekly',
-      icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="5" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.5" /><path d="M6 5V4a3 3 0 016 0v1" stroke="currentColor" strokeWidth="1.5" /><circle cx="9" cy="10" r="1.5" fill="currentColor" /></svg>,
-      desc: 'Every Friday, publisher balances sweep to their on-chain wallet in USDC.',
+      label: 'Advertisers',
+      icon: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="4" stroke="currentColor" strokeWidth="1.5"/><circle cx="10" cy="10" r="8.5" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 2"/></svg>,
+      headline: 'Reach real humans. Pay only for verified impressions.',
+      bullets: ['Transparent on-chain spend','Contextual & wallet-based targeting','Real-time campaign analytics','No minimum budget'],
+      primary: { label:'See advertiser app', href:'/advertiser' },
+      secondary: { label:'Launch a campaign', href:'/advertiser/campaigns/new' },
     },
   ];
 
   return (
-    <section className="section" style={{ background: 'var(--c-bg-2)' }}>
-      <div className="container">
-        <div style={{ textAlign: 'center', marginBottom: 56 }}>
-          <p className="t-eyebrow" style={{ marginBottom: 10 }}>How Adryx works</p>
-          <h2 className="t-display" style={{ maxWidth: 580, margin: '0 auto' }}>
-            From ad request to settled payout — in one hop.
-          </h2>
+    <section className="c-section" style={{ background:'#08080a' }}>
+      <div className="c-wrap">
+        <div style={{ textAlign:'center', marginBottom:52 }}>
+          <p className="c-label" style={{ marginBottom:12 }}>A two-sided network</p>
+          <h2 className="c-display" style={{ maxWidth:560, margin:'0 auto' }}>One protocol. Two sides. Aligned incentives.</h2>
         </div>
-        <div className="grid-4" style={{ marginBottom: 48 }}>
-          {steps.map(s => (
-            <div key={s.n} className="col" style={{ gap: 14 }}>
-              <div className="row gap-3" style={{ alignItems: 'center' }}>
-                <div style={{ width: 36, height: 36, borderRadius: 9, background: 'var(--c-acc-soft)', color: 'var(--c-acc)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  {s.icon}
+        <div className="c-grid-2">
+          {cards.map(c => (
+            <div key={c.label} className="c-card c-col" style={{ gap:22 }}>
+              <div className="accent-bar" />
+              <div style={{ display:'flex', alignItems:'flex-start', gap:14 }}>
+                <div style={{ width:42, height:42, borderRadius:11, background:'rgba(235,255,69,.1)', color:'#EBFF45', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, border:'1px solid rgba(235,255,69,.2)' }}>{c.icon}</div>
+                <div>
+                  <p className="c-label" style={{ marginBottom:5 }}>{c.label}</p>
+                  <h3 className="c-h3">{c.headline}</h3>
                 </div>
-                <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--c-fg-4)', letterSpacing: '.06em' }}>{s.n}</span>
               </div>
-              <h4 className="t-h4">{s.title}</h4>
-              <p className="t-sm muted">{s.desc}</p>
+              <ul style={{ display:'flex', flexDirection:'column', gap:8, padding:0, listStyle:'none', margin:0 }}>
+                {c.bullets.map(b => (
+                  <li key={b} style={{ display:'flex', alignItems:'center', gap:8 }} className="c-sm">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ flexShrink:0 }}><path d="M3 7l3 3 5-5" stroke="#EBFF45" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    {b}
+                  </li>
+                ))}
+              </ul>
+              <div style={{ display:'flex', gap:8, marginTop:'auto' }}>
+                <Link href={c.primary.href} className="c-btn-y" style={{ padding:'9px 18px', fontSize:13 }}>{c.primary.label}</Link>
+                <Link href={c.secondary.href} className="c-btn-ghost" style={{ padding:'8px 16px', fontSize:13 }}>{c.secondary.label}</Link>
+              </div>
             </div>
           ))}
         </div>
-        <div className="grid-2">
-          <div className="card" style={{ overflow: 'hidden' }}>
-            <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--c-line)', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span className="t-xs" style={{ fontWeight: 560, color: 'var(--c-fg-3)' }}>Publisher integration</span>
+      </div>
+    </section>
+  );
+}
+
+/* ─── HowItWorks ───────────────────────────────────────────────────── */
+function HowItWorks() {
+  const steps = [
+    { n:'01', title:'Publisher embeds Adryx',  desc:'One async script tag — no frameworks, no bundle impact.', icon:<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M5 5l-3 4 3 4M13 5l3 4-3 4M10 3l-2 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg> },
+    { n:'02', title:'Auction runs in 38ms',     desc:'Second-price auction selects the winning bid in real-time.', icon:<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2v4M9 12v4M5 6L2.5 3.5M13 12l2.5 2.5M2 9h4M12 9h4M5 12L2.5 14.5M13 6l2.5-2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg> },
+    { n:'03', title:'Impression is attested',   desc:'Human verification proof is written on-chain. Bots earn nothing.', icon:<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2C5 2 2 5 2 9s3 7 7 7 7-3 7-7-3-7-7-7z" stroke="currentColor" strokeWidth="1.5"/><path d="M6 9l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg> },
+    { n:'04', title:'USDC settles weekly',      desc:'Every Friday, publisher balances sweep to their on-chain wallet.', icon:<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="5" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.5"/><path d="M6 5V4a3 3 0 016 0v1" stroke="currentColor" strokeWidth="1.5"/><circle cx="9" cy="10" r="1.5" fill="currentColor"/></svg> },
+  ];
+
+  return (
+    <section className="c-section" style={{ background:'#0f0f13' }}>
+      <div className="c-wrap">
+        <div style={{ textAlign:'center', marginBottom:60 }}>
+          <p className="c-label" style={{ marginBottom:12 }}>How Adryx works</p>
+          <h2 className="c-display" style={{ maxWidth:580, margin:'0 auto' }}>From ad request to settled payout — in one hop.</h2>
+        </div>
+        <div className="c-grid-4" style={{ marginBottom:52 }}>
+          {steps.map(s => (
+            <div key={s.n} style={{ display:'flex', flexDirection:'column', gap:14 }}>
+              <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+                <div style={{ width:38, height:38, borderRadius:10, background:'rgba(235,255,69,.1)', color:'#EBFF45', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, border:'1px solid rgba(235,255,69,.18)' }}>{s.icon}</div>
+                <span style={{ fontSize:11, fontWeight:640, color:'rgba(235,255,69,.6)', letterSpacing:'.08em' }}>{s.n}</span>
+              </div>
+              <h4 className="c-h4">{s.title}</h4>
+              <p className="c-sm c-muted">{s.desc}</p>
             </div>
-            <div className="code" style={{ borderRadius: 0, margin: 0 }}>
+          ))}
+        </div>
+        <div className="c-grid-2">
+          <div style={{ border:'1px solid rgba(255,255,255,.08)', borderRadius:14, overflow:'hidden', background:'rgba(255,255,255,.02)' }}>
+            <div style={{ padding:'13px 18px', borderBottom:'1px solid rgba(255,255,255,.07)', display:'flex', alignItems:'center' }}>
+              <span style={{ fontSize:12, fontWeight:580, color:'rgba(245,245,245,.45)' }}>Publisher integration</span>
+            </div>
+            <div className="c-code" style={{ borderRadius:0, border:'none', margin:0 }}>
               <span className="tk-c">{'<!-- Paste before </body> -->'}</span>{'\n'}
               <span className="tk-k">{'<script'}</span><span className="tk-n">{' async'}</span><span className="tk-k">{'>'}</span>
               {'\n  '}<span className="tk-s">{'src="https://cdn.adryx.io/v1/loader.js"'}</span>
@@ -148,24 +357,19 @@ function HowItWorks() {
               {'\n'}<span className="tk-k">{'</script>'}</span>
             </div>
           </div>
-          <div className="card" style={{ overflow: 'hidden' }}>
-            <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--c-line)', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span className="t-xs" style={{ fontWeight: 560, color: 'var(--c-fg-3)' }}>Advertiser settlement</span>
+          <div style={{ border:'1px solid rgba(255,255,255,.08)', borderRadius:14, overflow:'hidden', background:'rgba(255,255,255,.02)' }}>
+            <div style={{ padding:'13px 18px', borderBottom:'1px solid rgba(255,255,255,.07)' }}>
+              <span style={{ fontSize:12, fontWeight:580, color:'rgba(245,245,245,.45)' }}>Advertiser settlement</span>
             </div>
-            <table className="table" style={{ fontSize: 12.5 }}>
+            <table className="c-table" style={{ fontSize:12.5 }}>
               <thead><tr><th>Tx hash</th><th>Date</th><th>Amount</th><th>Status</th></tr></thead>
               <tbody>
-                {[
-                  { hash: '0x4f2a…9c1e', date: 'May 16', amt: '-$1,240.00' },
-                  { hash: '0x8b1d…3a7f', date: 'May 9',  amt: '-$980.50' },
-                  { hash: '0x2e9c…7b4d', date: 'May 2',  amt: '-$1,105.20' },
-                  { hash: '0x6f3a…2c8e', date: 'Apr 25', amt: '-$870.00' },
-                ].map(r => (
+                {[{hash:'0x4f2a…9c1e',date:'May 16',amt:'-$1,240.00'},{hash:'0x8b1d…3a7f',date:'May 9',amt:'-$980.50'},{hash:'0x2e9c…7b4d',date:'May 2',amt:'-$1,105.20'},{hash:'0x6f3a…2c8e',date:'Apr 25',amt:'-$870.00'}].map(r => (
                   <tr key={r.hash}>
-                    <td className="t-mono" style={{ color: 'var(--c-fg-3)' }}>{r.hash}</td>
-                    <td style={{ color: 'var(--c-fg-3)' }}>{r.date}</td>
-                    <td style={{ fontWeight: 530 }}>{r.amt}</td>
-                    <td><span className="badge badge-ok"><span className="badge-dot" />Settled</span></td>
+                    <td className="c-mono">{r.hash}</td>
+                    <td className="c-muted">{r.date}</td>
+                    <td style={{ fontWeight:550, color:'#f5f5f5' }}>{r.amt}</td>
+                    <td><span className="c-badge c-badge-ok"><span className="c-badge-dot"/>Settled</span></td>
                   </tr>
                 ))}
               </tbody>
@@ -177,14 +381,14 @@ function HowItWorks() {
   );
 }
 
-/* ─── Features ────────────────────────────────────────────────────── */
+/* ─── Features ─────────────────────────────────────────────────────── */
 function ProofVisual() {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-      {['Request', 'Auction', 'Attest', 'Settle'].map((s, i) => (
-        <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ background: 'var(--c-acc-soft)', color: 'var(--c-acc)', fontSize: 11.5, fontWeight: 560, borderRadius: 6, padding: '4px 10px', border: '1px solid rgba(37,99,235,.15)' }}>{s}</div>
-          {i < 3 && <svg width="16" height="10" viewBox="0 0 16 10" fill="none"><path d="M1 5h12M11 1l4 4-4 4" stroke="var(--c-fg-4)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+    <div style={{ display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
+      {['Request','Auction','Attest','Settle'].map((s,i) => (
+        <div key={s} style={{ display:'flex', alignItems:'center', gap:10 }}>
+          <div style={{ background:'rgba(235,255,69,.12)', color:'#EBFF45', fontSize:11.5, fontWeight:580, borderRadius:6, padding:'4px 10px', border:'1px solid rgba(235,255,69,.2)' }}>{s}</div>
+          {i < 3 && <svg width="14" height="10" viewBox="0 0 14 10" fill="none"><path d="M1 5h10M9 1l4 4-4 4" stroke="rgba(245,245,245,.3)" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>}
         </div>
       ))}
     </div>
@@ -193,78 +397,78 @@ function ProofVisual() {
 
 function Features() {
   return (
-    <section className="section">
-      <div className="container">
-        <div style={{ textAlign: 'center', marginBottom: 48 }}>
-          <p className="t-eyebrow" style={{ marginBottom: 10 }}>Built for both sides</p>
-          <h2 className="t-display" style={{ maxWidth: 520, margin: '0 auto' }}>The features that make Adryx work.</h2>
+    <section className="c-section" style={{ background:'#08080a' }}>
+      <div className="c-wrap">
+        <div style={{ textAlign:'center', marginBottom:52 }}>
+          <p className="c-label" style={{ marginBottom:12 }}>Built for both sides</p>
+          <h2 className="c-display" style={{ maxWidth:520, margin:'0 auto' }}>The features that make Adryx work.</h2>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: 16 }}>
-          <div className="card card-pad" style={{ gridColumn: 'span 4', minHeight: 200 }}>
-            <p className="t-eyebrow-n" style={{ marginBottom: 6 }}>Transparency</p>
-            <h3 className="t-h3" style={{ marginBottom: 12 }}>Every impression, proven on-chain.</h3>
-            <p className="t-sm muted" style={{ marginBottom: 20 }}>Each ad render writes an attestation to Base. Advertisers can verify every dollar spent; publishers can audit every cent earned.</p>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(6,1fr)', gap:16 }}>
+          <div className="c-card" style={{ gridColumn:'span 4', minHeight:200 }}>
+            <div className="accent-bar"/>
+            <p className="c-label" style={{ marginBottom:8 }}>Transparency</p>
+            <h3 className="c-h3" style={{ marginBottom:12 }}>Every impression, proven on-chain.</h3>
+            <p className="c-sm c-muted" style={{ marginBottom:22, maxWidth:440 }}>Each ad render writes an attestation to Base. Advertisers can verify every dollar spent; publishers can audit every cent earned.</p>
             <ProofVisual />
           </div>
-          <div className="card card-pad" style={{ gridColumn: 'span 2' }}>
-            <p className="t-eyebrow-n" style={{ marginBottom: 6 }}>Speed</p>
-            <h3 className="t-h4" style={{ marginBottom: 16 }}>38ms median auction latency</h3>
-            {[{ label: 'Adryx', pct: 38, w: '38%', color: 'var(--c-acc)' }, { label: 'Incumbent A', pct: 180, w: '90%', color: 'var(--c-line-3)' }, { label: 'Incumbent B', pct: 220, w: '100%', color: 'var(--c-line-3)' }].map(b => (
-              <div key={b.label} style={{ marginBottom: 10 }}>
-                <div className="row between t-xs muted" style={{ marginBottom: 4 }}><span>{b.label}</span><span>{b.pct}ms</span></div>
-                <div style={{ height: 6, background: 'var(--c-bg-3)', borderRadius: 3 }}>
-                  <div style={{ height: 6, borderRadius: 3, background: b.color, width: b.w }} />
-                </div>
+          <div className="c-card" style={{ gridColumn:'span 2' }}>
+            <div className="accent-bar"/>
+            <p className="c-label" style={{ marginBottom:8 }}>Speed</p>
+            <h3 className="c-h4" style={{ marginBottom:18 }}>38ms median auction latency</h3>
+            {[{label:'Adryx',pct:38,w:'38%',acc:true},{label:'Incumbent A',pct:180,w:'90%',acc:false},{label:'Incumbent B',pct:220,w:'100%',acc:false}].map(b => (
+              <div key={b.label} style={{ marginBottom:10 }}>
+                <div style={{ display:'flex', justifyContent:'space-between', marginBottom:4 }} className="c-xs c-muted"><span>{b.label}</span><span>{b.pct}ms</span></div>
+                <div className="c-bar-track"><div className={`c-bar-fill${b.acc?'':' c-bar-muted'}`} style={{ width:b.w }}/></div>
               </div>
             ))}
           </div>
-          <div className="card card-pad" style={{ gridColumn: 'span 2' }}>
-            <p className="t-eyebrow-n" style={{ marginBottom: 6 }}>Trust</p>
-            <h3 className="t-h4" style={{ marginBottom: 16 }}>92% human traffic, verified</h3>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div className="c-card" style={{ gridColumn:'span 2' }}>
+            <div className="accent-bar"/>
+            <p className="c-label" style={{ marginBottom:8 }}>Trust</p>
+            <h3 className="c-h4" style={{ marginBottom:18 }}>92% human traffic, verified</h3>
+            <div style={{ display:'flex', alignItems:'center', gap:18 }}>
               <svg width="72" height="72" viewBox="0 0 72 72">
-                <circle cx="36" cy="36" r="28" fill="none" stroke="var(--c-line)" strokeWidth="8" />
-                <circle cx="36" cy="36" r="28" fill="none" stroke="var(--c-acc)" strokeWidth="8"
-                  strokeDasharray={`${2 * Math.PI * 28 * 0.92} ${2 * Math.PI * 28}`}
-                  strokeDashoffset={2 * Math.PI * 28 * 0.25} strokeLinecap="round" />
-                <text x="36" y="40" textAnchor="middle" fontSize="13" fontWeight="600" fill="var(--c-fg)">92%</text>
+                <circle cx="36" cy="36" r="28" fill="none" stroke="rgba(255,255,255,.07)" strokeWidth="8"/>
+                <circle cx="36" cy="36" r="28" fill="none" stroke="#EBFF45" strokeWidth="8" strokeDasharray={`${2*Math.PI*28*0.92} ${2*Math.PI*28}`} strokeDashoffset={2*Math.PI*28*0.25} strokeLinecap="round"/>
+                <text x="36" y="40" textAnchor="middle" fontSize="13" fontWeight="600" fill="#f5f5f5">92%</text>
               </svg>
-              <div className="col" style={{ gap: 6 }}>
-                <span className="t-xs" style={{ color: 'var(--c-fg-3)' }}><span style={{ color: 'var(--c-acc)', fontWeight: 600 }}>92%</span> Human verified</span>
-                <span className="t-xs" style={{ color: 'var(--c-fg-3)' }}><span style={{ color: 'var(--c-bad)', fontWeight: 600 }}>8%</span> Filtered bots</span>
+              <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+                <span className="c-xs c-muted"><span style={{ color:'#EBFF45', fontWeight:620 }}>92%</span> Human verified</span>
+                <span className="c-xs c-muted"><span style={{ color:'#f87171', fontWeight:620 }}>8%</span> Filtered bots</span>
               </div>
             </div>
           </div>
-          <div className="card card-pad" style={{ gridColumn: 'span 2' }}>
-            <p className="t-eyebrow-n" style={{ marginBottom: 6 }}>Targeting</p>
-            <h3 className="t-h4" style={{ marginBottom: 12 }}>Wallet-based audience segments</h3>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {['DeFi users', 'NFT holders', 'L2 native', 'Early adopters', 'DAO voters', 'Stakers'].map(t => (
-                <span key={t} className="badge badge-acc">{t}</span>
+          <div className="c-card" style={{ gridColumn:'span 2' }}>
+            <div className="accent-bar"/>
+            <p className="c-label" style={{ marginBottom:8 }}>Targeting</p>
+            <h3 className="c-h4" style={{ marginBottom:14 }}>Wallet-based audience segments</h3>
+            <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
+              {['DeFi users','NFT holders','L2 native','Early adopters','DAO voters','Stakers'].map(t => (
+                <span key={t} className="c-badge c-badge-acc">{t}</span>
               ))}
             </div>
           </div>
-          <div className="card card-pad" style={{ gridColumn: 'span 2' }}>
-            <p className="t-eyebrow-n" style={{ marginBottom: 6 }}>Payments</p>
-            <h3 className="t-h4" style={{ marginBottom: 12 }}>Multi-chain USDC payouts</h3>
-            <div style={{ display: 'flex', gap: 8 }}>
-              {[{ label: 'Base', color: '#0052ff' }, { label: 'Optimism', color: '#ff0420' }, { label: 'Polygon', color: '#8247e5' }, { label: 'Linea', color: '#121212' }].map(c => (
-                <div key={c.label} title={c.label} style={{ width: 32, height: 32, borderRadius: '50%', background: c.color, border: '2px solid var(--c-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: '#fff', fontWeight: 700 }}>
-                  {c.label[0]}
-                </div>
+          <div className="c-card" style={{ gridColumn:'span 2' }}>
+            <div className="accent-bar"/>
+            <p className="c-label" style={{ marginBottom:8 }}>Payments</p>
+            <h3 className="c-h4" style={{ marginBottom:14 }}>Multi-chain USDC payouts</h3>
+            <div style={{ display:'flex', gap:8 }}>
+              {[{label:'Base',color:'#0052ff'},{label:'Optimism',color:'#ff0420'},{label:'Polygon',color:'#8247e5'},{label:'Linea',color:'#232323'}].map(c => (
+                <div key={c.label} title={c.label} style={{ width:32, height:32, borderRadius:'50%', background:c.color, border:'2px solid rgba(255,255,255,.1)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:10, color:'#fff', fontWeight:700 }}>{c.label[0]}</div>
               ))}
             </div>
           </div>
-          <div className="card card-pad" style={{ gridColumn: 'span 2' }}>
-            <p className="t-eyebrow-n" style={{ marginBottom: 6 }}>Control</p>
-            <h3 className="t-h4" style={{ marginBottom: 12 }}>Brand safety allow/block list</h3>
-            <div className="col" style={{ gap: 6 }}>
-              {[{ t: 'Allow: crypto, DeFi, Web3', ok: true }, { t: 'Block: gambling, adult', ok: false }].map(r => (
-                <div key={r.t} className="row gap-2 t-xs" style={{ color: r.ok ? 'var(--c-ok)' : 'var(--c-bad)' }}>
-                  {r.ok
-                    ? <Check size={12} strokeWidth={2} />
-                    : <X size={12} strokeWidth={2} />}
-                  {r.t}
+          <div className="c-card" style={{ gridColumn:'span 2' }}>
+            <div className="accent-bar"/>
+            <p className="c-label" style={{ marginBottom:8 }}>Control</p>
+            <h3 className="c-h4" style={{ marginBottom:14 }}>Brand safety allow/block list</h3>
+            <div style={{ display:'flex', flexDirection:'column', gap:7 }}>
+              {[{t:'Allow: crypto, DeFi, Web3',ok:true},{t:'Block: gambling, adult',ok:false}].map(r => (
+                <div key={r.t} style={{ display:'flex', alignItems:'center', gap:7 }} className={`c-xs ${r.ok?'':'c-muted'}`} >
+                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style={{ color:r.ok?'#4ade80':'#f87171' }}>
+                    {r.ok?<><circle cx="6.5" cy="6.5" r="6" stroke="currentColor" strokeWidth="1.1"/><path d="M4 6.5l2 2 3-3" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/></>:<><circle cx="6.5" cy="6.5" r="6" stroke="currentColor" strokeWidth="1.1"/><path d="M4.5 4.5l4 4M8.5 4.5l-4 4" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/></>}
+                  </svg>
+                  <span style={{ color:r.ok?'#4ade80':'#f87171' }}>{r.t}</span>
                 </div>
               ))}
             </div>
@@ -275,45 +479,59 @@ function Features() {
   );
 }
 
-/* ─── Compare ─────────────────────────────────────────────────────── */
-function Compare() {
-  const rows: [string, boolean | string, boolean | string][] = [
-    ['On-chain attestations',        true,  false],
-    ['USDC payouts',                 true,  false],
-    ['No middlemen',                 true,  false],
-    ['Real-time analytics',          true,  true],
-    ['78% publisher revenue share',  true,  false],
-    ['Human verification',           true,  'Partial'],
-    ['Transparent auction',          true,  false],
-  ];
+/* ─── Stats ────────────────────────────────────────────────────────── */
+function Stats() {
+  const stats = [{value:'$28.4M',label:'Paid to publishers'},{value:'4.2B',label:'Impressions verified'},{value:'12,400',label:'Active publisher sites'},{value:'78%',label:'Revenue share'}];
+  return (
+    <div style={{ background:'#0d0d11', padding:'56px 0', borderTop:'1px solid rgba(255,255,255,.07)', borderBottom:'1px solid rgba(255,255,255,.07)' }}>
+      <div className="c-wrap">
+        <div className="c-grid-4">
+          {stats.map(s => (
+            <div key={s.label} style={{ textAlign:'center' }}>
+              <div className="c-stat-val">{s.value}</div>
+              <div className="c-stat-lbl">{s.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
-  const cell = (v: boolean | string) =>
-    v === true    ? <Check size={16} color="var(--c-ok)" strokeWidth={2.5} />
-    : v === false ? <X     size={16} color="var(--c-bad)" strokeWidth={2} />
-    : <span style={{ color: 'var(--c-warn)', fontSize: 12, fontWeight: 520 }}>{v}</span>;
+/* ─── Compare ──────────────────────────────────────────────────────── */
+function Compare() {
+  const rows: [string, boolean|string, boolean|string][] = [
+    ['On-chain attestations',       true, false],
+    ['USDC payouts',                true, false],
+    ['No middlemen',                true, false],
+    ['Real-time analytics',         true, true],
+    ['78% publisher revenue share', true, false],
+    ['Human verification',          true, 'Partial'],
+    ['Transparent auction',         true, false],
+  ];
+  const check = (v: boolean|string) =>
+    v === true  ? <span style={{ color:'#4ade80', fontWeight:640 }}>✓</span>
+    : v === false ? <span style={{ color:'#f87171' }}>✕</span>
+    : <span style={{ color:'#fbbf24', fontSize:12 }}>{v}</span>;
 
   return (
-    <section className="section-tight" style={{ background: 'var(--c-bg-2)' }}>
-      <div className="container">
-        <div style={{ textAlign: 'center', marginBottom: 36 }}>
-          <p className="t-eyebrow" style={{ marginBottom: 10 }}>Compare</p>
-          <h2 className="t-h1">Adryx vs. incumbent ad networks</h2>
+    <section className="c-section-tight" style={{ background:'#08080a' }}>
+      <div className="c-wrap">
+        <div style={{ textAlign:'center', marginBottom:40 }}>
+          <p className="c-label" style={{ marginBottom:12 }}>Compare</p>
+          <h2 className="c-h1">Adryx vs. incumbent ad networks</h2>
         </div>
-        <div className="table-wrap" style={{ maxWidth: 680, margin: '0 auto' }}>
-          <table className="table">
+        <div style={{ maxWidth:680, margin:'0 auto', border:'1px solid rgba(255,255,255,.08)', borderRadius:14, overflow:'hidden' }}>
+          <table className="c-table">
             <thead>
-              <tr>
-                <th>Feature</th>
-                <th style={{ color: 'var(--c-acc)', textAlign: 'center' }}>Adryx</th>
-                <th style={{ textAlign: 'center' }}>Incumbent</th>
-              </tr>
+              <tr><th>Feature</th><th style={{ color:'#EBFF45' }}>Adryx</th><th>Incumbent</th></tr>
             </thead>
             <tbody>
               {rows.map(([label, adryx, other]) => (
-                <tr key={label}>
-                  <td style={{ fontWeight: 480, color: 'var(--c-fg-2)' }}>{label}</td>
-                  <td style={{ textAlign: 'center' }}>{cell(adryx)}</td>
-                  <td style={{ textAlign: 'center' }}>{cell(other)}</td>
+                <tr key={label as string}>
+                  <td style={{ fontWeight:480, color:'rgba(245,245,245,.72)' }}>{label as string}</td>
+                  <td style={{ textAlign:'center' }}>{check(adryx)}</td>
+                  <td style={{ textAlign:'center' }}>{check(other)}</td>
                 </tr>
               ))}
             </tbody>
@@ -324,134 +542,122 @@ function Compare() {
   );
 }
 
-/* ─── No setup fees CTA ───────────────────────────────────────────── */
-function NoSetupFees() {
+/* ─── Testimonials ─────────────────────────────────────────────────── */
+function Testimonials() {
+  const quotes = [
+    { quote:'Switching to Adryx doubled our effective CPM and we actually get paid on time — every Friday, in USDC.', name:'Marina Voss', title:'Head of Revenue, Tessera Wire', initials:'MV' },
+    { quote:'The transparency is unreal. I can verify every impression we paid for on Base. No more trusting a black box.', name:'Daniel Park', title:'Growth Lead, Onchain Labs', initials:'DP' },
+    { quote:'Our DeFi audience segment performed 3x better than generic programmatic. Wallet-based targeting is a game-changer.', name:'Asha Rao', title:'Marketing Director, Meridian Finance', initials:'AR' },
+  ];
   return (
-    <section className="section" style={{ textAlign: 'center' }}>
-      <div className="container col" style={{ alignItems: 'center', gap: 24 }}>
-        <div className="eyebrow-pill"><span className="dot" />No setup fee</div>
-        <h2 className="t-display" style={{ maxWidth: 520, margin: 0 }}>Ready when you are.</h2>
-        <p className="t-body-lg" style={{ maxWidth: 480, margin: 0 }}>
-          Join 12,400 publishers earning in USDC and hundreds of advertisers reaching verified on-chain audiences.
-          Get early access when we launch.
-        </p>
-        <div style={{ width: '100%' }}>
-          <WaitlistForm />
+    <section className="c-section-tight" style={{ background:'#0f0f13' }}>
+      <div className="c-wrap">
+        <div style={{ textAlign:'center', marginBottom:44 }}>
+          <p className="c-label" style={{ marginBottom:12 }}>Testimonials</p>
+          <h2 className="c-h1">What our partners say</h2>
+        </div>
+        <div className="c-grid-3">
+          {quotes.map(q => (
+            <div key={q.name} className="c-card c-col" style={{ gap:22 }}>
+              <div className="accent-bar"/>
+              <p className="c-body" style={{ flex:1 }}>"{q.quote}"</p>
+              <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+                <div className="c-avatar">{q.initials}</div>
+                <div>
+                  <p className="c-sm" style={{ fontWeight:560, color:'#f5f5f5', marginBottom:2 }}>{q.name}</p>
+                  <p className="c-xs c-muted">{q.title}</p>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>
   );
 }
 
-/* ─── Page ────────────────────────────────────────────────────────── */
-export default function ComingSoonPage() {
-  const { dark, toggle } = useDarkMode();
-
-  const an = (delay: number, duration = 0.65) => ({
-    animation: `fadeUp ${duration}s cubic-bezier(.22,1,.36,1) both`,
-    animationDelay: `${delay}s`,
-  });
-
+/* ─── CTAFinal ─────────────────────────────────────────────────────── */
+function CTAFinal() {
+  const router = useRouter();
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--c-bg)', position: 'relative' }}>
-
-      {/* ── Background orbs ──────────────────────────────────────── */}
-      <div aria-hidden style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: -160, right: -160, width: 640, height: 640, borderRadius: '50%', background: dark ? 'radial-gradient(circle, rgba(59,130,246,.28) 0%, transparent 65%)' : 'radial-gradient(circle, rgba(37,99,235,.13) 0%, transparent 65%)', filter: 'blur(48px)', animation: 'orb-1 14s ease-in-out infinite' }} />
-        <div style={{ position: 'absolute', bottom: -120, left: -100, width: 560, height: 560, borderRadius: '50%', background: dark ? 'radial-gradient(circle, rgba(124,58,237,.22) 0%, transparent 65%)' : 'radial-gradient(circle, rgba(124,58,237,.1) 0%, transparent 65%)', filter: 'blur(48px)', animation: 'orb-2 18s ease-in-out infinite' }} />
-        <div style={{ position: 'absolute', top: '40%', left: '50%', transform: 'translate(-50%,-50%)', width: 400, height: 400, borderRadius: '50%', background: dark ? 'radial-gradient(circle, rgba(59,130,246,.1) 0%, transparent 70%)' : 'radial-gradient(circle, rgba(37,99,235,.05) 0%, transparent 70%)', filter: 'blur(60px)', animation: 'orb-3 22s ease-in-out infinite' }} />
-      </div>
-
-      {/* ── Nav ──────────────────────────────────────────────────── */}
-      <nav style={{ borderBottom: '1px solid var(--c-line)', padding: '0 24px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: 1100, width: '100%', margin: '0 auto', position: 'relative', zIndex: 10 }}>
-        <div className="brand" style={{ ...an(0, 0.4) }}>
-          <span className="mark mark-acc" />Adryx
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{ fontSize: 12, fontWeight: 540, color: 'var(--c-fg-4)', letterSpacing: '.04em', textTransform: 'uppercase', ...an(0.05, 0.4) }}>Private beta</span>
-          <button onClick={toggle} aria-label="Toggle dark mode" style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--c-line-2)', background: 'var(--c-bg-2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--c-fg-3)', ...an(0.1, 0.4) }}>
-            {dark ? <Sun size={15} /> : <Moon size={15} />}
-          </button>
-        </div>
-      </nav>
-
-      {/* ── Hero ─────────────────────────────────────────────────── */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 24px', textAlign: 'center', position: 'relative', zIndex: 1 }}>
-
-        <div className="eyebrow-pill" style={{ marginBottom: 28, ...an(0.1) }}>
-          <span className="dot" />Launching soon · USDC on Base
-        </div>
-
-        <h1 className="t-display-xl" style={{ maxWidth: 700, marginBottom: 18, ...an(0.2) }}>
-          Internet advertising,<br />settled in stablecoins.
-        </h1>
-
-        <p className="t-body-lg" style={{ maxWidth: 480, marginBottom: 40, ...an(0.3) }}>
-          Adryx connects publishers and advertisers through a transparent, on-chain ad marketplace.
-          Every impression attested. Every payout in USDC.
+    <section className="c-section" style={{ textAlign:'center', background:'#08080a', position:'relative', overflow:'hidden' }}>
+      <div style={{ position:'absolute', bottom:-80, left:'50%', transform:'translateX(-50%)', width:500, height:300, background:'radial-gradient(ellipse,rgba(235,255,69,.06) 0%,transparent 70%)', pointerEvents:'none' }}/>
+      <div className="c-wrap c-col" style={{ alignItems:'center', gap:24 }}>
+        <div className="c-eyebrow"><span className="c-dot"/>No setup fee</div>
+        <h2 className="c-display" style={{ maxWidth:480, margin:0 }}>Ready when you are.</h2>
+        <p className="c-body-lg" style={{ maxWidth:440, margin:0 }}>
+          Join 12,400 publishers earning in USDC and hundreds of advertisers reaching verified on-chain audiences.
         </p>
-
-        <div style={{ width: '100%', ...an(0.4) }}>
-          <WaitlistForm />
+        <div style={{ display:'flex', gap:14 }}>
+          <button onClick={() => router.push('/signup')} className="c-btn-y lg">Create free account</button>
+          <button onClick={() => router.push('/docs')} className="c-btn-ghost lg">Read the docs</button>
         </div>
+      </div>
+    </section>
+  );
+}
 
-        <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', justifyContent: 'center', marginTop: 44, fontSize: 13.5, color: 'var(--c-fg-3)', ...an(0.5) }}>
-          {['78% publisher revenue share', 'Weekly USDC payouts', 'On-chain impression proofs', 'Zero setup fees'].map(t => (
-            <span key={t} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-              <span style={{ width: 18, height: 18, borderRadius: '50%', background: 'var(--c-acc-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Check size={10} color="var(--c-acc)" strokeWidth={2.5} />
-              </span>
-              {t}
-            </span>
-          ))}
-        </div>
-
-        {/* Dashboard preview mock */}
-        <div style={{ marginTop: 64, maxWidth: 640, width: '100%', animation: 'fadeUp 0.65s cubic-bezier(.22,1,.36,1) 0.55s both, float 7s ease-in-out 1.2s infinite' }}>
-          <div style={{ background: dark ? 'var(--c-bg-2)' : '#fff', border: '1px solid var(--c-line)', borderRadius: 14, boxShadow: dark ? '0 24px 80px -16px rgba(0,0,0,.6), 0 0 0 1px var(--c-line)' : '0 24px 64px -16px rgba(15,15,20,.12), 0 0 0 1px var(--c-line)', overflow: 'hidden' }}>
-            <div style={{ background: 'var(--c-bg-3)', borderBottom: '1px solid var(--c-line)', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
-              {[dark ? '#6b3535' : '#ff5f57', dark ? '#6b5a28' : '#febc2e', dark ? '#1e5c2a' : '#28c840'].map((c, i) => (
-                <span key={i} style={{ width: 10, height: 10, borderRadius: '50%', background: c, display: 'inline-block' }} />
-              ))}
-              <span style={{ flex: 1, background: dark ? 'var(--c-bg-4)' : '#fff', border: '1px solid var(--c-line)', borderRadius: 6, height: 22, marginLeft: 8, display: 'flex', alignItems: 'center', paddingLeft: 10, fontSize: 11, color: 'var(--c-fg-4)' }}>
-                app.adryx.io/advertiser
-              </span>
-            </div>
-            <div style={{ padding: '20px 24px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                <div>
-                  <div style={{ fontSize: 11.5, color: 'var(--c-fg-4)', marginBottom: 3 }}>Good morning, Forecast Labs</div>
-                  <div style={{ fontSize: 22, fontWeight: 620, letterSpacing: '-0.02em' }}>$24,140 spent this month</div>
-                </div>
-                <span className="badge badge-ok"><span className="badge-dot" /> 5 campaigns live</span>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10 }}>
-                {[{ label: 'Impressions', value: '4.8M' }, { label: 'Clicks', value: '92.1K' }, { label: 'CTR', value: '1.92%' }, { label: 'Avg. CPC', value: '$0.26' }].map(m => (
-                  <div key={m.label} style={{ background: 'var(--c-bg-3)', border: '1px solid var(--c-line)', borderRadius: 8, padding: '10px 12px' }}>
-                    <div style={{ fontSize: 11, color: 'var(--c-fg-4)', marginBottom: 3 }}>{m.label}</div>
-                    <div style={{ fontSize: 15, fontWeight: 580, letterSpacing: '-0.01em' }}>{m.value}</div>
-                  </div>
+/* ─── Footer ───────────────────────────────────────────────────────── */
+function SiteFooter() {
+  const cols = {
+    Product:    [{label:'Features',href:'/features'},{label:'How it works',href:'/#how-it-works'},{label:'Pricing',href:'/pricing'},{label:'Changelog',href:'#'}],
+    Developers: [{label:'Documentation',href:'/docs'},{label:'SDK reference',href:'/docs'},{label:'GitHub',href:'https://github.com'},{label:'Status',href:'#'}],
+    Company:    [{label:'About',href:'/about'},{label:'Blog',href:'#'},{label:'Careers',href:'/contact'},{label:'Contact',href:'/contact'}],
+    Legal:      [{label:'Privacy',href:'/privacy'},{label:'Terms',href:'/terms'},{label:'Cookie policy',href:'#'},{label:'DPA',href:'#'}],
+  };
+  return (
+    <footer style={{ borderTop:'1px solid rgba(255,255,255,.07)', background:'#0a0a0c', padding:'56px 0 32px' }}>
+      <div className="c-wrap">
+        <div style={{ display:'grid', gridTemplateColumns:'2fr 1fr 1fr 1fr 1fr', gap:32, marginBottom:48 }}>
+          <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+            <BrandLogo />
+            <p className="c-sm c-muted" style={{ maxWidth:240 }}>Internet advertising, settled in stablecoins. USDC payouts for every verified impression.</p>
+          </div>
+          {Object.entries(cols).map(([group, links]) => (
+            <div key={group}>
+              <p className="c-label" style={{ marginBottom:16 }}>{group}</p>
+              <div style={{ display:'flex', flexDirection:'column', gap:9 }}>
+                {links.map(l => (
+                  <Link key={l.label} href={l.href} className="c-sm c-muted" style={{ textDecoration:'none', transition:'color .1s' }}
+                    onMouseEnter={e=>(e.currentTarget.style.color='rgba(245,245,245,.75)')}
+                    onMouseLeave={e=>(e.currentTarget.style.color='')}
+                  >{l.label}</Link>
                 ))}
               </div>
             </div>
+          ))}
+        </div>
+        <div style={{ borderTop:'1px solid rgba(255,255,255,.06)', paddingTop:20, display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:12 }}>
+          <p className="c-xs c-muted">© 2026 Adryx. All rights reserved.</p>
+          <div style={{ display:'flex', gap:20 }}>
+            {[{label:'Help',href:'/contact'},{label:'Privacy',href:'/privacy'},{label:'Terms',href:'/terms'}].map(l => (
+              <Link key={l.label} href={l.href} className="c-xs c-muted" style={{ textDecoration:'none' }}>{l.label}</Link>
+            ))}
           </div>
         </div>
-      </main>
+      </div>
+    </footer>
+  );
+}
 
-      {/* ── Content sections ─────────────────────────────────────── */}
-      <div style={{ position: 'relative', zIndex: 1 }}>
+/* ─── Page ─────────────────────────────────────────────────────────── */
+export default function LandingPage() {
+  return (
+    <div style={{ background:'#08080a', minHeight:'100vh', color:'#f5f5f5', fontFamily:'var(--font-manrope,var(--font-inter,system-ui,sans-serif))' }}>
+      <style dangerouslySetInnerHTML={{ __html: STYLES }} />
+      <TopNav />
+      <main>
+        <Hero />
+        <LogoBar />
+        <SplitSection />
         <HowItWorks />
         <Features />
+        <Stats />
         <Compare />
-        <NoSetupFees />
-      </div>
-
-      {/* ── Footer ───────────────────────────────────────────────── */}
-      <footer style={{ borderTop: '1px solid var(--c-line)', padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, fontSize: 13, color: 'var(--c-fg-4)', position: 'relative', zIndex: 1 }}>
-        <span>© 2026 Adryx</span>
-        <span style={{ opacity: 0.4 }}>·</span>
-        <a href="mailto:hello@adryx.xyz" style={{ color: 'var(--c-fg-4)' }}>hello@adryx.xyz</a>
-      </footer>
+        <Testimonials />
+        <CTAFinal />
+      </main>
+      <SiteFooter />
     </div>
   );
 }
