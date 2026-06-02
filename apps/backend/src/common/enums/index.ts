@@ -3,3 +3,6 @@ export * from './campaign-status.enum';
 export * from './ad-format.enum';
 export * from './site-type.enum';
 export * from './interaction-type.enum';
+export * from './kyb-status.enum';
+export * from './auction-status.enum';
+export * from './bid-status.enum';

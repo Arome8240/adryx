@@ -39,6 +39,16 @@ export class Campaign {
   @Prop()
   solanaTxHash: string;
 
+  // ERD additions
+  @Prop({ default: null, lowercase: true, trim: true })
+  escrowId: string | null; // ↗ on-chain CampaignEscrow address (set after escrow deploy)
+
+  @Prop({ type: Object, default: {} })
+  targeting: Record<string, unknown>; // JSONB: geo, segments, formats, etc.
+
+  @Prop({ required: true, type: Number, default: 0 })
+  budgetUsdc: number; // canonical USDC budget (mirrors budget, kept for ERD alignment)
+
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   advertiserId: Types.ObjectId;
 
