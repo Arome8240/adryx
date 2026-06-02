@@ -52,10 +52,11 @@ UserSchema.virtual('campaigns', {
   foreignField: 'advertiserId',
 });
 
-UserSchema.virtual('sites', {
-  ref: 'Site',
+UserSchema.virtual('publisher', {
+  ref: 'Publisher',
   localField: '_id',
-  foreignField: 'publisherId',
+  foreignField: '_id', // linked by matching wallet address in Publisher.payoutAddress
+  justOne: true,
 });
 
 // Enable virtuals in JSON
