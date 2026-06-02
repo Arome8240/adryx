@@ -36,9 +36,6 @@ export class Campaign {
   @Prop()
   creativeUrl: string;
 
-  @Prop()
-  solanaTxHash: string;
-
   // ERD additions
   @Prop({ default: null, lowercase: true, trim: true })
   escrowId: string | null; // ↗ on-chain CampaignEscrow address (set after escrow deploy)
@@ -67,10 +64,10 @@ CampaignSchema.virtual('advertiser', {
   justOne: true,
 });
 
-CampaignSchema.virtual('interactions', {
-  ref: 'Interaction',
+CampaignSchema.virtual('impressions', {
+  ref: 'Impression',
   localField: '_id',
-  foreignField: 'campaignId',
+  foreignField: 'creativeId', // via Creative → Campaign chain
 });
 
 // Enable virtuals in JSON

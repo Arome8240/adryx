@@ -44,14 +44,6 @@ export class AnalyticsController {
     );
   }
 
-  @Get('advertiser/heatmap')
-  @Roles(UserRole.ADVERTISER)
-  async getHourlyHeatmap(@Request() req, @Query('days') days?: number) {
-    return await this.analyticsService.getCampaignHourlyHeatmap(
-      req.user.userId,
-      days ? parseInt(days.toString()) : 30,
-    );
-  }
 
   @Get('publisher/dashboard')
   @Roles(UserRole.PUBLISHER)
@@ -68,13 +60,13 @@ export class AnalyticsController {
     );
   }
 
-  @Get('publisher/top-placements')
+  @Get('publisher/top-slots')
   @Roles(UserRole.PUBLISHER)
-  async getPublisherTopPlacements(
+  async getPublisherTopSlots(
     @Request() req,
     @Query('limit') limit?: number,
   ) {
-    return await this.analyticsService.getPublisherTopPlacements(
+    return await this.analyticsService.getPublisherTopSlots(
       req.user.userId,
       limit ? parseInt(limit.toString()) : 10,
     );
@@ -87,15 +79,6 @@ export class AnalyticsController {
     @Query('days') days?: number,
   ) {
     return await this.analyticsService.getPublisherEarningsChart(
-      req.user.userId,
-      days ? parseInt(days.toString()) : 30,
-    );
-  }
-
-  @Get('publisher/heatmap')
-  @Roles(UserRole.PUBLISHER)
-  async getPublisherHeatmap(@Request() req, @Query('days') days?: number) {
-    return await this.analyticsService.getPublisherHourlyHeatmap(
       req.user.userId,
       days ? parseInt(days.toString()) : 30,
     );
@@ -121,17 +104,6 @@ export class AnalyticsController {
     );
   }
 
-  @Get('site/:id')
-  async getSiteAnalytics(
-    @Param('id') id: string,
-    @Query('days') days?: number,
-  ) {
-    return await this.analyticsService.getSiteAnalytics(
-      id,
-      days ? parseInt(days.toString()) : 30,
-    );
-  }
-
   @Get('top-campaigns')
   async getTopPerformingCampaigns(@Query('limit') limit?: number) {
     return await this.analyticsService.getTopPerformingCampaigns(
@@ -139,9 +111,9 @@ export class AnalyticsController {
     );
   }
 
-  @Get('top-sites')
-  async getTopEarningSites(@Query('limit') limit?: number) {
-    return await this.analyticsService.getTopEarningSites(
+  @Get('top-publishers')
+  async getTopEarningPublishers(@Query('limit') limit?: number) {
+    return await this.analyticsService.getTopEarningPublishers(
       limit ? parseInt(limit.toString()) : 10,
     );
   }

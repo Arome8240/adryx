@@ -1,66 +1,96 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Campaign, CampaignDocument } from '../../schemas/campaign.schema';
-import {
-  Interaction,
-  InteractionDocument,
-} from '../../schemas/interaction.schema';
-import { Placement, PlacementDocument } from '../../schemas/placement.schema';
-import { Site, SiteDocument } from '../../schemas/site.schema';
+import { Impression, ImpressionDocument } from '../../schemas/impression.schema';
+import { AdSlot, AdSlotDocument } from '../../schemas/ad-slot.schema';
+import { Publisher, PublisherDocument } from '../../schemas/publisher.schema';
 
 @Injectable()
 export class AnalyticsService {
   constructor(
-    @InjectModel(Campaign.name) private campaignModel: Model<CampaignDocument>,
-    @InjectModel(Interaction.name)
-    private interactionModel: Model<InteractionDocument>,
-    @InjectModel(Placement.name)
-    private placementModel: Model<PlacementDocument>,
-    @InjectModel(Site.name) private siteModel: Model<SiteDocument>,
+    @InjectModel(Campaign.name)   private campaignModel:   Model<CampaignDocument>,
+    @InjectModel(Impression.name) private impressionModel: Model<ImpressionDocument>,
+    @InjectModel(AdSlot.name)     private adSlotModel:     Model<AdSlotDocument>,
+    @InjectModel(Publisher.name)  private publisherModel:  Model<PublisherDocument>,
   ) {}
+
+  // ── Advertiser analytics ────────────────────────────────────────────────────
 
   async getAdvertiserActivity(advertiserId: string, limit = 10) {
     const campaigns = await this.campaignModel
       .find({ advertiserId })
       .sort({ updatedAt: -1 })
       .limit(limit)
-      .select('name status budget spent solanaTxHash updatedAt createdAt')
+      .select('name status budget budgetUsdc spent escrowId updatedAt createdAt')
       .lean();
 
     return campaigns.map((c: any) => ({
-      campaignId: c._id,
-      name: c.name,
-      status: c.status,
-      budget: c.budget,
-      spent: c.spent,
-      hasTx: !!c.solanaTxHash,
-      updatedAt: c.updatedAt,
+      campaignId:  c._id,
+      name:        c.name,
+      status:      c.status,
+      budgetUsdc:  c.budgetUsdc ?? c.budget,
+      spent:       c.spent,
+      hasEscrow:   !!c.escrowId,
+      updatedAt:   c.updatedAt,
     }));
+  }
+
+  async getAdvertiserDashboard(advertiserId: string) {
+    const campaigns = await this.campaignModel.find({ advertiserId });
+    const campaignIds = campaigns.map(c => c._id);
+
+    const totalBudget = campaigns.reduce((s, c) => s + (c.budgetUsdc ?? c.budget), 0);
+    const totalSpent  = campaigns.reduce((s, c) => s + c.spent, 0);
+
+    // Impressions served for this advertiser's campaigns
+    // BidRequest → Impression: the creative links back to a campaign
+    const [impressionCount, clickCount] = await Promise.all([
+      this.impressionModel.countDocuments({
+        creativeId: {
+          $in: await this._creativeIdsForCampaigns(campaignIds),
+        },
+      }),
+      // Placeholder: click-type impressions tracked via proofId presence as proxy
+      this.impressionModel.countDocuments({
+        creativeId: { $in: await this._creativeIdsForCampaigns(campaignIds) },
+        proofId: { $ne: null },
+      }),
+    ]);
+
+    const ctr    = impressionCount > 0 ? (clickCount / impressionCount) * 100 : 0;
+    const avgCpc = clickCount > 0 ? totalSpent / clickCount : 0;
+
+    return {
+      totalCampaigns:    campaigns.length,
+      activeCampaigns:   campaigns.filter(c => c.status === 'active').length,
+      totalBudgetUsdc:   totalBudget,
+      totalSpent,
+      remaining:         totalBudget - totalSpent,
+      impressions:       impressionCount,
+      attestedProofs:    clickCount,
+      ctr:               ctr.toFixed(2),
+      avgCpc:            avgCpc.toFixed(4),
+    };
   }
 
   async getAdvertiserTopCampaigns(advertiserId: string, limit = 10) {
     const campaigns = await this.campaignModel.find({ advertiserId });
 
     const stats = await Promise.all(
-      campaigns.map(async (campaign) => {
-        const impressions = await this.interactionModel.countDocuments({
-          campaignId: campaign._id,
-          type: 'impression',
-        });
-        const clicks = await this.interactionModel.countDocuments({
-          campaignId: campaign._id,
-          type: 'click',
-        });
-        const ctr = impressions > 0 ? (clicks / impressions) * 100 : 0;
+      campaigns.map(async campaign => {
+        const creativeIds = await this._creativeIdsForCampaigns([campaign._id]);
+        const impressions = await this.impressionModel.countDocuments({ creativeId: { $in: creativeIds } });
+        const attested    = await this.impressionModel.countDocuments({ creativeId: { $in: creativeIds }, proofId: { $ne: null } });
+        const ctr = impressions > 0 ? (attested / impressions) * 100 : 0;
         return {
-          campaignId: campaign._id,
-          name: campaign.name,
-          status: campaign.status,
+          campaignId:  campaign._id,
+          name:        campaign.name,
+          status:      campaign.status,
           impressions,
-          clicks,
-          ctr: parseFloat(ctr.toFixed(2)),
-          spent: campaign.spent,
+          attested,
+          ctr:         parseFloat(ctr.toFixed(2)),
+          spent:       campaign.spent,
         };
       }),
     );
@@ -68,379 +98,145 @@ export class AnalyticsService {
     return stats.sort((a, b) => b.ctr - a.ctr).slice(0, limit);
   }
 
-  async getAdvertiserDashboard(advertiserId: string) {
-    const campaigns = await this.campaignModel.find({ advertiserId });
-    const campaignIds = campaigns.map((c) => c._id);
+  async getCampaignAnalytics(campaignId: string, days = 30) {
+    const creativeIds = await this._creativeIdsForCampaigns([new Types.ObjectId(campaignId)]);
+    const since = new Date(Date.now() - days * 86400_000);
 
-    const totalBudget = campaigns.reduce((sum, c) => sum + c.budget, 0);
-    const totalSpent = campaigns.reduce((sum, c) => sum + c.spent, 0);
-
-    const impressions = await this.interactionModel.countDocuments({
-      campaignId: { $in: campaignIds },
-      type: 'impression',
-    });
-
-    const clicks = await this.interactionModel.countDocuments({
-      campaignId: { $in: campaignIds },
-      type: 'click',
-    });
-
-    const ctr = impressions > 0 ? (clicks / impressions) * 100 : 0;
-    const avgCpc = clicks > 0 ? totalSpent / clicks : 0;
-
-    return {
-      totalCampaigns: campaigns.length,
-      activeCampaigns: campaigns.filter((c) => c.status === 'active').length,
-      totalBudget,
-      totalSpent,
-      remaining: totalBudget - totalSpent,
-      impressions,
-      clicks,
-      ctr: ctr.toFixed(2),
-      avgCpc: avgCpc.toFixed(4),
-    };
+    return this.impressionModel.aggregate([
+      { $match: { creativeId: { $in: creativeIds }, servedAt: { $gte: since } } },
+      { $group: {
+          _id:     { date: { $dateToString: { format: '%Y-%m-%d', date: '$servedAt' } } },
+          total:   { $sum: 1 },
+          attested: { $sum: { $cond: [{ $ne: ['$proofId', null] }, 1, 0] } },
+      }},
+      { $sort: { '_id.date': 1 } },
+    ]);
   }
 
-  async getPublisherDashboard(publisherId: string) {
-    const sites = await this.siteModel.find({ publisherId });
-    const placements = await this.placementModel.find({ publisherId });
-    const placementIds = placements.map((p) => p._id);
+  async getAllCampaignsAnalytics(advertiserId: string, days = 30) {
+    const campaigns  = await this.campaignModel.find({ advertiserId });
+    const campaignIds = campaigns.map(c => c._id);
+    const creativeIds = await this._creativeIdsForCampaigns(campaignIds);
+    const since = new Date(Date.now() - days * 86400_000);
 
-    const impressions = await this.interactionModel.countDocuments({
-      placementId: { $in: placementIds },
-      type: 'impression',
-    });
+    return this.impressionModel.aggregate([
+      { $match: { creativeId: { $in: creativeIds }, servedAt: { $gte: since } } },
+      { $group: {
+          _id:     { date: { $dateToString: { format: '%Y-%m-%d', date: '$servedAt' } } },
+          total:   { $sum: 1 },
+          attested: { $sum: { $cond: [{ $ne: ['$proofId', null] }, 1, 0] } },
+      }},
+      { $sort: { '_id.date': 1 } },
+    ]);
+  }
 
-    const clicks = await this.interactionModel.countDocuments({
-      placementId: { $in: placementIds },
-      type: 'click',
-    });
+  async getTopPerformingCampaigns(limit = 10) {
+    const campaigns = await this.campaignModel.find({ status: 'active' });
 
-    const clickInteractions = await this.interactionModel.find({
-      placementId: { $in: placementIds },
-      type: 'click',
-    });
-
-    const totalEarnings = clickInteractions.reduce(
-      (sum, interaction) => sum + (interaction.reward || 0),
-      0,
+    const stats = await Promise.all(
+      campaigns.map(async campaign => {
+        const creativeIds = await this._creativeIdsForCampaigns([campaign._id]);
+        const impressions = await this.impressionModel.countDocuments({ creativeId: { $in: creativeIds } });
+        const attested    = await this.impressionModel.countDocuments({ creativeId: { $in: creativeIds }, proofId: { $ne: null } });
+        const ctr = impressions > 0 ? (attested / impressions) * 100 : 0;
+        return { campaignId: campaign._id, name: campaign.name, impressions, attested, ctr, spent: campaign.spent };
+      }),
     );
 
-    const ctr = impressions > 0 ? (clicks / impressions) * 100 : 0;
+    return stats.sort((a, b) => b.ctr - a.ctr).slice(0, limit);
+  }
+
+  // ── Publisher analytics ─────────────────────────────────────────────────────
+
+  async getPublisherDashboard(publisherId: string) {
+    const publisher = await this.publisherModel.findById(publisherId).lean();
+    const slots = await this.adSlotModel.find({ publisherId }).lean();
+    const slotIds = slots.map(s => s._id);
+
+    const [impressions, attested] = await Promise.all([
+      this.impressionModel.countDocuments({ requestId: { $in: await this._requestIdsForSlots(slotIds) } }),
+      this.impressionModel.countDocuments({ requestId: { $in: await this._requestIdsForSlots(slotIds) }, proofId: { $ne: null } }),
+    ]);
 
     return {
-      totalSites: sites.length,
-      totalPlacements: placements.length,
+      publisherName:   publisher?.appName ?? 'Unknown',
+      payoutAddress:   publisher?.payoutAddress ?? null,
+      totalSlots:      slots.length,
       impressions,
-      clicks,
-      ctr: ctr.toFixed(2),
-      totalEarnings: totalEarnings.toFixed(4),
+      attestedProofs:  attested,
+      fillRate:        impressions > 0 ? ((attested / impressions) * 100).toFixed(2) : '0.00',
     };
   }
 
   async getPublisherActivity(publisherId: string, limit = 8) {
-    const placements = await this.placementModel
+    return this.adSlotModel
       .find({ publisherId })
       .sort({ updatedAt: -1 })
       .limit(limit)
-      .populate('site')
+      .select('dimensions floorPrice context updatedAt')
       .lean();
-
-    return placements.map((p: any) => ({
-      placementId: p._id,
-      name: p.name,
-      format: p.format,
-      siteName: p.site?.name ?? 'Unknown',
-      updatedAt: p.updatedAt,
-    }));
   }
 
-  async getPublisherTopPlacements(publisherId: string, limit = 10) {
-    const placements = await this.placementModel.find({ publisherId });
+  async getPublisherTopSlots(publisherId: string, limit = 10) {
+    const slots = await this.adSlotModel.find({ publisherId }).lean();
 
     const stats = await Promise.all(
-      placements.map(async (p) => {
-        const impressions = await this.interactionModel.countDocuments({
-          placementId: p._id,
-          type: 'impression',
-        });
-        const clicks = await this.interactionModel.countDocuments({
-          placementId: p._id,
-          type: 'click',
-        });
-        const clickDocs = await this.interactionModel.find({
-          placementId: p._id,
-          type: 'click',
-        });
-        const earnings = clickDocs.reduce((s, i) => s + (i.reward || 0), 0);
-        const ctr = impressions > 0 ? (clicks / impressions) * 100 : 0;
-        return {
-          placementId: p._id,
-          name: p.name,
-          format: p.format,
-          impressions,
-          clicks,
-          ctr: parseFloat(ctr.toFixed(2)),
-          earnings: parseFloat(earnings.toFixed(4)),
-        };
+      slots.map(async slot => {
+        const reqIds = await this._requestIdsForSlots([slot._id]);
+        const imps   = await this.impressionModel.countDocuments({ requestId: { $in: reqIds } });
+        const proved = await this.impressionModel.countDocuments({ requestId: { $in: reqIds }, proofId: { $ne: null } });
+        return { slotId: slot._id, dimensions: slot.dimensions, floorPrice: slot.floorPrice, impressions: imps, attestedProofs: proved };
       }),
     );
 
-    return stats.sort((a, b) => b.earnings - a.earnings).slice(0, limit);
+    return stats.sort((a, b) => b.impressions - a.impressions).slice(0, limit);
   }
 
   async getPublisherEarningsChart(publisherId: string, days = 30) {
-    const placements = await this.placementModel.find({ publisherId });
-    const placementIds = placements.map((p) => p._id);
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
+    const slots = await this.adSlotModel.find({ publisherId }).lean();
+    const reqIds = await this._requestIdsForSlots(slots.map(s => s._id));
+    const since = new Date(Date.now() - days * 86400_000);
 
-    const result = await this.interactionModel.aggregate([
-      {
-        $match: {
-          placementId: { $in: placementIds },
-          type: 'click',
-          createdAt: { $gte: startDate },
-        },
-      },
-      {
-        $group: {
-          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
-          earnings: { $sum: '$reward' },
-          clicks: { $sum: 1 },
-        },
-      },
-      { $sort: { _id: 1 } },
-    ]);
-
-    return result.map((r: any) => ({
-      date: r._id,
-      earnings: r.earnings,
-      clicks: r.clicks,
-    }));
-  }
-
-  async getPublisherHourlyHeatmap(publisherId: string, days = 30) {
-    const placements = await this.placementModel.find({ publisherId });
-    const placementIds = placements.map((p) => p._id);
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
-
-    const result = await this.interactionModel.aggregate([
-      {
-        $match: {
-          placementId: { $in: placementIds },
-          type: 'click',
-          createdAt: { $gte: startDate },
-        },
-      },
-      {
-        $group: { _id: { hour: { $hour: '$createdAt' } }, clicks: { $sum: 1 } },
-      },
-      { $sort: { '_id.hour': 1 } },
-    ]);
-
-    const byHour: Record<number, number> = {};
-    result.forEach((r: any) => {
-      byHour[r._id.hour] = r.clicks;
-    });
-    return Array.from({ length: 24 }, (_, h) => ({
-      hour: h,
-      clicks: byHour[h] ?? 0,
-    }));
-  }
-
-  async getCampaignAnalytics(campaignId: string, days: number = 30) {
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
-
-    // Convert string to ObjectId so the $match hits the index correctly
-    const { Types } = await import('mongoose');
-    const campaignObjectId = new Types.ObjectId(campaignId);
-
-    const interactions = await this.interactionModel.aggregate([
-      {
-        $match: {
-          campaignId: campaignObjectId,
-          createdAt: { $gte: startDate },
-        },
-      },
-      {
-        $group: {
-          _id: {
-            date: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
-            type: '$type',
-          },
-          count: { $sum: 1 },
-          totalReward: { $sum: '$reward' },
-        },
-      },
+    return this.impressionModel.aggregate([
+      { $match: { requestId: { $in: reqIds }, proofId: { $ne: null }, servedAt: { $gte: since } } },
+      { $group: {
+          _id:    { date: { $dateToString: { format: '%Y-%m-%d', date: '$servedAt' } } },
+          proofs: { $sum: 1 },
+      }},
       { $sort: { '_id.date': 1 } },
+      { $project: { date: '$_id.date', proofs: 1, _id: 0 } },
     ]);
-
-    return interactions;
   }
 
-  async getAllCampaignsAnalytics(advertiserId: string, days: number = 30) {
-    const campaigns = await this.campaignModel.find({ advertiserId });
-    const campaignIds = campaigns.map((c) => c._id);
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
-
-    const interactions = await this.interactionModel.aggregate([
-      {
-        $match: {
-          campaignId: { $in: campaignIds },
-          createdAt: { $gte: startDate },
-        },
-      },
-      {
-        $group: {
-          _id: {
-            date: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
-            type: '$type',
-          },
-          count: { $sum: 1 },
-          totalReward: { $sum: '$reward' },
-        },
-      },
-      { $sort: { '_id.date': 1 } },
+  async getTopEarningPublishers(limit = 10) {
+    return this.impressionModel.aggregate([
+      { $match: { proofId: { $ne: null } } },
+      { $lookup: { from: 'bid_requests', localField: 'requestId', foreignField: '_id', as: 'req' } },
+      { $unwind: '$req' },
+      { $lookup: { from: 'ad_slots', localField: 'req.slotId', foreignField: '_id', as: 'slot' } },
+      { $unwind: '$slot' },
+      { $group: { _id: '$slot.publisherId', attestedProofs: { $sum: 1 } } },
+      { $sort: { attestedProofs: -1 } },
+      { $limit: limit },
     ]);
-
-    return interactions;
   }
 
-  async getCampaignHourlyHeatmap(advertiserId: string, days: number = 30) {
-    const campaigns = await this.campaignModel.find({ advertiserId });
-    const campaignIds = campaigns.map((c) => c._id);
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
+  // ── Helpers ─────────────────────────────────────────────────────────────────
 
-    const result = await this.interactionModel.aggregate([
-      {
-        $match: {
-          campaignId: { $in: campaignIds },
-          type: 'click',
-          createdAt: { $gte: startDate },
-        },
-      },
-      {
-        $group: {
-          _id: { hour: { $hour: '$createdAt' } },
-          clicks: { $sum: 1 },
-        },
-      },
-      { $sort: { '_id.hour': 1 } },
-    ]);
-
-    // Fill all 24 hours
-    const byHour: Record<number, number> = {};
-    result.forEach((r: any) => {
-      byHour[r._id.hour] = r.clicks;
-    });
-    return Array.from({ length: 24 }, (_, h) => ({
-      hour: h,
-      clicks: byHour[h] ?? 0,
-    }));
+  /** Returns Creative _ids that belong to the given campaign _ids. */
+  private async _creativeIdsForCampaigns(campaignIds: Types.ObjectId[]): Promise<Types.ObjectId[]> {
+    // Dynamic import to avoid circular deps; Creative is not registered in this module
+    const { default: mongoose } = await import('mongoose');
+    const Creative = mongoose.model('Creative');
+    const docs = await Creative.find({ campaignId: { $in: campaignIds } }).select('_id').lean();
+    return docs.map((d: any) => d._id);
   }
 
-  async getSiteAnalytics(siteId: string, days: number = 30) {
-    const placements = await this.placementModel.find({ siteId });
-    const placementIds = placements.map((p) => p._id);
-
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
-
-    const interactions = await this.interactionModel.aggregate([
-      {
-        $match: {
-          placementId: { $in: placementIds },
-          createdAt: { $gte: startDate },
-        },
-      },
-      {
-        $group: {
-          _id: {
-            date: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
-            type: '$type',
-          },
-          count: { $sum: 1 },
-          totalReward: { $sum: '$reward' },
-        },
-      },
-      {
-        $sort: { '_id.date': 1 },
-      },
-    ]);
-
-    return interactions;
-  }
-
-  async getTopPerformingCampaigns(limit: number = 10) {
-    const campaigns = await this.campaignModel.find({ status: 'active' });
-
-    const campaignStats = await Promise.all(
-      campaigns.map(async (campaign) => {
-        const impressions = await this.interactionModel.countDocuments({
-          campaignId: campaign._id,
-          type: 'impression',
-        });
-
-        const clicks = await this.interactionModel.countDocuments({
-          campaignId: campaign._id,
-          type: 'click',
-        });
-
-        const ctr = impressions > 0 ? (clicks / impressions) * 100 : 0;
-
-        return {
-          campaignId: campaign._id,
-          name: campaign.name,
-          impressions,
-          clicks,
-          ctr,
-          spent: campaign.spent,
-        };
-      }),
-    );
-
-    return campaignStats.sort((a, b) => b.ctr - a.ctr).slice(0, limit);
-  }
-
-  async getTopEarningSites(limit: number = 10) {
-    const earnings = await this.interactionModel.aggregate([
-      {
-        $match: {
-          type: 'click',
-          reward: { $gt: 0 },
-        },
-      },
-      {
-        $lookup: {
-          from: 'placements',
-          localField: 'placementId',
-          foreignField: '_id',
-          as: 'placement',
-        },
-      },
-      {
-        $unwind: '$placement',
-      },
-      {
-        $group: {
-          _id: '$placement.siteId',
-          totalEarnings: { $sum: '$reward' },
-          totalClicks: { $sum: 1 },
-        },
-      },
-      {
-        $sort: { totalEarnings: -1 },
-      },
-      {
-        $limit: limit,
-      },
-    ]);
-
-    return earnings;
+  /** Returns BidRequest _ids that belong to the given ad slot _ids. */
+  private async _requestIdsForSlots(slotIds: Types.ObjectId[]): Promise<Types.ObjectId[]> {
+    const { default: mongoose } = await import('mongoose');
+    const BidRequest = mongoose.model('BidRequest');
+    const docs = await BidRequest.find({ slotId: { $in: slotIds } }).select('_id').lean();
+    return docs.map((d: any) => d._id);
   }
 }

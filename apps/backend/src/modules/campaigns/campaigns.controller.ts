@@ -72,13 +72,12 @@ export class CampaignsController {
   async topUpCampaign(
     @Param('id') id: string,
     @Request() req,
-    @Body() body: { additionalUsdc: number; txSignature: string },
+    @Body() body: { additionalUsdc: number },
   ) {
     return await this.campaignsService.topUpCampaign(
       id,
       req.user.userId,
       body.additionalUsdc,
-      body.txSignature,
     );
   }
 
@@ -88,24 +87,18 @@ export class CampaignsController {
     return await this.campaignsService.duplicateCampaign(id, req.user.userId);
   }
 
-  @Post(':id/fund')
+  /** Called after the CampaignEscrow contract is deployed on-chain. */
+  @Post(':id/escrow')
   @Roles(UserRole.ADVERTISER)
-  async fundCampaign(
+  async recordEscrow(
     @Param('id') id: string,
     @Request() req,
-    @Body()
-    body: {
-      advertiserWallet: string;
-      amountUsdc: number;
-      txSignature?: string;
-    },
+    @Body() body: { escrowId: string },
   ) {
-    return await this.campaignsService.fundCampaign(
+    return await this.campaignsService.recordEscrow(
       id,
       req.user.userId,
-      body.advertiserWallet,
-      body.amountUsdc,
-      body.txSignature,
+      body.escrowId,
     );
   }
 
@@ -119,11 +112,6 @@ export class CampaignsController {
   @Roles(UserRole.ADVERTISER)
   async resumeCampaign(@Param('id') id: string, @Request() req) {
     return await this.campaignsService.resumeCampaign(id, req.user.userId);
-  }
-
-  @Get(':id/balance')
-  async getCampaignBalance(@Param('id') id: string) {
-    return await this.campaignsService.getCampaignBalance(id);
   }
 
   @Get(':id/stats')

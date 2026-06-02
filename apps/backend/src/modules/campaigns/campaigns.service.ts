@@ -1,13 +1,11 @@
 import {
   Injectable,
   NotFoundException,
-  ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Campaign, CampaignDocument } from '../../schemas/campaign.schema';
-import { PaymentService } from '../solana/payment.service';
 import { CreateCampaignDto } from './dto/create-campaign.dto';
 import { UpdateCampaignDto } from './dto/update-campaign.dto';
 import { CampaignStatus } from '../../common/enums';
@@ -16,277 +14,143 @@ import { CampaignStatus } from '../../common/enums';
 export class CampaignsService {
   constructor(
     @InjectModel(Campaign.name) private campaignModel: Model<CampaignDocument>,
-    private readonly paymentService: PaymentService,
   ) {}
 
-  async topUpCampaign(
-    id: string,
-    advertiserId: string,
-    additionalUsdc: number,
-    txSignature: string,
-  ) {
-    const campaign = await this.campaignModel.findOne({
-      _id: id,
-      advertiserId,
-    });
-    if (!campaign) throw new NotFoundException(`Campaign ${id} not found`);
-
-    if (
-      campaign.status !== CampaignStatus.ACTIVE &&
-      campaign.status !== CampaignStatus.PAUSED
-    ) {
-      throw new BadRequestException(
-        'Only active or paused campaigns can be topped up',
-      );
-    }
-
-    const updated = await this.campaignModel.findByIdAndUpdate(
-      id,
-      { $inc: { budget: additionalUsdc } },
-      { new: true },
-    );
-
-    return {
-      campaignId: id,
-      addedUsdc: additionalUsdc,
-      newBudget: updated!.budget,
-      txSignature,
-    };
-  }
-
-  async duplicateCampaign(id: string, advertiserId: string): Promise<Campaign> {
-    const source = await this.campaignModel.findOne({ _id: id, advertiserId });
-    if (!source) throw new NotFoundException(`Campaign ${id} not found`);
-
-    const copy = await this.campaignModel.create({
-      name: `${source.name} (Copy)`,
-      description: source.description,
-      format: source.format,
-      budget: source.budget,
-      startDate: source.startDate,
-      endDate: source.endDate,
-      targetUrl: source.targetUrl,
-      creativeUrl: source.creativeUrl,
+  async create(advertiserId: string, dto: CreateCampaignDto): Promise<Campaign> {
+    return this.campaignModel.create({
+      ...dto,
       advertiserId,
       status: CampaignStatus.DRAFT,
       spent: 0,
+      budgetUsdc: dto.budget ?? 0,
     });
-
-    return copy;
-  }
-
-  async create(
-    advertiserId: string,
-    createCampaignDto: CreateCampaignDto,
-  ): Promise<Campaign> {
-    const campaign = await this.campaignModel.create({
-      ...createCampaignDto,
-      advertiserId,
-      status: CampaignStatus.DRAFT,
-      spent: 0,
-    });
-
-    return campaign;
   }
 
   async findAll(advertiserId?: string): Promise<Campaign[]> {
     const query = advertiserId ? { advertiserId } : {};
-    return this.campaignModel
-      .find(query)
-      .populate('advertiser')
-      .sort({ createdAt: -1 })
-      .exec();
+    return this.campaignModel.find(query).sort({ createdAt: -1 }).exec();
   }
 
   async findOne(id: string): Promise<Campaign> {
-    const campaign = await this.campaignModel
-      .findById(id)
-      .populate('advertiser')
-      .exec();
-
-    if (!campaign) {
-      throw new NotFoundException(`Campaign with ID ${id} not found`);
-    }
-
+    const campaign = await this.campaignModel.findById(id).exec();
+    if (!campaign) throw new NotFoundException(`Campaign ${id} not found`);
     return campaign;
   }
 
-  async update(
-    id: string,
-    advertiserId: string,
-    updateCampaignDto: UpdateCampaignDto,
-  ): Promise<Campaign> {
+  async update(id: string, advertiserId: string, dto: UpdateCampaignDto): Promise<Campaign> {
     const campaign = await this.campaignModel
-      .findOneAndUpdate(
-        { _id: id, advertiserId },
-        { $set: updateCampaignDto },
-        { new: true },
-      )
+      .findOneAndUpdate({ _id: id, advertiserId }, { $set: dto }, { new: true })
       .exec();
-
-    if (!campaign) {
-      throw new NotFoundException(`Campaign with ID ${id} not found`);
-    }
-
+    if (!campaign) throw new NotFoundException(`Campaign ${id} not found`);
     return campaign;
   }
 
   async remove(id: string, advertiserId: string): Promise<void> {
-    const campaign = await this.campaignModel.findOne({
-      _id: id,
-      advertiserId,
-    });
-
-    if (!campaign) {
-      throw new NotFoundException(`Campaign with ID ${id} not found`);
-    }
-
+    const campaign = await this.campaignModel.findOne({ _id: id, advertiserId });
+    if (!campaign) throw new NotFoundException(`Campaign ${id} not found`);
     if (campaign.status === CampaignStatus.ACTIVE) {
-      throw new BadRequestException(
-        'Cannot delete active campaign. Pause it first.',
-      );
+      throw new BadRequestException('Pause the campaign before deleting it.');
     }
-
     await this.campaignModel.findByIdAndDelete(id);
   }
 
-  async fundCampaign(
-    id: string,
-    advertiserId: string,
-    advertiserWallet: string,
-    amountSol: number,
-    txSignature?: string,
-  ) {
-    const campaign = await this.campaignModel.findOne({
-      _id: id,
-      advertiserId,
-    });
-
-    if (!campaign) {
-      throw new NotFoundException(`Campaign with ID ${id} not found`);
-    }
-
+  /**
+   * Called by the on-chain integration layer after CampaignEscrow is deployed.
+   * Records the escrow contract address and activates the campaign.
+   */
+  async recordEscrow(id: string, advertiserId: string, escrowId: string): Promise<Campaign> {
+    const campaign = await this.campaignModel.findOne({ _id: id, advertiserId });
+    if (!campaign) throw new NotFoundException(`Campaign ${id} not found`);
     if (campaign.status !== CampaignStatus.DRAFT) {
-      throw new BadRequestException('Campaign is already funded');
+      throw new BadRequestException('Campaign is already funded.');
     }
-
-    let signature: string;
-    let escrowPda: string;
-
-    if (txSignature) {
-      // Real on-chain transfer was done by the frontend wallet — just record it
-      signature = txSignature;
-      const { PublicKey } = await import('@solana/web3.js');
-      const advertiserPubkey = new PublicKey(advertiserWallet);
-      escrowPda = this.paymentService['solanaService']
-        .deriveCampaignEscrowPda(advertiserPubkey, id)
-        .toString();
-    } else {
-      // Fallback: simulated (dev only)
-      const result = await this.paymentService.createCampaignEscrow(
-        id,
-        advertiserWallet,
-        amountSol,
-      );
-      signature = result.signature;
-      escrowPda = result.escrowPda;
-    }
-
-    await this.campaignModel.findByIdAndUpdate(id, {
-      status: CampaignStatus.ACTIVE,
-      budget: amountSol,
-      solanaTxHash: signature,
-    });
-
-    return {
-      campaignId: id,
-      signature,
-      escrowPda,
-      status: CampaignStatus.ACTIVE,
-    };
+    campaign.escrowId = escrowId;
+    campaign.status = CampaignStatus.ACTIVE;
+    return campaign.save();
   }
 
   async pauseCampaign(id: string, advertiserId: string): Promise<Campaign> {
-    const campaign = await this.campaignModel.findOne({
-      _id: id,
-      advertiserId,
-    });
-
-    if (!campaign) {
-      throw new NotFoundException(`Campaign with ID ${id} not found`);
-    }
-
+    const campaign = await this.campaignModel.findOne({ _id: id, advertiserId });
+    if (!campaign) throw new NotFoundException(`Campaign ${id} not found`);
     if (campaign.status !== CampaignStatus.ACTIVE) {
-      throw new BadRequestException('Campaign is not active');
+      throw new BadRequestException('Campaign is not active.');
     }
-
     campaign.status = CampaignStatus.PAUSED;
-    await campaign.save();
-
-    return campaign;
+    return campaign.save();
   }
 
   async resumeCampaign(id: string, advertiserId: string): Promise<Campaign> {
-    const campaign = await this.campaignModel.findOne({
-      _id: id,
-      advertiserId,
-    });
-
-    if (!campaign) {
-      throw new NotFoundException(`Campaign with ID ${id} not found`);
-    }
-
+    const campaign = await this.campaignModel.findOne({ _id: id, advertiserId });
+    if (!campaign) throw new NotFoundException(`Campaign ${id} not found`);
     if (campaign.status !== CampaignStatus.PAUSED) {
-      throw new BadRequestException('Campaign is not paused');
+      throw new BadRequestException('Campaign is not paused.');
     }
-
     campaign.status = CampaignStatus.ACTIVE;
-    await campaign.save();
-
-    return campaign;
+    return campaign.save();
   }
 
-  async getCampaignBalance(id: string) {
-    const campaign = await this.findOne(id);
-    const onChainBalance = await this.paymentService.syncCampaignBalance(id);
+  async topUpCampaign(id: string, advertiserId: string, additionalUsdc: number): Promise<object> {
+    const campaign = await this.campaignModel.findOne({ _id: id, advertiserId });
+    if (!campaign) throw new NotFoundException(`Campaign ${id} not found`);
+    if (campaign.status !== CampaignStatus.ACTIVE && campaign.status !== CampaignStatus.PAUSED) {
+      throw new BadRequestException('Only active or paused campaigns can be topped up.');
+    }
+    const updated = await this.campaignModel.findByIdAndUpdate(
+      id,
+      { $inc: { budget: additionalUsdc, budgetUsdc: additionalUsdc } },
+      { new: true },
+    );
+    return { campaignId: id, addedUsdc: additionalUsdc, newBudgetUsdc: updated!.budgetUsdc };
+  }
 
-    return {
-      campaignId: id,
-      budgetTotal: campaign.budget,
-      spent: campaign.spent,
-      remaining: campaign.budget - campaign.spent,
-      onChainBalance,
-    };
+  async duplicateCampaign(id: string, advertiserId: string): Promise<Campaign> {
+    const src = await this.campaignModel.findOne({ _id: id, advertiserId });
+    if (!src) throw new NotFoundException(`Campaign ${id} not found`);
+    return this.campaignModel.create({
+      name:       `${src.name} (Copy)`,
+      description: src.description,
+      format:     src.format,
+      budget:     src.budget,
+      budgetUsdc: src.budgetUsdc,
+      targeting:  src.targeting,
+      startDate:  src.startDate,
+      endDate:    src.endDate,
+      targetUrl:  src.targetUrl,
+      creativeUrl: src.creativeUrl,
+      advertiserId,
+      status: CampaignStatus.DRAFT,
+      spent: 0,
+    });
   }
 
   async getCampaignStats(id: string) {
     const campaign = await this.findOne(id);
 
-    // Get interactions count
-    const Interaction = this.campaignModel.db.model('Interaction');
-    const impressions = await Interaction.countDocuments({
-      campaignId: id,
-      type: 'impression',
-    });
-    const clicks = await Interaction.countDocuments({
-      campaignId: id,
-      type: 'click',
-    });
+    // Count attested impressions via the ERD Impression model
+    const Impression = this.campaignModel.db.model('Impression');
+    const Creative   = this.campaignModel.db.model('Creative');
 
-    const ctr = impressions > 0 ? (clicks / impressions) * 100 : 0;
-    const avgCpc = clicks > 0 ? campaign.spent / clicks : 0;
+    const creatives = await Creative.find({ campaignId: id }).select('_id').lean();
+    const creativeIds = creatives.map((c: any) => c._id);
+
+    const [total, attested] = await Promise.all([
+      Impression.countDocuments({ creativeId: { $in: creativeIds } }),
+      Impression.countDocuments({ creativeId: { $in: creativeIds }, proofId: { $ne: null } }),
+    ]);
+
+    const attestRate = total > 0 ? (attested / total) * 100 : 0;
 
     return {
-      campaignId: id,
-      name: campaign.name,
-      status: campaign.status,
-      budget: campaign.budget,
-      spent: campaign.spent,
-      remaining: campaign.budget - campaign.spent,
-      impressions,
-      clicks,
-      ctr: ctr.toFixed(2),
-      avgCpc: avgCpc.toFixed(4),
+      campaignId:   id,
+      name:         campaign.name,
+      status:       campaign.status,
+      budgetUsdc:   campaign.budgetUsdc ?? campaign.budget,
+      spent:        campaign.spent,
+      remaining:    (campaign.budgetUsdc ?? campaign.budget) - campaign.spent,
+      escrowId:     campaign.escrowId,
+      impressions:  total,
+      attested,
+      attestRate:   attestRate.toFixed(2),
     };
   }
 }
