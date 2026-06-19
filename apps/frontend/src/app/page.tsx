@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { HambergerMenu, CloseCircle } from 'iconsax-react';
 
 /* ─── Celina dark-first CSS overrides ────────────────────────────── */
 const STYLES = `
@@ -155,6 +156,8 @@ function BrandLogo() {
 /* ─── TopNav ───────────────────────────────────────────────────────── */
 function TopNav() {
   const [scrolled, setScrolled] = useState(false);
+  const [open, setOpen] = useState(false);
+
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 16);
     window.addEventListener('scroll', fn, { passive: true });
@@ -165,16 +168,63 @@ function TopNav() {
     <nav className={`c-nav${scrolled ? ' scrolled' : ''}`}>
       <div className="c-wrap c-row c-between" style={{ height: 60 }}>
         <BrandLogo />
+
+        {/* Desktop links */}
         <div className="hidden md:flex items-center" style={{ gap: 2 }}>
           {['Publishers', 'Advertisers', 'Docs', 'Pricing'].map(l => (
             <Link key={l} href={`/${l.toLowerCase()}`} className="c-nav-link">{l}</Link>
           ))}
         </div>
+
+        {/* Desktop CTAs */}
         <div className="hidden md:flex items-center" style={{ gap: 10 }}>
           <Link href="/login" className="c-btn-ghost" style={{ padding: '8px 16px', fontSize: 13 }}>Sign in</Link>
           <Link href="/signup" className="c-btn-y" style={{ padding: '8px 18px', fontSize: 13 }}>Get started</Link>
         </div>
+
+        {/* Mobile hamburger */}
+        <button
+          className="md:hidden"
+          onClick={() => setOpen(v => !v)}
+          aria-label="Toggle menu"
+          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}
+        >
+          {open
+            ? <CloseCircle size={22} color="#f87171" />
+            : <HambergerMenu size={22} color="rgba(245,245,245,.7)" />
+          }
+        </button>
       </div>
+
+      {/* Mobile dropdown */}
+      {open && (
+        <div style={{
+          background: 'rgba(8,8,10,.97)',
+          borderTop: '1px solid rgba(255,255,255,.08)',
+          padding: '16px 24px 20px',
+        }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginBottom: 16 }}>
+            {['Publishers', 'Advertisers', 'Docs', 'Pricing'].map(l => (
+              <Link
+                key={l}
+                href={`/${l.toLowerCase()}`}
+                className="c-nav-link"
+                onClick={() => setOpen(false)}
+              >
+                {l}
+              </Link>
+            ))}
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <Link href="/login" className="c-btn-ghost" style={{ justifyContent: 'center', fontSize: 13 }} onClick={() => setOpen(false)}>
+              Sign in
+            </Link>
+            <Link href="/signup" className="c-btn-y" style={{ justifyContent: 'center', fontSize: 13 }} onClick={() => setOpen(false)}>
+              Get started
+            </Link>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }
