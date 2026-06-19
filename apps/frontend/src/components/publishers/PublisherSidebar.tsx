@@ -72,8 +72,9 @@ export default function PublisherSidebar() {
       {/* Logo */}
       <div className="px-6 py-5 border-b border-white/8">
         <Link href="/" className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[#EBFF45] to-[#d4e63c] flex items-center justify-center">
-            <span className="text-white font-bold text-sm">A</span>
+          <div style={{width:32,height:32,borderRadius:8,background:'#EBFF45',position:'relative',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+            <span style={{fontSize:14,fontWeight:900,color:'#08080a',letterSpacing:'-0.5px'}}>A</span>
+            <span style={{position:'absolute',bottom:3,right:3,width:5,height:5,borderRadius:'50%',background:'#08080a'}} />
           </div>
           <div>
             <span className="font-bold text-base tracking-tight block">
@@ -89,7 +90,7 @@ export default function PublisherSidebar() {
       {/* User info */}
       {user && (
         <div className="px-4 py-3 border-b border-white/8 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-linear-to-br from-[#EBFF45] to-[#d4e63c] flex items-center justify-center text-xs font-bold text-white shrink-0">
+          <div className="w-8 h-8 rounded-full bg-[#EBFF45] flex items-center justify-center text-xs font-bold text-[#08080a] shrink-0">
             {getInitial(user.name)}
           </div>
           <div className="min-w-0">

@@ -174,7 +174,7 @@ export default function PublisherNav() {
 
   return (
     <>
-      <header className="h-16 border-b border-white/8 bg-[#0f0f13]/50 flex items-center justify-between px-6 sticky top-0 z-40">
+      <header className="h-16 border-b border-white/8 bg-[#0f0f13]/80 backdrop-blur-md flex items-center justify-between px-6 sticky top-0 z-40">
         {/* Mobile menu + page title */}
         <div className="flex items-center gap-3">
           <button
@@ -219,7 +219,7 @@ export default function PublisherNav() {
                   <Link
                     href="/publishers/settings"
                     onClick={() => setNotifOpen(false)}
-                    className="text-[10px] text-[#EBFF45] hover:text-[#c084fc] transition-colors"
+                    className="text-[10px] text-[#EBFF45] hover:text-[#d4e63c] transition-colors"
                   >
                     Manage →
                   </Link>
@@ -274,7 +274,7 @@ export default function PublisherNav() {
               className="flex items-center gap-2 hover:opacity-80 transition-opacity"
               aria-label="Profile menu"
             >
-              <div className="w-8 h-8 rounded-full bg-linear-to-br from-[#EBFF45] to-[#d4e63c] flex items-center justify-center text-xs font-bold text-white">
+              <div className="w-8 h-8 rounded-full bg-[#EBFF45] flex items-center justify-center text-xs font-bold text-[#08080a]">
                 {user ? getInitial(user.name) : "P"}
               </div>
               <div className="hidden sm:flex flex-col items-start">
@@ -292,7 +292,7 @@ export default function PublisherNav() {
                 {/* User info */}
                 <div className="px-4 py-3 border-b border-white/8">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-[#EBFF45] to-[#d4e63c] flex items-center justify-center text-sm font-bold text-white shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-[#EBFF45] flex items-center justify-center text-sm font-bold text-[#08080a] shrink-0">
                       {user ? getInitial(user.name) : "P"}
                     </div>
                     <div className="min-w-0">
@@ -361,8 +361,9 @@ export default function PublisherNav() {
           <aside className="absolute left-0 top-0 bottom-0 w-64 bg-[#0f0f13] border-r border-white/8 flex flex-col">
             <div className="px-6 py-5 border-b border-white/8 flex items-center justify-between">
               <Link href="/" className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[#EBFF45] to-[#d4e63c] flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">A</span>
+                <div style={{width:32,height:32,borderRadius:8,background:'#EBFF45',position:'relative',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                  <span style={{fontSize:14,fontWeight:900,color:'#08080a',letterSpacing:'-0.5px'}}>A</span>
+                  <span style={{position:'absolute',bottom:3,right:3,width:5,height:5,borderRadius:'50%',background:'#08080a'}} />
                 </div>
                 <div>
                   <span className="font-bold text-base block">Adryx</span>
@@ -379,7 +380,7 @@ export default function PublisherNav() {
             {/* Mobile user info */}
             {user && (
               <div className="px-4 py-3 border-b border-white/8 flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-linear-to-br from-[#EBFF45] to-[#d4e63c] flex items-center justify-center text-sm font-bold text-white shrink-0">
+                <div className="w-9 h-9 rounded-full bg-[#EBFF45] flex items-center justify-center text-sm font-bold text-[#08080a] shrink-0">
                   {getInitial(user.name)}
                 </div>
                 <div className="min-w-0">
