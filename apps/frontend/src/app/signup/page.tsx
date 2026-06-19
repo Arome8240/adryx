@@ -4,141 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-/* ─── Brand logo ───────────────────────────────────────────────────── */
-function BrandLogo() {
-  return (
-    <Link href="/" className="brand" style={{ display: 'inline-flex' }}>
-      <span className="mark mark-acc" />
-      Adryx
-    </Link>
-  );
-}
-
-/* ─── Mini sparkline for side card ────────────────────────────────── */
-function MiniSparkline() {
-  const vals = [28, 42, 35, 55, 48, 62, 58, 72, 65, 80];
-  const W = 140, H = 36;
-  const min = Math.min(...vals), max = Math.max(...vals);
-  const pts = vals.map((v, i) => {
-    const x = (i / (vals.length - 1)) * W;
-    const y = H - ((v - min) / (max - min)) * (H * 0.8) - H * 0.1;
-    return `${x},${y}`;
-  }).join(' ');
-  const area = `M0,${H} ` + vals.map((v, i) => {
-    const x = (i / (vals.length - 1)) * W;
-    const y = H - ((v - min) / (max - min)) * (H * 0.8) - H * 0.1;
-    return `L${x},${y}`;
-  }).join(' ') + ` L${W},${H} Z`;
-
-  return (
-    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ display: 'block' }}>
-      <defs>
-        <linearGradient id="spGrad2" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#2563eb" stopOpacity="0.2" />
-          <stop offset="100%" stopColor="#2563eb" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path d={area} fill="url(#spGrad2)" />
-      <polyline points={pts} fill="none" stroke="#2563eb" strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-/* ─── Side card ────────────────────────────────────────────────────── */
-function SideCard() {
-  return (
-    <div style={{
-      background: '#fff', border: '1px solid var(--c-line)', borderRadius: 14,
-      padding: '20px 22px', boxShadow: '0 12px 36px -8px rgba(15,15,20,.12)', marginBottom: 24,
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-        <div>
-          <div style={{ fontSize: 11, color: 'var(--c-fg-4)', marginBottom: 2 }}>Weekly payout</div>
-          <div style={{ fontSize: 26, fontWeight: 620, letterSpacing: '-0.025em', color: 'var(--c-fg)' }}>$8,420.10</div>
-        </div>
-        <span className="badge badge-ok"><span className="badge-dot" />Settled</span>
-      </div>
-      <MiniSparkline />
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginTop: 14, marginBottom: 12 }}>
-        {[{ label: 'Impressions', value: '1.2M' }, { label: 'CTR', value: '1.84%' }, { label: 'eCPM', value: '$3.05' }].map(m => (
-          <div key={m.label} style={{ background: 'var(--c-bg-2)', border: '1px solid var(--c-line)', borderRadius: 8, padding: '8px 10px' }}>
-            <div style={{ fontSize: 10.5, color: 'var(--c-fg-4)', marginBottom: 2 }}>{m.label}</div>
-            <div style={{ fontSize: 14, fontWeight: 560 }}>{m.value}</div>
-          </div>
-        ))}
-      </div>
-      <div style={{ fontSize: 11, color: 'var(--c-fg-4)', fontFamily: 'var(--f-mono)' }}>TX: 0x4f2a…9c1e · Base</div>
-    </div>
-  );
-}
-
-/* ─── Benefits list ────────────────────────────────────────────────── */
-function Benefits() {
-  const items = [
-    '$10 test impressions on signup',
-    'Real-time analytics dashboard',
-    'Weekly USDC payouts, on-chain',
-    'SOC 2 Type II compliant',
-  ];
-  return (
-    <div className="col" style={{ gap: 12 }}>
-      {items.map(item => (
-        <div key={item} className="row gap-3" style={{ color: 'rgba(255,255,255,.8)', fontSize: 14 }}>
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, marginTop: 1 }}>
-            <circle cx="8" cy="8" r="7.5" stroke="rgba(255,255,255,.3)" />
-            <path d="M5 8l2 2 4-4" stroke="rgba(255,255,255,.9)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          {item}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/* ─── Right panel ──────────────────────────────────────────────────── */
-function RightPanel() {
-  return (
-    <div style={{
-      background: 'var(--c-fg)', display: 'flex', flexDirection: 'column',
-      justifyContent: 'center', padding: '56px 48px', minHeight: '100vh',
-      position: 'relative', overflow: 'hidden',
-    }}>
-      <div style={{
-        position: 'absolute', top: '15%', left: '50%', transform: 'translateX(-50%)',
-        width: 400, height: 300, borderRadius: '50%',
-        background: 'radial-gradient(ellipse, rgba(37,99,235,.35) 0%, transparent 70%)',
-        pointerEvents: 'none',
-      }} />
-      <div style={{ position: 'relative', zIndex: 1 }}>
-        <SideCard />
-        <Benefits />
-      </div>
-    </div>
-  );
-}
-
-/* ─── Globe icon ───────────────────────────────────────────────────── */
-function GlobeIcon({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 18 18" fill="none">
-      <circle cx="9" cy="9" r="7.5" stroke="currentColor" strokeWidth="1.3" />
-      <ellipse cx="9" cy="9" rx="3.5" ry="7.5" stroke="currentColor" strokeWidth="1.3" />
-      <path d="M1.5 9h15" stroke="currentColor" strokeWidth="1.3" />
-    </svg>
-  );
-}
-
-/* ─── Target icon ──────────────────────────────────────────────────── */
-function TargetIcon({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 18 18" fill="none">
-      <circle cx="9" cy="9" r="3" stroke="currentColor" strokeWidth="1.3" />
-      <circle cx="9" cy="9" r="7.5" stroke="currentColor" strokeWidth="1.3" strokeDasharray="2.5 1.5" />
-    </svg>
-  );
-}
-
-/* ─── Google SVG ───────────────────────────────────────────────────── */
+/* ── Icons ── */
 function GoogleIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
@@ -149,16 +15,131 @@ function GoogleIcon() {
     </svg>
   );
 }
-
 function GitHubIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.385-1.335-1.755-1.335-1.755-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.298 24 12c0-6.63-5.37-12-12-12z" />
+      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.385-1.335-1.755-1.335-1.755-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.298 24 12c0-6.63-5.37-12-12-12z"/>
+    </svg>
+  );
+}
+function GlobeIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+      <circle cx="9" cy="9" r="7.5" stroke="currentColor" strokeWidth="1.3"/>
+      <ellipse cx="9" cy="9" rx="3.5" ry="7.5" stroke="currentColor" strokeWidth="1.3"/>
+      <path d="M1.5 9h15" stroke="currentColor" strokeWidth="1.3"/>
+    </svg>
+  );
+}
+function TargetIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+      <circle cx="9" cy="9" r="3" stroke="currentColor" strokeWidth="1.3"/>
+      <circle cx="9" cy="9" r="7.5" stroke="currentColor" strokeWidth="1.3" strokeDasharray="2.5 1.5"/>
     </svg>
   );
 }
 
-/* ─── Signup page ──────────────────────────────────────────────────── */
+/* ── Brand logo ── */
+function BrandLogo() {
+  return (
+    <Link href="/" style={{ display:'inline-flex', alignItems:'center', gap:9, fontWeight:560, letterSpacing:'-0.02em', fontSize:18, color:'#f5f5f5', textDecoration:'none' }}>
+      <div style={{ width:24, height:24, borderRadius:6, background:'#EBFF45', position:'relative', flexShrink:0 }}>
+        <div style={{ position:'absolute', top:4, left:4, width:8, height:8, background:'#08080a', borderRadius:'2px 0 0 0' }}/>
+      </div>
+      Adryx
+    </Link>
+  );
+}
+
+/* ── Yellow sparkline ── */
+function Sparkline() {
+  const vals = [28, 42, 35, 55, 48, 62, 58, 72, 65, 80];
+  const W = 180, H = 42;
+  const min = Math.min(...vals), max = Math.max(...vals);
+  const pts = vals.map((v, i) => `${(i / (vals.length - 1)) * W},${H - ((v - min) / (max - min)) * (H * 0.78) - H * 0.1}`).join(' ');
+  const area = `M0,${H} ` + vals.map((v, i) => `L${(i / (vals.length - 1)) * W},${H - ((v - min) / (max - min)) * (H * 0.78) - H * 0.1}`).join(' ') + ` L${W},${H} Z`;
+  return (
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ display:'block' }}>
+      <defs>
+        <linearGradient id="lg-signup" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#EBFF45" stopOpacity="0.22"/>
+          <stop offset="100%" stopColor="#EBFF45" stopOpacity="0"/>
+        </linearGradient>
+      </defs>
+      <path d={area} fill="url(#lg-signup)"/>
+      <polyline points={pts} fill="none" stroke="#EBFF45" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+/* ── Stats card ── */
+function StatsCard() {
+  return (
+    <div style={{ position:'relative', overflow:'hidden', border:'1px solid rgba(255,255,255,.08)', background:'rgba(255,255,255,.025)', borderRadius:12, padding:'20px 22px', marginBottom:28 }}>
+      <div style={{ position:'absolute', left:0, top:0, bottom:0, width:2, background:'#EBFF45', borderRadius:'12px 0 0 12px' }}/>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:14 }}>
+        <div>
+          <div style={{ fontSize:10.5, color:'rgba(245,245,245,.38)', textTransform:'uppercase', letterSpacing:'.08em', marginBottom:4 }}>Weekly payout</div>
+          <div style={{ fontSize:28, fontWeight:620, letterSpacing:'-0.025em', color:'#f5f5f5', fontFamily:'var(--f-display)' }}>$8,420.10</div>
+        </div>
+        <div style={{ display:'inline-flex', alignItems:'center', gap:5, height:22, padding:'0 8px', borderRadius:999, background:'rgba(74,222,128,.12)', border:'1px solid rgba(74,222,128,.2)', fontSize:11, fontWeight:550, color:'#4ade80' }}>
+          <div style={{ width:5, height:5, borderRadius:'50%', background:'#4ade80' }}/>Settled
+        </div>
+      </div>
+      <Sparkline/>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:8, marginTop:14, marginBottom:10 }}>
+        {[{ label:'Impressions', value:'1.2M' }, { label:'CTR', value:'1.84%' }, { label:'eCPM', value:'$3.05' }].map(m => (
+          <div key={m.label} style={{ background:'rgba(255,255,255,.04)', border:'1px solid rgba(255,255,255,.07)', borderRadius:8, padding:'8px 10px' }}>
+            <div style={{ fontSize:10, color:'rgba(245,245,245,.32)', marginBottom:3 }}>{m.label}</div>
+            <div style={{ fontSize:14, fontWeight:560, color:'#f5f5f5' }}>{m.value}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ fontSize:10.5, color:'rgba(245,245,245,.28)', fontFamily:'var(--f-mono)' }}>TX: 0x4f2a…9c1e · Base</div>
+    </div>
+  );
+}
+
+/* ── Benefits list ── */
+function Benefits() {
+  const items = [
+    '$10 test impressions on signup',
+    'Real-time analytics dashboard',
+    'Weekly USDC payouts, on-chain',
+    'SOC 2 Type II compliant',
+  ];
+  return (
+    <div style={{ display:'flex', flexDirection:'column', gap:11 }}>
+      {items.map(item => (
+        <div key={item} style={{ display:'flex', alignItems:'center', gap:10, color:'rgba(245,245,245,.6)', fontSize:13.5 }}>
+          <div style={{ width:18, height:18, borderRadius:'50%', border:'1px solid rgba(235,255,69,.3)', background:'rgba(235,255,69,.08)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+            <svg width="9" height="9" viewBox="0 0 9 9" fill="none">
+              <path d="M1.5 4.5l2 2 4-4" stroke="#EBFF45" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          {item}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ── Right panel ── */
+function RightPanel() {
+  return (
+    <div style={{ background:'#08080a', display:'flex', flexDirection:'column', justifyContent:'center', padding:'56px 52px', minHeight:'100vh', position:'relative', overflow:'hidden' }}>
+      <div style={{ position:'absolute', top:'15%', left:'35%', width:520, height:520, borderRadius:'50%', background:'radial-gradient(ellipse, rgba(235,255,69,.07) 0%, transparent 65%)', pointerEvents:'none' }}/>
+      <div style={{ position:'absolute', bottom:'18%', right:'5%', width:240, height:240, borderRadius:'50%', background:'radial-gradient(ellipse, rgba(59,130,246,.05) 0%, transparent 65%)', pointerEvents:'none' }}/>
+      <div style={{ position:'relative', zIndex:1 }}>
+        <StatsCard/>
+        <Benefits/>
+      </div>
+    </div>
+  );
+}
+
+/* ── Signup page ── */
 export default function SignupPage() {
   const router = useRouter();
   const [role, setRole] = useState<'publisher' | 'advertiser'>('publisher');
@@ -185,105 +166,107 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="auth-shell" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', minHeight: '100vh' }}>
+    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', minHeight:'100vh', background:'#08080a' }} className="auth-shell">
       {/* ── Left ── */}
-      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '56px 64px', background: '#fff', overflowY: 'auto' }}>
-        <div style={{ maxWidth: 400, width: '100%', margin: '0 auto' }}>
-          <div style={{ marginBottom: 32 }}><BrandLogo /></div>
+      <div style={{ display:'flex', flexDirection:'column', justifyContent:'center', padding:'56px 64px', background:'#0f0f13', borderRight:'1px solid rgba(255,255,255,.06)', overflowY:'auto' }}>
+        <div style={{ maxWidth:400, width:'100%', margin:'0 auto' }}>
+          <div style={{ marginBottom:36 }}><BrandLogo/></div>
 
-          <h1 className="t-h1" style={{ marginBottom: 4 }}>Create your account</h1>
-          <p className="t-sm muted" style={{ marginBottom: 28 }}>Free to start. No credit card required.</p>
+          <h1 style={{ fontSize:28, fontWeight:560, letterSpacing:'-0.022em', color:'#f5f5f5', marginBottom:4, fontFamily:'var(--f-display)' }}>Create your account</h1>
+          <p style={{ fontSize:14, color:'rgba(245,245,245,.45)', marginBottom:28 }}>Free to start. No credit card required.</p>
 
           {/* Role picker */}
-          <div className="row gap-3" style={{ marginBottom: 24 }}>
+          <div style={{ display:'flex', gap:10, marginBottom:24 }}>
             {([
-              { value: 'publisher', label: 'Earn from my site', sub: 'Publisher', icon: <GlobeIcon /> },
-              { value: 'advertiser', label: 'Run ad campaigns', sub: 'Advertiser', icon: <TargetIcon /> },
-            ] as const).map(opt => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => setRole(opt.value)}
-                style={{
-                  flex: 1, padding: '12px 14px', borderRadius: 10, cursor: 'pointer',
-                  border: role === opt.value ? '2px solid var(--c-acc)' : '1px solid var(--c-line-2)',
-                  background: role === opt.value ? 'var(--c-acc-soft)' : '#fff',
-                  transition: 'border-color .12s, background .12s',
-                  textAlign: 'left',
-                }}
-              >
-                <div style={{ color: role === opt.value ? 'var(--c-acc)' : 'var(--c-fg-3)', marginBottom: 6 }}>
-                  {opt.icon}
-                </div>
-                <div style={{ fontSize: 13.5, fontWeight: 550, color: role === opt.value ? 'var(--c-acc-ink)' : 'var(--c-fg)' }}>{opt.label}</div>
-                <div style={{ fontSize: 11.5, color: role === opt.value ? 'var(--c-acc)' : 'var(--c-fg-4)' }}>{opt.sub}</div>
-              </button>
-            ))}
+              { value: 'publisher', label: 'Earn from my site', sub: 'Publisher', Icon: GlobeIcon },
+              { value: 'advertiser', label: 'Run ad campaigns', sub: 'Advertiser', Icon: TargetIcon },
+            ] as const).map(opt => {
+              const active = role === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setRole(opt.value)}
+                  style={{
+                    flex:1, padding:'12px 14px', borderRadius:10, cursor:'pointer', textAlign:'left',
+                    border: active ? '1.5px solid rgba(235,255,69,.5)' : '1px solid rgba(255,255,255,.1)',
+                    background: active ? 'rgba(235,255,69,.08)' : 'rgba(255,255,255,.04)',
+                    transition:'border-color .12s, background .12s',
+                  }}
+                >
+                  <div style={{ color: active ? '#EBFF45' : 'rgba(245,245,245,.35)', marginBottom:7 }}>
+                    <opt.Icon/>
+                  </div>
+                  <div style={{ fontSize:13.5, fontWeight:550, color: active ? '#f5f5f5' : 'rgba(245,245,245,.7)', marginBottom:2 }}>{opt.label}</div>
+                  <div style={{ fontSize:11.5, color: active ? 'rgba(235,255,69,.7)' : 'rgba(245,245,245,.3)' }}>{opt.sub}</div>
+                </button>
+              );
+            })}
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="col" style={{ gap: 14, marginBottom: 16 }}>
+          <form onSubmit={handleSubmit} style={{ display:'flex', flexDirection:'column', gap:14, marginBottom:16 }}>
             {error && (
-              <div style={{ background: 'var(--c-bad-soft)', border: '1px solid rgba(185,28,28,.2)', borderRadius: 8, padding: '10px 14px', fontSize: 13.5, color: 'var(--c-bad)' }}>
+              <div style={{ background:'rgba(248,113,113,.1)', border:'1px solid rgba(248,113,113,.2)', borderRadius:8, padding:'10px 14px', fontSize:13.5, color:'#f87171' }}>
                 {error}
               </div>
             )}
-            <div className="field">
-              <label className="field-label">Full name</label>
-              <input type="text" required value={name} onChange={e => setName(e.target.value)} className="input" placeholder="Ada Lovelace" />
+            <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+              <label style={{ fontSize:13, fontWeight:500, color:'rgba(245,245,245,.65)' }}>Full name</label>
+              <input type="text" required value={name} onChange={e => setName(e.target.value)} className="c-input" placeholder="Ada Lovelace"/>
             </div>
-            <div className="field">
-              <label className="field-label">Work email</label>
-              <input type="email" required value={email} onChange={e => setEmail(e.target.value)} className="input" placeholder="you@company.com" />
+            <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+              <label style={{ fontSize:13, fontWeight:500, color:'rgba(245,245,245,.65)' }}>Work email</label>
+              <input type="email" required value={email} onChange={e => setEmail(e.target.value)} className="c-input" placeholder="you@company.com"/>
             </div>
-            <div className="field">
-              <label className="field-label">Password</label>
-              <input type="password" required minLength={8} value={password} onChange={e => setPassword(e.target.value)} className="input" placeholder="Min. 8 characters" />
+            <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+              <label style={{ fontSize:13, fontWeight:500, color:'rgba(245,245,245,.65)' }}>Password</label>
+              <input type="password" required minLength={8} value={password} onChange={e => setPassword(e.target.value)} className="c-input" placeholder="Min. 8 characters"/>
             </div>
-            {/* Terms */}
-            <label className="row gap-2 t-sm" style={{ cursor: 'pointer', color: 'var(--c-fg-3)', userSelect: 'none' }}>
+            <label style={{ display:'flex', alignItems:'flex-start', gap:10, cursor:'pointer', userSelect:'none', fontSize:13.5, color:'rgba(245,245,245,.5)' }}>
               <input
                 type="checkbox" checked={terms} onChange={e => setTerms(e.target.checked)}
-                style={{ width: 14, height: 14, accentColor: 'var(--c-acc)', cursor: 'pointer' }}
+                style={{ width:14, height:14, marginTop:2, accentColor:'#EBFF45', cursor:'pointer', flexShrink:0 }}
               />
-              I agree to the{' '}
-              <Link href="/terms" style={{ color: 'var(--c-acc)' }}>Terms</Link>
-              {' '}&amp;{' '}
-              <Link href="/privacy" style={{ color: 'var(--c-acc)' }}>Privacy Policy</Link>
+              <span>
+                I agree to the{' '}
+                <Link href="/terms" style={{ color:'#EBFF45' }}>Terms</Link>
+                {' '}&amp;{' '}
+                <Link href="/privacy" style={{ color:'#EBFF45' }}>Privacy Policy</Link>
+              </span>
             </label>
             <button
               type="submit" disabled={loading}
-              className="btn btn-primary btn-lg"
-              style={{ width: '100%', justifyContent: 'center', marginTop: 4 }}
+              className="c-btn-y" style={{ width:'100%', justifyContent:'center', marginTop:4, height:46 }}
             >
               {loading ? 'Creating account…' : 'Create account'}
             </button>
           </form>
 
           {/* Social */}
-          <div className="row gap-3" style={{ marginBottom: 16 }}>
-            <div style={{ flex: 1, height: 1, background: 'var(--c-line)' }} />
-            <span style={{ fontSize: 12, color: 'var(--c-fg-4)' }}>or</span>
-            <div style={{ flex: 1, height: 1, background: 'var(--c-line)' }} />
+          <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:14, color:'rgba(245,245,245,.28)', fontSize:12 }}>
+            <div style={{ flex:1, height:1, background:'rgba(255,255,255,.08)' }}/>
+            or
+            <div style={{ flex:1, height:1, background:'rgba(255,255,255,.08)' }}/>
           </div>
-          <div className="row gap-3" style={{ marginBottom: 20 }}>
-            <button className="btn btn-outline" style={{ flex: 1, justifyContent: 'center', gap: 8 }}>
-              <GoogleIcon /> Google
+          <div style={{ display:'flex', gap:10, marginBottom:22 }}>
+            <button className="c-btn-ghost" style={{ flex:1, justifyContent:'center', gap:8, height:40, fontSize:13.5 }}>
+              <GoogleIcon/> Google
             </button>
-            <button className="btn btn-outline" style={{ flex: 1, justifyContent: 'center', gap: 8 }}>
-              <GitHubIcon /> GitHub
+            <button className="c-btn-ghost" style={{ flex:1, justifyContent:'center', gap:8, height:40, fontSize:13.5 }}>
+              <GitHubIcon/> GitHub
             </button>
           </div>
 
-          <p className="t-sm" style={{ textAlign: 'center', color: 'var(--c-fg-3)' }}>
+          <p style={{ textAlign:'center', fontSize:13.5, color:'rgba(245,245,245,.45)' }}>
             Already have an account?{' '}
-            <Link href="/login" style={{ color: 'var(--c-acc)', fontWeight: 520 }}>Sign in</Link>
+            <Link href="/login" style={{ color:'#EBFF45', fontWeight:520 }}>Sign in</Link>
           </p>
         </div>
       </div>
 
       {/* ── Right ── */}
-      <RightPanel />
+      <RightPanel/>
     </div>
   );
 }
