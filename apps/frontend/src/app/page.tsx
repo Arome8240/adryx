@@ -165,12 +165,12 @@ function TopNav() {
     <nav className={`c-nav${scrolled ? ' scrolled' : ''}`}>
       <div className="c-wrap c-row c-between" style={{ height: 60 }}>
         <BrandLogo />
-        <div className="c-row gap-2" style={{ display: 'flex' as const }}>
+        <div className="hidden md:flex items-center" style={{ gap: 2 }}>
           {['Publishers', 'Advertisers', 'Docs', 'Pricing'].map(l => (
             <Link key={l} href={`/${l.toLowerCase()}`} className="c-nav-link">{l}</Link>
           ))}
         </div>
-        <div className="c-row gap-3">
+        <div className="hidden md:flex items-center" style={{ gap: 10 }}>
           <Link href="/login" className="c-btn-ghost" style={{ padding: '8px 16px', fontSize: 13 }}>Sign in</Link>
           <Link href="/signup" className="c-btn-y" style={{ padding: '8px 18px', fontSize: 13 }}>Get started</Link>
         </div>
