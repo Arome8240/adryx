@@ -2,30 +2,24 @@
 
 import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { type WalletId, getAdapter } from '@/lib/wallet-adapters';
 
-// Freighter browser extension API (injected as window.freighter)
-declare global {
-  interface Window {
-    freighter?: {
-      isConnected: () => Promise<{ isConnected: boolean }>;
-      getPublicKey: () => Promise<string>;
-      signMessage: (opts: { message: string; networkPassphrase?: string }) => Promise<{ signedMessage: string }>;
-      signTransaction: (xdr: string, opts?: { network?: string; networkPassphrase?: string }) => Promise<{ signedTransaction: string }>;
-    };
-  }
-}
+const STORAGE_KEY = 'adryx_wallet_id';
 
 interface StellarWalletState {
   address: string | null;
+  walletId: WalletId | null;
   connected: boolean;
   connecting: boolean;
-  connect: () => Promise<string>;
+  /** Call with a walletId to connect via that adapter. */
+  connect: (walletId: WalletId) => Promise<string>;
   disconnect: () => void;
   signTransaction: (xdr: string) => Promise<string>;
 }
 
 const StellarWalletContext = createContext<StellarWalletState>({
   address: null,
+  walletId: null,
   connected: false,
   connecting: false,
   connect: async () => { throw new Error('WalletProvider not mounted'); },
@@ -36,23 +30,27 @@ const StellarWalletContext = createContext<StellarWalletState>({
 export function WalletProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [address, setAddress] = useState<string | null>(null);
+  const [walletId, setWalletId] = useState<WalletId | null>(null);
   const [connecting, setConnecting] = useState(false);
 
-  // Seed address from the auth user's linked Stellar wallet on mount / user change
+  // Restore last-used wallet and seed address from auth user
   useEffect(() => {
     if (user?.walletAddress) setAddress(user.walletAddress);
+    const saved = localStorage.getItem(STORAGE_KEY) as WalletId | null;
+    if (saved) setWalletId(saved);
   }, [user?.walletAddress]);
 
-  const connect = useCallback(async (): Promise<string> => {
-    if (!window.freighter) {
-      throw new Error('Freighter extension is not installed. Visit freighter.app to install it.');
+  const connect = useCallback(async (id: WalletId): Promise<string> => {
+    const adapter = getAdapter(id);
+    if (!adapter.isAvailable()) {
+      throw new Error(`${adapter.name} is not installed. Visit ${adapter.website} to install it.`);
     }
     setConnecting(true);
     try {
-      const { isConnected } = await window.freighter.isConnected();
-      if (!isConnected) throw new Error('Freighter is locked. Please unlock your wallet first.');
-      const pubKey = await window.freighter.getPublicKey();
+      const pubKey = await adapter.getPublicKey();
       setAddress(pubKey);
+      setWalletId(id);
+      localStorage.setItem(STORAGE_KEY, id);
       return pubKey;
     } finally {
       setConnecting(false);
@@ -61,18 +59,18 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
   const disconnect = useCallback(() => {
     if (!user?.walletAddress) setAddress(null);
+    setWalletId(null);
+    localStorage.removeItem(STORAGE_KEY);
   }, [user?.walletAddress]);
 
   const signTransaction = useCallback(async (xdr: string): Promise<string> => {
-    if (!window.freighter) throw new Error('Freighter not available');
-    const network = process.env.NEXT_PUBLIC_STELLAR_NETWORK === 'mainnet' ? 'MAINNET' : 'TESTNET';
-    const { signedTransaction } = await window.freighter.signTransaction(xdr, { network });
-    return signedTransaction;
-  }, []);
+    if (!walletId) throw new Error('No wallet connected');
+    return getAdapter(walletId).signTransaction(xdr);
+  }, [walletId]);
 
   return (
     <StellarWalletContext.Provider
-      value={{ address, connected: !!address, connecting, connect, disconnect, signTransaction }}
+      value={{ address, walletId, connected: !!address, connecting, connect, disconnect, signTransaction }}
     >
       {children}
     </StellarWalletContext.Provider>
