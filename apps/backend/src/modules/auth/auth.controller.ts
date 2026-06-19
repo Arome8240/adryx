@@ -6,9 +6,11 @@ import {
   UseGuards,
   Get,
   Request,
+  Res,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -22,58 +24,109 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  // ── Email / password ──────────────────────────────────────────────────────
+
   @Post('register')
   async register(@Body() registerDto: RegisterDto) {
-    return await this.authService.register(registerDto);
+    return this.authService.register(registerDto);
   }
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(@Body() loginDto: LoginDto) {
-    return await this.authService.login(loginDto);
+    return this.authService.login(loginDto);
   }
+
+  // ── Stellar wallet ────────────────────────────────────────────────────────
 
   @Post('wallet-login')
   @HttpCode(HttpStatus.OK)
   async walletLogin(@Body() walletLoginDto: WalletLoginDto) {
-    return await this.authService.walletLogin(walletLoginDto);
+    return this.authService.walletLogin(walletLoginDto);
   }
+
+  // ── Google OAuth ──────────────────────────────────────────────────────────
+
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  googleAuth() {
+    // Passport handles the redirect to Google — this handler never executes.
+  }
+
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleCallback(@Request() req, @Res() res) {
+    const result = await this.authService.generateTokensForOAuthUser(req.user);
+    return this.redirectWithTokens(res, result);
+  }
+
+  // ── GitHub OAuth ──────────────────────────────────────────────────────────
+
+  @Get('github')
+  @UseGuards(AuthGuard('github'))
+  githubAuth() {
+    // Passport handles the redirect to GitHub — this handler never executes.
+  }
+
+  @Get('github/callback')
+  @UseGuards(AuthGuard('github'))
+  async githubCallback(@Request() req, @Res() res) {
+    const result = await this.authService.generateTokensForOAuthUser(req.user);
+    return this.redirectWithTokens(res, result);
+  }
+
+  // ── Authenticated routes ──────────────────────────────────────────────────
 
   @Post('refresh')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   async refresh(@Request() req) {
-    return await this.authService.refreshToken(req.user.userId);
+    return this.authService.refreshToken(req.user.userId);
   }
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
   async getProfile(@Request() req) {
-    return await this.authService.validateUser(req.user.userId);
+    return this.authService.validateUser(req.user.userId);
   }
 
   @Patch('profile')
   @UseGuards(JwtAuthGuard)
   async updateProfile(@Request() req, @Body() dto: UpdateProfileDto) {
-    return await this.authService.updateProfile(req.user.userId, dto);
+    return this.authService.updateProfile(req.user.userId, dto);
   }
 
   @Patch('password')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   async changePassword(@Request() req, @Body() dto: ChangePasswordDto) {
-    return await this.authService.changePassword(req.user.userId, dto);
+    return this.authService.changePassword(req.user.userId, dto);
   }
+
+  // ── Password reset ────────────────────────────────────────────────────────
 
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
   async forgotPassword(@Body() dto: ForgotPasswordDto) {
-    return await this.authService.forgotPassword(dto);
+    return this.authService.forgotPassword(dto);
   }
 
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
   async resetPassword(@Body() dto: ResetPasswordDto) {
-    return await this.authService.resetPassword(dto);
+    return this.authService.resetPassword(dto);
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+
+  private redirectWithTokens(
+    res: any,
+    result: { accessToken: string; refreshToken: string },
+  ) {
+    const base = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const url = new URL('/auth/callback', base);
+    url.searchParams.set('token', result.accessToken);
+    url.searchParams.set('refreshToken', result.refreshToken);
+    return res.redirect(url.toString());
   }
 }

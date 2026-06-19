@@ -32,6 +32,15 @@ export class User {
   @Prop({ default: 'UTC' })
   timezone: string;
 
+  @Prop({ unique: true, sparse: true })
+  googleId: string;
+
+  @Prop({ unique: true, sparse: true })
+  githubId: string;
+
+  @Prop()
+  avatar: string;
+
   @Prop()
   resetToken: string;
 
