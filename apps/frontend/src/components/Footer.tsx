@@ -1,131 +1,117 @@
 "use client";
-import { motion } from "framer-motion";
-import { DocumentText, Code, Global } from "iconsax-react";
 import Link from "next/link";
 
-const links = {
+const COLS: Record<string, { label: string; href: string }[]> = {
   Product: [
-    { name: "Features", href: "/features" },
-    { name: "How It Works", href: "/#how-it-works" },
-    { name: "Pricing", href: "/pricing" },
-    { name: "Changelog", href: "https://github.com/adryx/adryx/releases" },
+    { label: "Features",     href: "/features" },
+    { label: "How it works", href: "/#how-it-works" },
+    { label: "Pricing",      href: "/pricing" },
+    { label: "Changelog",    href: "#" },
   ],
   Developers: [
-    { name: "Documentation", href: "/docs" },
-    { name: "SDK Reference", href: "/docs#sdk" },
-    { name: "GitHub", href: "https://github.com/adryx/adryx" },
-    { name: "Status", href: "https://status.adryx.io" },
+    { label: "Documentation", href: "/docs" },
+    { label: "SDK reference", href: "/docs" },
+    { label: "GitHub",        href: "https://github.com" },
+    { label: "Status",        href: "#" },
   ],
   Company: [
-    { name: "About", href: "/about" },
-    { name: "Blog", href: "https://blog.adryx.io" },
-    { name: "Careers", href: "/contact" },
-    { name: "Contact", href: "/contact" },
+    { label: "About",    href: "/about" },
+    { label: "Blog",     href: "#" },
+    { label: "Careers",  href: "/contact" },
+    { label: "Contact",  href: "/contact" },
+  ],
+  Legal: [
+    { label: "Privacy",       href: "/privacy" },
+    { label: "Terms",         href: "/terms" },
+    { label: "Cookie policy", href: "#" },
+    { label: "DPA",           href: "#" },
   ],
 };
 
 export default function Footer() {
   return (
-    <footer className="relative border-t border-border pt-16 pb-8 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6 relative">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-12">
-          {/* Brand */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4 }}
-            className="col-span-2 md:col-span-1"
-          >
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center">
-                <span className="text-white font-bold text-sm">A</span>
-              </div>
-              <span className="font-semibold text-base">Adryx</span>
-            </div>
-            <p className="body-sm text-text-tertiary max-w-xs mb-4">
-              The decentralized advertising network for Web2 and Web3.
-              Transparent, instant, and built on Solana.
+    <footer
+      style={{
+        borderTop: "1px solid rgba(255,255,255,.07)",
+        background: "#0a0a0c",
+        padding: "56px 0 32px",
+      }}
+    >
+      <div className="c-wrap">
+        {/* Main grid */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr",
+            gap: 32,
+            marginBottom: 48,
+          }}
+        >
+          {/* Brand column */}
+          <div className="c-col" style={{ gap: 14 }}>
+            <Link href="/" className="c-brand">
+              <span className="c-mark" />
+              Adryx
+            </Link>
+            <p className="c-sm c-muted" style={{ maxWidth: 240 }}>
+              Internet advertising, settled in stablecoins. USDC payouts on
+              Stellar for every verified impression.
             </p>
-            <div className="flex items-center gap-2">
-              <Link
-                href="/docs"
-                aria-label="Documentation"
-                className="w-8 h-8 rounded-md border border-border flex items-center justify-center text-text-tertiary hover:text-text-primary hover:border-border-hover transition-all duration-200"
-              >
-                <DocumentText size={16} color="#f97316" />
-              </Link>
-              <a
-                href="https://github.com/adryx/adryx"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="GitHub"
-                className="w-8 h-8 rounded-md border border-border flex items-center justify-center text-text-tertiary hover:text-text-primary hover:border-border-hover transition-all duration-200"
-              >
-                <Code size={16} color="#a855f7" />
-              </a>
-              <a
-                href="https://twitter.com/adryx_io"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Twitter"
-                className="w-8 h-8 rounded-md border border-border flex items-center justify-center text-text-tertiary hover:text-text-primary hover:border-border-hover transition-all duration-200"
-              >
-                <Global size={16} color="#06b6d4" />
-              </a>
-            </div>
-          </motion.div>
+          </div>
 
           {/* Link columns */}
-          {Object.entries(links).map(([group, items], i) => (
-            <motion.div
-              key={group}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: (i + 1) * 0.05 }}
-            >
-              <h4 className="label-xs text-text-tertiary mb-3">
-                {group}
-              </h4>
-              <ul className="flex flex-col gap-2">
-                {items.map((item) => (
-                  <li key={item.name}>
-                    {item.href.startsWith('http') ? (
-                      <a
-                        href={item.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="body-sm text-text-secondary hover:text-text-primary transition-colors duration-200"
-                      >
-                        {item.name}
-                      </a>
-                    ) : (
-                      <Link
-                        href={item.href}
-                        className="body-sm text-text-secondary hover:text-text-primary transition-colors duration-200"
-                      >
-                        {item.name}
-                      </Link>
-                    )}
-                  </li>
+          {Object.entries(COLS).map(([group, links]) => (
+            <div key={group}>
+              <p className="c-label" style={{ marginBottom: 16 }}>{group}</p>
+              <div className="c-col" style={{ gap: 9 }}>
+                {links.map((l) => (
+                  <Link
+                    key={l.label}
+                    href={l.href}
+                    className="c-sm"
+                    style={{
+                      color: "rgba(245,245,245,.42)",
+                      textDecoration: "none",
+                      transition: "color .1s",
+                    }}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.color = "rgba(245,245,245,.75)")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.color = "rgba(245,245,245,.42)")
+                    }
+                  >
+                    {l.label}
+                  </Link>
                 ))}
-              </ul>
-            </motion.div>
+              </div>
+            </div>
           ))}
         </div>
 
-        <div className="border-t border-border pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="label-xs text-text-tertiary">
-            &copy; {new Date().getFullYear()} Adryx. All rights reserved.
-          </p>
-          <div className="flex items-center gap-4">
-            <Link href="/privacy" className="label-xs text-text-tertiary hover:text-text-secondary transition-colors duration-200">
-              Privacy Policy
-            </Link>
-            <Link href="/terms" className="label-xs text-text-tertiary hover:text-text-secondary transition-colors duration-200">
-              Terms of Service
-            </Link>
+        {/* Bottom bar */}
+        <div
+          style={{
+            borderTop: "1px solid rgba(255,255,255,.06)",
+            paddingTop: 20,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: 12,
+          }}
+        >
+          <p className="c-xs c-muted">© 2026 Adryx. All rights reserved.</p>
+          <div className="c-row" style={{ gap: 16 }}>
+            {[
+              { label: "Help",    href: "/contact" },
+              { label: "Privacy", href: "/privacy" },
+              { label: "Terms",   href: "/terms" },
+            ].map((l) => (
+              <Link key={l.label} href={l.href} className="c-xs c-muted" style={{ textDecoration: "none" }}>
+                {l.label}
+              </Link>
+            ))}
           </div>
         </div>
       </div>

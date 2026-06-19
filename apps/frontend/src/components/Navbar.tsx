@@ -1,125 +1,99 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { HambergerMenu, CloseCircle } from "iconsax-react";
 
-const links = [
-  { label: "Features", href: "#features" },
-  { label: "How It Works", href: "#how-it-works" },
-  { label: "Who It's For", href: "#for-who" },
-  { label: "Docs", href: "/docs" },
+const NAV_LINKS = [
+  { label: "Product",     href: "/features" },
+  { label: "Publishers",  href: "/publisher" },
+  { label: "Advertisers", href: "/dashboard" },
+  { label: "Docs",        href: "/docs" },
+  { label: "Pricing",     href: "/pricing" },
 ];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
+    const fn = () => setScrolled(window.scrollY > 16);
+    window.addEventListener("scroll", fn, { passive: true });
+    return () => window.removeEventListener("scroll", fn);
   }, []);
 
   return (
-    <motion.nav
-      initial={{ y: -10, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.3 }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${
-        scrolled 
-          ? "bg-dark-bg-primary/80 backdrop-blur-xl border-b border-dark-border" 
-          : "bg-transparent"
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5 hover-lift">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
-            <span className="text-white font-bold text-sm">A</span>
-          </div>
-          <span className="font-bold text-lg tracking-tight">Adryx</span>
+    <nav className={`c-nav${scrolled ? " scrolled" : ""}`}>
+      <div className="c-wrap c-row c-between" style={{ height: 60 }}>
+        {/* Brand */}
+        <Link href="/" className="c-brand">
+          <span className="c-mark" />
+          Adryx
         </Link>
 
         {/* Desktop links */}
-        <div className="hidden md:flex items-center gap-1 text-sm">
-          {links.map((l) => (
-            <a
-              key={l.label}
-              href={l.href}
-              className="px-3 py-2 rounded-md text-secondary hover:text-primary hover:bg-dark-bg-tertiary transition-all"
-            >
+        <div className="c-row" style={{ gap: 2, display: "flex" as const }}>
+          {NAV_LINKS.map((l) => (
+            <Link key={l.label} href={l.href} className="c-nav-link">
               {l.label}
-            </a>
+            </Link>
           ))}
         </div>
 
-        {/* Desktop CTA */}
-        <div className="hidden md:flex items-center gap-2">
-          <Link
-            href="/publishers"
-            className="btn-ghost text-sm px-4 py-2"
-          >
-            Publishers
+        {/* Desktop CTAs */}
+        <div className="c-row" style={{ gap: 10 }}>
+          <Link href="/login" className="c-btn-ghost" style={{ padding: "8px 16px", fontSize: 13 }}>
+            Sign in
           </Link>
-          <Link
-            href="/dashboard"
-            className="btn-primary text-sm px-4 py-2"
-          >
-            Advertisers
+          <Link href="/signup" className="c-btn-y" style={{ padding: "8px 18px", fontSize: 13 }}>
+            Get started
           </Link>
         </div>
 
-        {/* Mobile menu toggle */}
+        {/* Mobile toggle */}
         <button
-          className="md:hidden text-secondary hover:text-primary transition-colors"
-          onClick={() => setMenuOpen(!menuOpen)}
+          className="md:hidden"
+          style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}
+          onClick={() => setOpen((v) => !v)}
           aria-label="Toggle menu"
         >
-          {menuOpen ? (
-            <CloseCircle size={24} color="#f0f0f5" />
-          ) : (
-            <HambergerMenu size={24} color="#f0f0f5" />
-          )}
+          {open
+            ? <CloseCircle size={22} color="#f87171" />
+            : <HambergerMenu size={22} color="rgba(245,245,245,.7)" />
+          }
         </button>
       </div>
 
-      {/* Mobile menu */}
-      {menuOpen && (
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.2 }}
-          className="md:hidden bg-dark-bg-secondary/95 backdrop-blur-xl border-t border-dark-border px-6 py-4 flex flex-col gap-2"
+      {/* Mobile drawer */}
+      {open && (
+        <div
+          style={{
+            background: "rgba(8,8,10,.96)",
+            borderTop: "1px solid rgba(255,255,255,.08)",
+            padding: "16px 24px 20px",
+          }}
         >
-          {links.map((l) => (
-            <a
-              key={l.label}
-              href={l.href}
-              className="px-3 py-2 rounded-md text-sm text-secondary hover:text-primary hover:bg-dark-bg-tertiary transition-all"
-              onClick={() => setMenuOpen(false)}
-            >
-              {l.label}
-            </a>
-          ))}
-          <div className="flex flex-col gap-2 pt-2 mt-2 border-t border-dark-border">
-            <Link
-              href="/publishers"
-              className="btn-secondary text-sm px-4 py-2.5 text-center"
-              onClick={() => setMenuOpen(false)}
-            >
-              For Publishers
+          <div style={{ display: "flex", flexDirection: "column", gap: 2, marginBottom: 16 }}>
+            {NAV_LINKS.map((l) => (
+              <Link
+                key={l.label}
+                href={l.href}
+                className="c-nav-link"
+                onClick={() => setOpen(false)}
+              >
+                {l.label}
+              </Link>
+            ))}
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <Link href="/login" className="c-btn-ghost" style={{ justifyContent: "center", fontSize: 13 }}>
+              Sign in
             </Link>
-            <Link
-              href="/dashboard"
-              className="btn-primary text-sm px-4 py-2.5 text-center"
-              onClick={() => setMenuOpen(false)}
-            >
-              For Advertisers
+            <Link href="/signup" className="c-btn-y" style={{ justifyContent: "center", fontSize: 13 }}>
+              Get started
             </Link>
           </div>
-        </motion.div>
+        </div>
       )}
-    </motion.nav>
+    </nav>
   );
 }

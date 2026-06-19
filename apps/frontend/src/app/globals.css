@@ -362,8 +362,37 @@ button:focus-visible, a:focus-visible, .input:focus-visible { outline: 2px solid
   background: rgba(8,8,10,.72);
   backdrop-filter: saturate(180%) blur(16px);
   -webkit-backdrop-filter: saturate(180%) blur(16px);
-  border-bottom: 1px solid rgba(255,255,255,.06);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  transition: background .2s, border-color .2s;
 }
+.c-nav.scrolled { background: rgba(8,8,10,.92); border-color: rgba(255,255,255,.12); }
+.c-nav-link {
+  color: rgba(245,245,245,.55); font-size: 13px; font-weight: 500;
+  padding: 6px 10px; border-radius: 7px;
+  transition: color .1s, background .1s; text-decoration: none;
+}
+.c-nav-link:hover { color: #f5f5f5; background: rgba(255,255,255,.07); }
+
+/* ─── Brand logo ─────────────────────────────────────────────────── */
+.c-brand {
+  font-size: 17px; font-weight: 700; letter-spacing: -.02em; color: #f5f5f5;
+  display: inline-flex; align-items: center; gap: 7px; text-decoration: none;
+}
+.c-mark {
+  width: 9px; height: 9px; border-radius: 2px; background: #EBFF45;
+  display: inline-block; flex-shrink: 0;
+}
+
+/* ─── Layout utilities ───────────────────────────────────────────── */
+.c-wrap  { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+.c-row   { display: flex; align-items: center; flex-wrap: wrap; }
+.c-col   { display: flex; flex-direction: column; }
+.c-between { justify-content: space-between; }
+
+/* ─── Typography helpers ─────────────────────────────────────────── */
+.c-sm    { font-size: 13px; line-height: 1.6; color: rgba(245,245,245,.55); }
+.c-xs    { font-size: 12px; color: rgba(245,245,245,.45); }
+.c-label { font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: rgba(245,245,245,.38); }
 
 /* ─── Yellow CTA button ──────────────────────────────────────────── */
 .c-btn-y {
