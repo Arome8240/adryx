@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono, Space_Grotesk, Manrope } from "next/font/google";
 import "./globals.css";
+import { AuthInitializer } from "@/components/providers/AuthInitializer";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -50,7 +51,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" data-theme="dark" className={`${inter.variable} ${jetbrainsMono.variable} ${spaceGrotesk.variable} ${manrope.variable}`}>
-      <body>{children}</body>
+      <body>
+        <AuthInitializer />
+        {children}
+      </body>
     </html>
   );
 }

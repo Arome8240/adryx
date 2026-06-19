@@ -143,7 +143,7 @@ export default function CampaignsPage() {
     try {
       await fundCampaign(fundingId, publicKey, amount);
       showToast("Campaign funded successfully!", true);
-      setFundModal(null);
+      setFundingId(null); setFundingAmount("");
     } catch (err: unknown) {
       showToast(err instanceof Error ? err.message : "Funding failed", false);
     } finally {
@@ -159,9 +159,9 @@ export default function CampaignsPage() {
     if (!publicKey) return showToast("Connect your Stellar wallet first", false);
     setIsTopUp(true);
     try {
-      await topUpCampaign(topUpId, topUpAmount);
+      await apiClient.topUpCampaign(topUpId, parseFloat(topUpAmount), "");
       showToast("Campaign topped up!", true);
-      setTopUpModal(null);
+      setTopUpId(null); setTopUpAmount("");
     } catch (err: unknown) {
       showToast(err instanceof Error ? err.message : "Top-up failed", false);
     } finally {
@@ -918,18 +918,18 @@ export default function CampaignsPage() {
                   )}
                 </div>
               )}
-              {detailCampaign.solanaTxHash && (
+              {detailCampaign.txHash && (
                 <div className="rounded-xl bg-white/3 border border-white/8 p-4">
                   <p className="text-xs font-semibold text-white/30 uppercase tracking-wider mb-2">
                     On-chain Tx
                   </p>
                   <a
-                    href={`https://explorer.solana.com/tx/${detailCampaign.solanaTxHash}?cluster=devnet`}
+                    href={`https://stellar.expert/explorer/testnet/tx/${detailCampaign.txHash}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="font-mono text-xs text-[#a855f7] hover:text-[#c084fc] break-all transition-colors"
                   >
-                    {detailCampaign.solanaTxHash}
+                    {detailCampaign.txHash}
                   </a>
                 </div>
               )}

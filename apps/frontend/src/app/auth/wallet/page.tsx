@@ -5,17 +5,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 
-/* ── Freighter window type ─────────────────────────────────────────────────── */
-declare global {
-  interface Window {
-    freighter?: {
-      isConnected: () => Promise<{ isConnected: boolean }>;
-      getPublicKey: () => Promise<string>;
-      signMessage: (opts: { message: string; networkPassphrase?: string }) => Promise<{ signedMessage: string }>;
-    };
-  }
-}
-
 /* ── Icons ─────────────────────────────────────────────────────────────────── */
 function FreighterIcon() {
   return (

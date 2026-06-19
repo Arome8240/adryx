@@ -1,8 +1,7 @@
 "use client";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { useWallet, useConnection } from "@solana/wallet-adapter-react";
-import { PublicKey, Transaction } from "@solana/web3.js";
+import { useStellarWallet } from "@/components/providers/WalletProvider";
 import {
   DollarCircle,
   TrendUp,
@@ -19,22 +18,13 @@ import {
 } from "@/hooks/usePublisher";
 import { apiClient } from "@/lib/api-client";
 import {
-  TOKEN_MINTS,
   TOKEN_COLORS,
-  toRaw,
-  getAssociatedTokenAddress,
-  createTransferInstruction,
   formatToken,
   type StablecoinSymbol,
 } from "@/lib/tokens";
 
-// Escrow/treasury wallet that holds publisher earnings (would be a PDA in production)
-// For devnet testing this is the backend wallet from /solana/info
-const TREASURY_PLACEHOLDER = "11111111111111111111111111111111"; // system program as placeholder
-
 export default function EarningsPage() {
-  const { publicKey, sendTransaction } = useWallet();
-  const { connection } = useConnection();
+  const { address: publicKey } = useStellarWallet();
   const { dashboard, isLoading: dashLoading } = usePublisherDashboard();
   const { earningsChart, isLoading: chartLoading } = usePublisherEarnings(30);
   const { earnings: breakdown } = usePublisherEarningsBreakdown();
@@ -49,68 +39,13 @@ export default function EarningsPage() {
   }
 
   async function handleClaim() {
-    if (!publicKey) return showToast("Connect your wallet first", false);
+    if (!publicKey) return showToast("Connect your Stellar wallet first", false);
     setClaiming(true);
     try {
-      // Fetch treasury/escrow wallet from backend
-      const solanaInfo = await apiClient.getSolanaInfo();
-      const treasuryPubkey = new PublicKey(solanaInfo.treasuryPda);
-      const mint = TOKEN_MINTS[selectedToken];
-
-      // Build SPL token transfer: treasury → publisher wallet
-      const treasuryAta = await getAssociatedTokenAddress(
-        mint,
-        treasuryPubkey,
-        true,
-      );
-      const publisherAta = await getAssociatedTokenAddress(mint, publicKey);
-
-      const totalEarnings = parseFloat(dashboard?.totalEarnings ?? "0");
-      const rawAmount = toRaw(totalEarnings);
-
-      const transferIx = createTransferInstruction(
-        treasuryAta,
-        publisherAta,
-        treasuryPubkey, // authority is the treasury PDA — in production signed by the program
-        rawAmount,
-      );
-
-      const tx = new Transaction().add(transferIx);
-      const { blockhash } = await connection.getLatestBlockhash();
-      tx.recentBlockhash = blockhash;
-      tx.feePayer = publicKey;
-
-      showToast("Approve the transaction in your wallet…", true);
-      const signature = await sendTransaction(tx, connection);
-      await connection.confirmTransaction(signature, "confirmed");
-
-      // Record the claim on the backend
-      await apiClient.claimEarnings(
-        publicKey.toString(),
-        selectedToken,
-        signature,
-      );
-      showToast(
-        `Claimed $${formatToken(totalEarnings)} ${selectedToken}! Tx: ${signature.slice(0, 12)}…`,
-      );
-    } catch (e: any) {
-      // In dev the treasury PDA won't have a token account — fall back to simulated claim
-      if (e.message?.includes("User rejected")) {
-        showToast("Transaction cancelled", false);
-      } else {
-        // Simulated claim for dev environment
-        try {
-          const result = await apiClient.claimEarnings(
-            publicKey.toString(),
-            selectedToken,
-          );
-          showToast(
-            `Claimed (simulated) ${selectedToken}! Ref: ${result.signature.slice(0, 16)}…`,
-          );
-        } catch (err: any) {
-          showToast(err.message, false);
-        }
-      }
+      await apiClient.claimEarnings(publicKey, "USDC");
+      showToast("Earnings claimed successfully!", true);
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : "Claim failed", false);
     } finally {
       setClaiming(false);
     }

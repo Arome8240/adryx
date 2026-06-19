@@ -1,8 +1,7 @@
 "use client";
 import { useEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { useWallet, useConnection } from "@solana/wallet-adapter-react";
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { useStellarWallet } from "@/components/providers/WalletProvider";
 import {
   Wallet,
   ArrowCircleUp,
@@ -19,7 +18,8 @@ import Toast from "@/components/dashboard/Toast";
 import type { ToastType } from "@/components/dashboard/Toast";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import { useAdvertiserDashboard } from "@/hooks/useAnalytics";
-import { getUsdcBalance, formatUsdc } from "@/lib/usdc";
+import { getUsdcBalance, getXlmBalance, formatUsdc } from "@/lib/tokens";
+import { txExplorerUrl } from "@/lib/stellar";
 
 const AUTO_RELOAD_KEY = "adryx_auto_reload_threshold";
 
@@ -28,13 +28,12 @@ function truncateTx(sig: string) {
 }
 
 export default function WalletPage() {
-  const { publicKey, connected } = useWallet();
-  const { connection } = useConnection();
+  const { address: publicKey, connected } = useStellarWallet();
   const { campaigns, isLoading: campaignsLoading } = useCampaigns();
   const { dashboard } = useAdvertiserDashboard();
 
   const [usdcBalance, setUsdcBalance] = useState<number | null>(null);
-  const [solBalance, setSolBalance] = useState<number | null>(null);
+  const [xlmBalance, setXlmBalance] = useState<number | null>(null);
   const [balanceLoading, setBalanceLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [toast, setToast] = useState<{
@@ -52,28 +51,22 @@ export default function WalletPage() {
   const [showReloadSettings, setShowReloadSettings] = useState(false);
   const [reloadInput, setReloadInput] = useState("");
 
-  // Fetch USDC + SOL balances
+  // Fetch USDC + XLM balances via Stellar Horizon
   useEffect(() => {
-    if (!publicKey || !connection) {
+    if (!publicKey) {
       setUsdcBalance(null);
-      setSolBalance(null);
+      setXlmBalance(null);
       return;
     }
     setBalanceLoading(true);
-    Promise.all([
-      getUsdcBalance(connection, publicKey),
-      connection
-        .getBalance(publicKey)
-        .then((l) => l / LAMPORTS_PER_SOL)
-        .catch(() => null),
-    ])
-      .then(([usdc, sol]) => {
+    Promise.all([getUsdcBalance(publicKey), getXlmBalance(publicKey)])
+      .then(([usdc, xlm]) => {
         setUsdcBalance(usdc);
-        setSolBalance(sol);
+        setXlmBalance(xlm);
       })
       .catch(() => {})
       .finally(() => setBalanceLoading(false));
-  }, [publicKey, connection]);
+  }, [publicKey]);
 
   // T22 — Load auto-reload threshold
   useEffect(() => {
@@ -100,20 +93,20 @@ export default function WalletPage() {
 
   function handleCopyAddress() {
     if (!publicKey) return;
-    navigator.clipboard.writeText(publicKey.toString());
+    navigator.clipboard.writeText(publicKey);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   }
 
   const allTxRows = campaigns
-    .filter((c) => c.solanaTxHash)
+    .filter((c) => c.txHash ?? (c as any).solanaTxHash)
     .map((c) => ({
       id: c._id,
       description: `Funded "${c.name}"`,
       campaignName: c.name,
       amount: c.budget,
       status: c.status,
-      txHash: c.solanaTxHash as string,
+      txHash: (c.txHash ?? (c as any).solanaTxHash) as string,
       date: c.updatedAt ?? c.createdAt,
     }))
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -173,9 +166,9 @@ export default function WalletPage() {
                       ${formatUsdc(usdcBalance)}{" "}
                       <span className="text-lg text-white/50">USDC</span>
                     </p>
-                    {solBalance !== null && (
+                    {xlmBalance !== null && (
                       <p className="text-xs text-white/30 mt-1">
-                        {solBalance.toFixed(4)} SOL for gas
+                        {xlmBalance.toFixed(4)} XLM for fees
                       </p>
                     )}
                   </>
@@ -195,7 +188,7 @@ export default function WalletPage() {
               className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/8 border border-white/8 transition-colors group"
             >
               <span className="text-xs font-mono text-white/40 group-hover:text-white/60 transition-colors">
-                {publicKey.toString()}
+                {publicKey}
               </span>
               {copied ? (
                 <TickCircle size={14} color="#4ade80" />
@@ -449,10 +442,10 @@ export default function WalletPage() {
                     </td>
                     <td className="px-5 py-3.5">
                       <a
-                        href={`https://explorer.solana.com/tx/${tx.txHash}?cluster=devnet`}
+                        href={txExplorerUrl(tx.txHash)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 font-mono text-xs text-[#a855f7] bg-[#a855f7]/10 hover:bg-[#a855f7]/20 px-2 py-1 rounded-lg transition-colors"
+                        className="inline-flex items-center gap-1.5 font-mono text-xs text-[#EBFF45] bg-[#EBFF45]/10 hover:bg-[#EBFF45]/20 px-2 py-1 rounded-lg transition-colors"
                       >
                         {truncateTx(tx.txHash)}
                         <Link21 size={11} color="currentColor" />
