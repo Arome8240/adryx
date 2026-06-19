@@ -1,98 +1,133 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
+type Section = {
+  title: string;
+  content?: string;
+  list?: string[];
+  note?: string;
+  contactEmail?: string;
+};
+
+const sections: Section[] = [
+  {
+    title: "1. Acceptance of Terms",
+    content:
+      "By accessing and using Adryx, you accept and agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our platform.",
+  },
+  {
+    title: "2. Description of Service",
+    content:
+      "Adryx is a decentralised advertising platform that connects advertisers with publishers using blockchain technology. We provide tools for creating campaigns, displaying ads, and processing payments via Soroban smart contracts on the Stellar network.",
+  },
+  {
+    title: "3. User Responsibilities",
+    content: "As a user, you agree to:",
+    list: [
+      "Provide accurate and complete information",
+      "Maintain the security of your wallet and credentials",
+      "Comply with all applicable laws and regulations",
+      "Not engage in fraudulent or malicious activities",
+      "Not create misleading or inappropriate ad content",
+    ],
+  },
+  {
+    title: "4. Fees and Payments",
+    content: "Adryx charges platform fees on transactions:",
+    list: [
+      "Advertisers: 5% fee on ad spend",
+      "Publishers: 10% fee on earnings",
+    ],
+    note: "All payments are processed through Soroban smart contracts on Stellar. Transaction fees (network fees) are paid by the transaction initiator.",
+  },
+  {
+    title: "5. Content Guidelines",
+    content: "Prohibited content includes:",
+    list: [
+      "Illegal products or services",
+      "Adult or explicit content",
+      "Misleading or fraudulent claims",
+      "Hate speech or discriminatory content",
+      "Malware or phishing attempts",
+    ],
+  },
+  {
+    title: "6. Limitation of Liability",
+    content:
+      "Adryx is provided \"as is\" without warranties. We are not liable for any indirect, incidental, or consequential damages arising from your use of the platform. Smart contract interactions are irreversible.",
+  },
+  {
+    title: "7. Termination",
+    content:
+      "We reserve the right to suspend or terminate accounts that violate these terms or engage in fraudulent activities.",
+  },
+  {
+    title: "8. Changes to Terms",
+    content:
+      "We may update these terms from time to time. Continued use of the platform after changes constitutes acceptance of the new terms.",
+  },
+  {
+    title: "9. Contact",
+    contactEmail: "legal@adryx.xyz",
+  },
+];
+
 export default function TermsPage() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen pt-24 pb-16">
-        <div className="max-w-4xl mx-auto px-6">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">Terms of Service</h1>
-          <p className="text-white/60 mb-12">Last updated: {new Date().toLocaleDateString()}</p>
+      <main className="min-h-screen bg-[#08080a] pt-24 pb-20">
+        <div className="max-w-3xl mx-auto px-6">
+          {/* Hero */}
+          <div className="mb-12">
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-3">
+              Terms of Service
+            </h1>
+            <p className="text-sm text-white/35">Last updated: June 19, 2025</p>
+          </div>
 
-          <div className="space-y-8 text-white/70 leading-relaxed">
-            <section>
-              <h2 className="text-2xl font-bold mb-4 text-white">1. Acceptance of Terms</h2>
-              <p>
-                By accessing and using Adryx, you accept and agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our platform.
-              </p>
-            </section>
+          {/* Sections */}
+          <div className="space-y-10">
+            {sections.map((sec) => (
+              <section
+                key={sec.title}
+                className="pl-5"
+                style={{ borderLeft: "2px solid rgba(235,255,69,.18)" }}
+              >
+                <h2 className="text-xl font-bold text-white mb-3">{sec.title}</h2>
 
-            <section>
-              <h2 className="text-2xl font-bold mb-4 text-white">2. Description of Service</h2>
-              <p>
-                Adryx is a decentralized advertising platform that connects advertisers with publishers using blockchain technology. We provide tools for creating campaigns, displaying ads, and processing payments via smart contracts.
-              </p>
-            </section>
+                {sec.content && (
+                  <p className="text-white/60 leading-relaxed mb-3">{sec.content}</p>
+                )}
 
-            <section>
-              <h2 className="text-2xl font-bold mb-4 text-white">3. User Responsibilities</h2>
-              <p className="mb-4">As a user, you agree to:</p>
-              <ul className="space-y-2 ml-6">
-                <li>• Provide accurate and complete information</li>
-                <li>• Maintain the security of your wallet and credentials</li>
-                <li>• Comply with all applicable laws and regulations</li>
-                <li>• Not engage in fraudulent or malicious activities</li>
-                <li>• Not create misleading or inappropriate ad content</li>
-              </ul>
-            </section>
+                {sec.list && (
+                  <ul className="space-y-2 mb-3">
+                    {sec.list.map((item) => (
+                      <li key={item} className="flex items-start gap-2 text-white/55 text-sm">
+                        <span
+                          className="mt-1.5 w-1 h-1 rounded-full shrink-0"
+                          style={{ background: "#EBFF45" }}
+                        />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                )}
 
-            <section>
-              <h2 className="text-2xl font-bold mb-4 text-white">4. Fees and Payments</h2>
-              <p className="mb-4">
-                Adryx charges platform fees on transactions:
-              </p>
-              <ul className="space-y-2 ml-6">
-                <li>• Advertisers: 5% fee on ad spend</li>
-                <li>• Publishers: 10% fee on earnings</li>
-              </ul>
-              <p className="mt-4">
-                All payments are processed through Solana smart contracts. Transaction fees (gas) are paid by the transaction initiator.
-              </p>
-            </section>
+                {sec.note && (
+                  <p className="text-white/50 text-sm leading-relaxed">{sec.note}</p>
+                )}
 
-            <section>
-              <h2 className="text-2xl font-bold mb-4 text-white">5. Content Guidelines</h2>
-              <p className="mb-4">Prohibited content includes:</p>
-              <ul className="space-y-2 ml-6">
-                <li>• Illegal products or services</li>
-                <li>• Adult or explicit content</li>
-                <li>• Misleading or fraudulent claims</li>
-                <li>• Hate speech or discriminatory content</li>
-                <li>• Malware or phishing attempts</li>
-              </ul>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-bold mb-4 text-white">6. Limitation of Liability</h2>
-              <p>
-                Adryx is provided "as is" without warranties. We are not liable for any indirect, incidental, or consequential damages arising from your use of the platform. Smart contract interactions are irreversible.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-bold mb-4 text-white">7. Termination</h2>
-              <p>
-                We reserve the right to suspend or terminate accounts that violate these terms or engage in fraudulent activities.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-bold mb-4 text-white">8. Changes to Terms</h2>
-              <p>
-                We may update these terms from time to time. Continued use of the platform after changes constitutes acceptance of the new terms.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-bold mb-4 text-white">9. Contact</h2>
-              <p>
-                For questions about these Terms, contact us at{" "}
-                <a href="mailto:legal@adryx.io" className="text-orange-500 hover:text-orange-400">
-                  legal@adryx.io
-                </a>
-              </p>
-            </section>
+                {sec.contactEmail && (
+                  <p className="text-white/60 leading-relaxed">
+                    For questions about these Terms, contact us at{" "}
+                    <a href={`mailto:${sec.contactEmail}`} className="c-link">
+                      {sec.contactEmail}
+                    </a>
+                  </p>
+                )}
+              </section>
+            ))}
           </div>
         </div>
       </main>

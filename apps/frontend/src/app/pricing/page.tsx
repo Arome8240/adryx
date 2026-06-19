@@ -1,96 +1,148 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { TickCircle } from 'iconsax-react';
+import Link from "next/link";
+import { TickCircle } from "iconsax-react";
+
+const tiers = [
+  {
+    name: "Advertisers",
+    price: "5%",
+    unit: "of ad spend",
+    desc: "Launch and manage campaigns with full transparency.",
+    featured: false,
+    items: [
+      "Unlimited campaigns",
+      "Real-time analytics",
+      "On-chain escrow (Soroban)",
+      "Automated USDC payouts",
+    ],
+    cta: { label: "Start advertising", href: "/signup" },
+  },
+  {
+    name: "Publishers",
+    price: "10%",
+    unit: "of earnings",
+    desc: "Monetise your audience and get paid instantly.",
+    featured: true,
+    items: [
+      "Unlimited sites & apps",
+      "Instant USDC payouts",
+      "Multiple ad formats",
+      "Detailed fill-rate reporting",
+    ],
+    cta: { label: "Become a publisher", href: "/signup" },
+  },
+  {
+    name: "Enterprise",
+    price: "Custom",
+    unit: "volume pricing",
+    desc: "High-volume or custom infrastructure needs.",
+    featured: false,
+    items: [
+      "Volume discounts",
+      "Dedicated support",
+      "Custom integrations",
+      "SLA guarantees",
+    ],
+    cta: { label: "Talk to us", href: "mailto:hello@adryx.xyz" },
+  },
+];
 
 export default function PricingPage() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen pt-24 pb-16">
-        <div className="max-w-7xl mx-auto px-6">
+      <main className="min-h-screen bg-[#08080a] pt-24 pb-20">
+        <div className="max-w-6xl mx-auto px-6">
+          {/* Hero */}
           <div className="text-center mb-16">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">Simple, Transparent Pricing</h1>
-            <p className="text-xl text-white/60">
-              No hidden fees. Pay only for what you use.
+            <span
+              className="c-eyebrow mb-5"
+              style={{ color: "#EBFF45", borderColor: "rgba(235,255,69,.2)", background: "rgba(235,255,69,.08)" }}
+            >
+              <span
+                className="c-dot"
+                style={{ "--dot-color": "#EBFF45" } as React.CSSProperties}
+              />
+              No setup fees. Ever.
+            </span>
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight mt-4 mb-4">
+              Simple, transparent pricing
+            </h1>
+            <p className="text-lg text-white/50 max-w-lg mx-auto">
+              Pay only on successful delivery. No subscriptions, no minimums, no
+              hidden charges.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            <div className="glass p-8 rounded-2xl border border-white/10">
-              <h3 className="text-2xl font-bold mb-2">Advertisers</h3>
-              <div className="text-4xl font-bold mb-4">5%</div>
-              <p className="text-white/60 mb-6">Platform fee on ad spend</p>
-              <ul className="space-y-3 text-sm text-white/60">
-                <li className="flex items-center gap-2">
-                  <TickCircle size={16} color="#4ade80" variant="Bold" />
-                  Unlimited campaigns
-                </li>
-                <li className="flex items-center gap-2">
-                  <TickCircle size={16} color="#4ade80" variant="Bold" />
-                  Real-time analytics
-                </li>
-                <li className="flex items-center gap-2">
-                  <TickCircle size={16} color="#4ade80" variant="Bold" />
-                  On-chain escrow
-                </li>
-                <li className="flex items-center gap-2">
-                  <TickCircle size={16} color="#4ade80" variant="Bold" />
-                  Automated payments
-                </li>
-              </ul>
-            </div>
+          {/* Tier cards */}
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {tiers.map((tier) => (
+              <div
+                key={tier.name}
+                className="relative flex flex-col rounded-2xl p-8"
+                style={{
+                  background: tier.featured
+                    ? "rgba(235,255,69,.04)"
+                    : "rgba(255,255,255,.025)",
+                  border: tier.featured
+                    ? "1px solid rgba(235,255,69,.30)"
+                    : "1px solid rgba(255,255,255,.08)",
+                }}
+              >
+                {tier.featured && (
+                  <span
+                    className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-[11px] font-bold uppercase tracking-widest"
+                    style={{ background: "#EBFF45", color: "#08080a" }}
+                  >
+                    Most Popular
+                  </span>
+                )}
 
-            <div className="glass p-8 rounded-2xl border border-orange-500/50 relative">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-orange-500 rounded-full text-xs font-semibold">
-                POPULAR
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-white/80 mb-3">
+                    {tier.name}
+                  </h3>
+                  <div className="flex items-end gap-1 mb-1">
+                    <span
+                      className="text-5xl font-black tracking-tighter"
+                      style={{ color: tier.featured ? "#EBFF45" : "#f5f5f5" }}
+                    >
+                      {tier.price}
+                    </span>
+                  </div>
+                  <p className="text-sm text-white/40">{tier.unit}</p>
+                  <p className="text-sm text-white/50 mt-3">{tier.desc}</p>
+                </div>
+
+                <ul className="space-y-3 flex-1 mb-8">
+                  {tier.items.map((item) => (
+                    <li key={item} className="flex items-center gap-2.5 text-sm text-white/60">
+                      <TickCircle size={16} color="#EBFF45" variant="Bold" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+
+                <Link
+                  href={tier.cta.href}
+                  className={
+                    tier.featured
+                      ? "c-btn-y text-center"
+                      : "flex items-center justify-center h-11 rounded-xl text-sm font-semibold text-white/70 hover:text-white transition-colors border border-white/10 hover:border-white/20 hover:bg-white/5"
+                  }
+                >
+                  {tier.cta.label}
+                </Link>
               </div>
-              <h3 className="text-2xl font-bold mb-2">Publishers</h3>
-              <div className="text-4xl font-bold mb-4">10%</div>
-              <p className="text-white/60 mb-6">Platform fee on earnings</p>
-              <ul className="space-y-3 text-sm text-white/60">
-                <li className="flex items-center gap-2">
-                  <TickCircle size={16} color="#4ade80" variant="Bold" />
-                  Unlimited sites
-                </li>
-                <li className="flex items-center gap-2">
-                  <TickCircle size={16} color="#4ade80" variant="Bold" />
-                  Instant payouts
-                </li>
-                <li className="flex items-center gap-2">
-                  <TickCircle size={16} color="#4ade80" variant="Bold" />
-                  Multiple ad formats
-                </li>
-                <li className="flex items-center gap-2">
-                  <TickCircle size={16} color="#4ade80" variant="Bold" />
-                  Detailed reporting
-                </li>
-              </ul>
-            </div>
-
-            <div className="glass p-8 rounded-2xl border border-white/10">
-              <h3 className="text-2xl font-bold mb-2">Enterprise</h3>
-              <div className="text-4xl font-bold mb-4">Custom</div>
-              <p className="text-white/60 mb-6">Tailored solutions</p>
-              <ul className="space-y-3 text-sm text-white/60">
-                <li className="flex items-center gap-2">
-                  <TickCircle size={16} color="#4ade80" variant="Bold" />
-                  Volume discounts
-                </li>
-                <li className="flex items-center gap-2">
-                  <TickCircle size={16} color="#4ade80" variant="Bold" />
-                  Dedicated support
-                </li>
-                <li className="flex items-center gap-2">
-                  <TickCircle size={16} color="#4ade80" variant="Bold" />
-                  Custom integrations
-                </li>
-                <li className="flex items-center gap-2">
-                  <TickCircle size={16} color="#4ade80" variant="Bold" />
-                  SLA guarantees
-                </li>
-              </ul>
-            </div>
+            ))}
           </div>
+
+          {/* Bottom note */}
+          <p className="text-center text-sm text-white/30 mt-12">
+            All fees are deducted automatically by the Soroban smart contract. No
+            invoices, no billing cycles.
+          </p>
         </div>
       </main>
       <Footer />

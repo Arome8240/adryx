@@ -531,3 +531,7 @@ button:focus-visible, a:focus-visible, .input:focus-visible { outline: 2px solid
 }
 .c-orb-acc  { background: rgba(235,255,69,.12); }
 .c-orb-blue { background: rgba(59,130,246,.08); }
+
+/* ─── Inline yellow link ────────────────────────────────────────── */
+.c-link { color: #EBFF45; transition: color .12s; }
+.c-link:hover { color: #d4e63c; }
