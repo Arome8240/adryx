@@ -399,7 +399,7 @@ export default function CampaignsPage() {
         </div>
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 rounded-2xl border border-dashed border-white/10">
-          <Chart size={28} color="#f7931a" />
+          <Chart size={28} color="#EBFF45" />
           <p className="text-white font-semibold mt-4 mb-1">
             No campaigns found
           </p>
