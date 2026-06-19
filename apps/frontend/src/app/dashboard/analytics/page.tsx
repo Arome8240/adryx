@@ -9,10 +9,10 @@ import {
   MouseCircle,
   DollarCircle,
   ChartCircle,
-  ArrowDown2,
   DocumentDownload,
   Flash,
 } from "iconsax-react";
+import { Select } from "@/components/ui/select";
 import PerformanceChart from "@/components/dashboard/PerformanceChart";
 import MetricCard from "@/components/dashboard/MetricCard";
 import {
@@ -185,32 +185,20 @@ function AnalyticsContent() {
 
         <div className="flex items-center gap-2 flex-wrap">
           {/* T15 — Campaign selector */}
-          <div className="relative">
-            <select
-              value={selectedId}
-              onChange={(e) => {
-                setSelectedId(e.target.value);
-                if (e.target.value)
-                  router.replace(
-                    `/dashboard/analytics?campaign=${e.target.value}`,
-                  );
-                else router.replace("/dashboard/analytics");
-              }}
-              className="appearance-none pl-3 pr-8 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white/70 outline-none cursor-pointer max-w-[200px] truncate"
-            >
-              <option value="">All campaigns</option>
-              {campaigns.map((c) => (
-                <option key={c._id} value={c._id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-            <ArrowDown2
-              size={12}
-              color="#ffffff40"
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
-            />
-          </div>
+          <Select
+            value={selectedId}
+            onChange={(v) => {
+              setSelectedId(v);
+              if (v) router.replace(`/dashboard/analytics?campaign=${v}`);
+              else router.replace("/dashboard/analytics");
+            }}
+            placeholder="All campaigns"
+            options={[
+              { value: "", label: "All campaigns" },
+              ...campaigns.map((c) => ({ value: c._id, label: c.name })),
+            ]}
+            className="w-48"
+          />
 
           {/* Date range */}
           <div className="flex items-center gap-1 glass rounded-xl p-1 border border-white/8">
@@ -271,27 +259,18 @@ function AnalyticsContent() {
           <span className="text-xs text-[#a855f7] font-semibold shrink-0">
             Compare with:
           </span>
-          <div className="relative flex-1 max-w-xs">
-            <select
-              value={compareId}
-              onChange={(e) => setCompareId(e.target.value)}
-              className="w-full appearance-none pl-3 pr-8 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white/70 outline-none cursor-pointer"
-            >
-              <option value="">Select a campaign…</option>
-              {campaigns
+          <Select
+            value={compareId}
+            onChange={setCompareId}
+            placeholder="Select a campaign…"
+            options={[
+              { value: "", label: "Select a campaign…" },
+              ...campaigns
                 .filter((c) => c._id !== selectedId)
-                .map((c) => (
-                  <option key={c._id} value={c._id}>
-                    {c.name}
-                  </option>
-                ))}
-            </select>
-            <ArrowDown2
-              size={12}
-              color="#ffffff40"
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
-            />
-          </div>
+                .map((c) => ({ value: c._id, label: c.name })),
+            ]}
+            className="flex-1 max-w-xs"
+          />
           {compareId && compareChartData.length > 0 && (
             <div className="flex items-center gap-3 text-xs shrink-0">
               <span className="flex items-center gap-1.5">

@@ -19,8 +19,8 @@ import {
   Edit2,
   Copy,
   SearchNormal1,
-  ArrowDown2,
 } from "iconsax-react";
+import { Select } from "@/components/ui/select";
 
 const STATUS_STYLES: Record<string, { label: string; classes: string }> = {
   active: {
@@ -326,23 +326,17 @@ export default function CampaignsPage() {
         </div>
 
         {/* Sort */}
-        <div className="relative">
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="appearance-none pl-3 pr-8 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white/60 outline-none cursor-pointer"
-          >
-            <option value="newest">Newest</option>
-            <option value="oldest">Oldest</option>
-            <option value="budget-high">Budget ↓</option>
-            <option value="budget-low">Budget ↑</option>
-          </select>
-          <ArrowDown2
-            size={12}
-            color="#ffffff40"
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
-          />
-        </div>
+        <Select
+          value={sortBy}
+          onChange={setSortBy}
+          options={[
+            { value: "newest", label: "Newest" },
+            { value: "oldest", label: "Oldest" },
+            { value: "budget-high", label: "Budget ↓" },
+            { value: "budget-low", label: "Budget ↑" },
+          ]}
+          className="w-36"
+        />
       </div>
 
       {/* Bulk action bar */}

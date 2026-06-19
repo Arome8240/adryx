@@ -15,6 +15,7 @@ import {
   Copy,
 } from "iconsax-react";
 import { usePlacements, useSites } from "@/hooks/usePublisher";
+import { Select } from "@/components/ui/select";
 
 const AD_FORMATS = ["banner", "native", "video", "interstitial"];
 const inputCls =
@@ -294,21 +295,15 @@ export default function PlacementsPage() {
                 <label className="block text-xs font-semibold text-white/40 uppercase tracking-wider mb-1.5">
                   Site
                 </label>
-                <select
+                <Select
                   value={form.siteId}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, siteId: e.target.value }))
-                  }
-                  required
-                  className={`${inputCls} cursor-pointer`}
-                >
-                  <option value="">Select a site…</option>
-                  {sites.map((s) => (
-                    <option key={s._id} value={s._id}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(v) => setForm((p) => ({ ...p, siteId: v }))}
+                  placeholder="Select a site…"
+                  options={[
+                    { value: "", label: "Select a site…" },
+                    ...sites.map((s) => ({ value: s._id, label: s.name })),
+                  ]}
+                />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-white/40 uppercase tracking-wider mb-1.5">

@@ -5,6 +5,7 @@ import { useStellarWallet } from "@/components/providers/WalletProvider";
 import { useAuth } from "@/hooks/useAuth";
 import { apiClient } from "@/lib/api-client";
 import WalletButton from "@/components/dashboard/WalletButton";
+import { Select } from "@/components/ui/select";
 import {
   User,
   Lock,
@@ -217,15 +218,11 @@ export default function SettingsPage() {
                     <Global size={12} color="#ffffff40" /> Timezone
                   </span>
                 </FieldLabel>
-                <select
+                <Select
                   value={profile.timezone}
-                  onChange={(e) => setProfile((p) => ({ ...p, timezone: e.target.value }))}
-                  className={`${inputCls} cursor-pointer`}
-                >
-                  {TIMEZONES.map((tz) => (
-                    <option key={tz} value={tz}>{tz}</option>
-                  ))}
-                </select>
+                  onChange={(v) => setProfile((p) => ({ ...p, timezone: v }))}
+                  options={TIMEZONES.map((tz) => ({ value: tz, label: tz }))}
+                />
               </div>
               <div className="flex justify-end pt-1">
                 <button
