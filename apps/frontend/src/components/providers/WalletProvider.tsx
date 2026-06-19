@@ -42,9 +42,6 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
   const connect = useCallback(async (id: WalletId): Promise<string> => {
     const adapter = getAdapter(id);
-    if (!adapter.isAvailable()) {
-      throw new Error(`${adapter.name} is not installed. Visit ${adapter.website} to install it.`);
-    }
     setConnecting(true);
     try {
       const pubKey = await adapter.getPublicKey();
@@ -52,6 +49,14 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       setWalletId(id);
       localStorage.setItem(STORAGE_KEY, id);
       return pubKey;
+    } catch (err) {
+      // Re-throw with a clearer message if the extension simply wasn't found
+      if (err instanceof Error && err.message.includes('is not installed')) {
+        throw new Error(
+          `${adapter.name} extension not found. Make sure it is installed and this site has permission to access it.`
+        );
+      }
+      throw err;
     } finally {
       setConnecting(false);
     }
