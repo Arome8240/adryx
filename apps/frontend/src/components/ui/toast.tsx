@@ -222,7 +222,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             </div>
           ))}
         </AnimatePresence>
-      </div>
+      </div>}
     </ToastCtx.Provider>
   );
 }
