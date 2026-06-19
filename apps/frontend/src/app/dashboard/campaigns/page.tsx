@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useToast } from "@/components/ui/toast";
 import { useRouter } from "next/navigation";
 import { useStellarWallet } from "@/components/providers/WalletProvider";
 import { useCampaigns } from "@/hooks/useCampaigns";
@@ -98,12 +99,7 @@ export default function CampaignsPage() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [isBulking, setIsBulking] = useState(false);
 
-  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
-
-  function showToast(msg: string, ok = true) {
-    setToast({ msg, ok });
-    setTimeout(() => setToast(null), 4000);
-  }
+  const toast = useToast();
 
   // Filter + sort
   const filtered = useMemo(() => {
@@ -137,15 +133,15 @@ export default function CampaignsPage() {
   async function handleFund() {
     const amount = parseFloat(fundingAmount);
     if (!fundingId || isNaN(amount) || amount <= 0)
-      return showToast("Enter a valid amount", false);
-    if (!publicKey) return showToast("Connect your Stellar wallet first", false);
+      return toast("Enter a valid amount", 'error');
+    if (!publicKey) return toast("Connect your Stellar wallet first", 'error');
     setIsFunding(true);
     try {
       await fundCampaign(fundingId, publicKey, amount);
-      showToast("Campaign funded successfully!", true);
+      toast("Campaign funded successfully!", 'ok');
       setFundingId(null); setFundingAmount("");
     } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : "Funding failed", false);
+      toast(err instanceof Error ? err.message : "Funding failed", 'error');
     } finally {
       setIsFunding(false);
     }
@@ -155,15 +151,15 @@ export default function CampaignsPage() {
   async function handleTopUp() {
     const amount = parseFloat(topUpAmount);
     if (!topUpId || isNaN(amount) || amount <= 0)
-      return showToast("Enter a valid amount", false);
-    if (!publicKey) return showToast("Connect your Stellar wallet first", false);
+      return toast("Enter a valid amount", 'error');
+    if (!publicKey) return toast("Connect your Stellar wallet first", 'error');
     setIsTopUp(true);
     try {
       await apiClient.topUpCampaign(topUpId, parseFloat(topUpAmount), "");
-      showToast("Campaign topped up!", true);
+      toast("Campaign topped up!", 'ok');
       setTopUpId(null); setTopUpAmount("");
     } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : "Top-up failed", false);
+      toast(err instanceof Error ? err.message : "Top-up failed", 'error');
     } finally {
       setIsTopUp(false);
     }
@@ -188,10 +184,10 @@ export default function CampaignsPage() {
     setIsSaving(true);
     try {
       await updateCampaign(editingCampaign._id, editForm);
-      showToast("Campaign updated");
+      toast("Campaign updated");
       setEditingCampaign(null);
     } catch (e: any) {
-      showToast(e.message, false);
+      toast(e.message, 'error');
     } finally {
       setIsSaving(false);
     }
@@ -202,36 +198,36 @@ export default function CampaignsPage() {
     try {
       await apiClient.duplicateCampaign(id);
       await refetch();
-      showToast("Campaign duplicated");
+      toast("Campaign duplicated");
     } catch (e: any) {
-      showToast(e.message, false);
+      toast(e.message, 'error');
     }
   }
 
   async function handlePause(id: string) {
     try {
       await pauseCampaign(id);
-      showToast("Campaign paused");
+      toast("Campaign paused");
     } catch (e: any) {
-      showToast(e.message, false);
+      toast(e.message, 'error');
     }
   }
 
   async function handleResume(id: string) {
     try {
       await resumeCampaign(id);
-      showToast("Campaign resumed");
+      toast("Campaign resumed");
     } catch (e: any) {
-      showToast(e.message, false);
+      toast(e.message, 'error');
     }
   }
 
   async function handleDelete(id: string) {
     try {
       await deleteCampaign(id);
-      showToast("Campaign deleted");
+      toast("Campaign deleted");
     } catch (e: any) {
-      showToast(e.message, false);
+      toast(e.message, 'error');
     }
   }
 
@@ -259,9 +255,7 @@ export default function CampaignsPage() {
     await Promise.allSettled(active.map((c) => pauseCampaign(c._id)));
     setSelected(new Set());
     setIsBulking(false);
-    showToast(
-      `Paused ${active.length} campaign${active.length !== 1 ? "s" : ""}`,
-    );
+    toast(`Paused ${active.length} campaign${active.length !== 1 ? "s" : ""}`);
   }
 
   async function handleBulkDelete() {
@@ -272,31 +266,11 @@ export default function CampaignsPage() {
     await Promise.allSettled(drafts.map((c) => deleteCampaign(c._id)));
     setSelected(new Set());
     setIsBulking(false);
-    showToast(
-      `Deleted ${drafts.length} draft${drafts.length !== 1 ? "s" : ""}`,
-    );
+    toast(`Deleted ${drafts.length} draft${drafts.length !== 1 ? "s" : ""}`);
   }
 
   return (
     <div className="space-y-5">
-      {/* Toast */}
-      {toast && (
-        <div
-          className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl text-sm font-medium ${
-            toast.ok
-              ? "bg-emerald-400/10 border-emerald-400/20 text-emerald-400"
-              : "bg-[#f87171]/10 border-[#f87171]/20 text-[#f87171]"
-          }`}
-        >
-          {toast.ok ? (
-            <TrendUp size={16} color="currentColor" />
-          ) : (
-            <CloseCircle size={16} color="currentColor" />
-          )}
-          {toast.msg}
-        </div>
-      )}
-
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

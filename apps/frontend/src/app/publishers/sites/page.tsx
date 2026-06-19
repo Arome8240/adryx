@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useToast } from "@/components/ui/toast";
 import { motion } from "framer-motion";
 import {
   AddCircle,
@@ -19,7 +20,7 @@ export default function SitesPage() {
   const { sites, isLoading, createSite, deleteSite, verifySite } = useSites();
   const [showAddModal, setShowAddModal] = useState(false);
   const [verifyingSite, setVerifyingSite] = useState<any | null>(null);
-  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
+  const toast = useToast();
   const [isSaving, setIsSaving] = useState(false);
   const [form, setForm] = useState({
     name: "",
@@ -28,10 +29,6 @@ export default function SitesPage() {
     category: "",
   });
 
-  function showToast(msg: string, ok = true) {
-    setToast({ msg, ok });
-    setTimeout(() => setToast(null), 3500);
-  }
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -43,11 +40,11 @@ export default function SitesPage() {
         type: form.type,
         category: form.category || undefined,
       });
-      showToast("Site added successfully");
+      toast("Site added successfully");
       setShowAddModal(false);
       setForm({ name: "", url: "", type: "website", category: "" });
     } catch (err: any) {
-      showToast(err.message, false);
+      toast(err.message, 'error');
     } finally {
       setIsSaving(false);
     }
@@ -56,42 +53,24 @@ export default function SitesPage() {
   async function handleVerify(site: any) {
     try {
       await verifySite(site._id);
-      showToast("Site verified!");
+      toast("Site verified!");
       setVerifyingSite(null);
     } catch (err: any) {
-      showToast(err.message, false);
+      toast(err.message, 'error');
     }
   }
 
   async function handleDelete(id: string) {
     try {
       await deleteSite(id);
-      showToast("Site deleted");
+      toast("Site deleted");
     } catch (err: any) {
-      showToast(err.message, false);
+      toast(err.message, 'error');
     }
   }
 
   return (
     <div className="flex flex-col gap-6 max-w-7xl mx-auto">
-      {/* Toast */}
-      {toast && (
-        <div
-          className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl text-sm font-medium ${
-            toast.ok
-              ? "bg-emerald-400/10 border-emerald-400/20 text-emerald-400"
-              : "bg-[#f87171]/10 border-[#f87171]/20 text-[#f87171]"
-          }`}
-        >
-          {toast.ok ? (
-            <TickCircle size={16} color="currentColor" />
-          ) : (
-            <CloseCircle size={16} color="currentColor" />
-          )}
-          {toast.msg}
-        </div>
-      )}
-
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}

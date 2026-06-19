@@ -1,13 +1,12 @@
 "use client";
 import { useState } from "react";
+import { useToast } from "@/components/ui/toast";
 import { motion } from "framer-motion";
 import { useStellarWallet } from "@/components/providers/WalletProvider";
 import {
   DollarCircle,
   TrendUp,
   ArrowDown2,
-  TickCircle,
-  CloseCircle,
 } from "iconsax-react";
 import PerformanceChart from "@/components/dashboard/PerformanceChart";
 import WalletButton from "@/components/dashboard/WalletButton";
@@ -31,21 +30,17 @@ export default function EarningsPage() {
 
   const [selectedToken, setSelectedToken] = useState<StablecoinSymbol>("USDC");
   const [claiming, setClaiming] = useState(false);
-  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
+  const toast = useToast();
 
-  function showToast(msg: string, ok = true) {
-    setToast({ msg, ok });
-    setTimeout(() => setToast(null), 4000);
-  }
 
   async function handleClaim() {
-    if (!publicKey) return showToast("Connect your Stellar wallet first", false);
+    if (!publicKey) return toast("Connect your Stellar wallet first", 'error');
     setClaiming(true);
     try {
       await apiClient.claimEarnings(publicKey, "USDC");
-      showToast("Earnings claimed successfully!", true);
+      toast("Earnings claimed successfully!", 'ok');
     } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : "Claim failed", false);
+      toast(err instanceof Error ? err.message : "Claim failed", 'error');
     } finally {
       setClaiming(false);
     }
@@ -56,24 +51,6 @@ export default function EarningsPage() {
 
   return (
     <div className="flex flex-col gap-6 max-w-7xl mx-auto">
-      {/* Toast */}
-      {toast && (
-        <div
-          className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl text-sm font-medium ${
-            toast.ok
-              ? "bg-emerald-400/10 border-emerald-400/20 text-emerald-400"
-              : "bg-[#f87171]/10 border-[#f87171]/20 text-[#f87171]"
-          }`}
-        >
-          {toast.ok ? (
-            <TickCircle size={16} color="currentColor" />
-          ) : (
-            <CloseCircle size={16} color="currentColor" />
-          )}
-          {toast.msg}
-        </div>
-      )}
-
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}

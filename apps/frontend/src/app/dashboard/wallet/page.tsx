@@ -14,8 +14,7 @@ import {
   CloseCircle,
 } from "iconsax-react";
 import WalletButton from "@/components/dashboard/WalletButton";
-import Toast from "@/components/dashboard/Toast";
-import type { ToastType } from "@/components/dashboard/Toast";
+import { useToast } from "@/components/ui/toast";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import { useAdvertiserDashboard } from "@/hooks/useAnalytics";
 import { getUsdcBalance, getXlmBalance, formatUsdc } from "@/lib/tokens";
@@ -36,10 +35,7 @@ export default function WalletPage() {
   const [xlmBalance, setXlmBalance] = useState<number | null>(null);
   const [balanceLoading, setBalanceLoading] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [toast, setToast] = useState<{
-    message: string;
-    type: ToastType;
-  } | null>(null);
+  const toast = useToast();
 
   // T21 — Filter state
   const [filterCampaign, setFilterCampaign] = useState("");
@@ -83,11 +79,7 @@ export default function WalletPage() {
       setAutoReload(val);
       localStorage.setItem(AUTO_RELOAD_KEY, String(val));
       setShowReloadSettings(false);
-      setToast({
-        message:
-          val === 0 ? "Auto-reload disabled" : `Alert set at $${val} USDC`,
-        type: "success",
-      });
+      toast(val === 0 ? "Auto-reload disabled" : `Alert set at $${val} USDC`, 'ok');
     }
   }
 
@@ -459,13 +451,6 @@ export default function WalletPage() {
         )}
       </motion.div>
 
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
     </div>
   );
 }

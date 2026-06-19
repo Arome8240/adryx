@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useToast } from "@/components/ui/toast";
 import { useStellarWallet } from "@/components/providers/WalletProvider";
 import { useAuth } from "@/hooks/useAuth";
 import { apiClient } from "@/lib/api-client";
@@ -9,8 +10,6 @@ import {
   Lock,
   Notification,
   EmptyWallet,
-  TickCircle,
-  CloseCircle,
   Global,
 } from "iconsax-react";
 
@@ -59,7 +58,7 @@ export default function SettingsPage() {
   const { user, loadUser } = useAuth();
   const { address: publicKey } = useStellarWallet();
 
-  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
+  const toast = useToast();
 
   // Profile form
   const [profile, setProfile] = useState({
@@ -92,10 +91,6 @@ export default function SettingsPage() {
     if (saved) setBudgetThreshold(parseInt(saved));
   }, [user]);
 
-  function showToast(msg: string, ok = true) {
-    setToast({ msg, ok });
-    setTimeout(() => setToast(null), 3500);
-  }
 
   async function handleSaveProfile(e: React.FormEvent) {
     e.preventDefault();
@@ -107,9 +102,9 @@ export default function SettingsPage() {
         timezone: profile.timezone,
       });
       await loadUser();
-      showToast("Profile updated");
+      toast("Profile updated");
     } catch (err: any) {
-      showToast(err.message, false);
+      toast(err.message, 'error');
     } finally {
       setSavingProfile(false);
     }
@@ -118,16 +113,16 @@ export default function SettingsPage() {
   async function handleChangePassword(e: React.FormEvent) {
     e.preventDefault();
     if (passwords.next !== passwords.confirm)
-      return showToast("Passwords don't match", false);
+      return toast("Passwords don't match", 'error');
     if (passwords.next.length < 8)
-      return showToast("Password must be at least 8 characters", false);
+      return toast("Password must be at least 8 characters", 'error');
     setSavingPassword(true);
     try {
       await apiClient.changePassword(passwords.current, passwords.next);
       setPasswords({ current: "", next: "", confirm: "" });
-      showToast("Password changed");
+      toast("Password changed");
     } catch (err: any) {
-      showToast(err.message, false);
+      toast(err.message, 'error');
     } finally {
       setSavingPassword(false);
     }
@@ -136,29 +131,11 @@ export default function SettingsPage() {
   function handleSaveBudgetThreshold(val: number) {
     setBudgetThreshold(val);
     localStorage.setItem("adryx_budget_threshold", String(val));
-    showToast("Notification preference saved");
+    toast("Notification preference saved");
   }
 
   return (
     <div className="max-w-2xl mx-auto space-y-5">
-      {/* Toast */}
-      {toast && (
-        <div
-          className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl text-sm font-medium ${
-            toast.ok
-              ? "bg-emerald-400/10 border-emerald-400/20 text-emerald-400"
-              : "bg-[#f87171]/10 border-[#f87171]/20 text-[#f87171]"
-          }`}
-        >
-          {toast.ok ? (
-            <TickCircle size={16} color="currentColor" />
-          ) : (
-            <CloseCircle size={16} color="currentColor" />
-          )}
-          {toast.msg}
-        </div>
-      )}
-
       <div>
         <h1 className="text-xl font-bold text-white">Settings</h1>
         <p className="text-sm text-white/40 mt-0.5">

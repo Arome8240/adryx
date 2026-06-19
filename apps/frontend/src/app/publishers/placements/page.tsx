@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useToast } from "@/components/ui/toast";
 import { motion } from "framer-motion";
 import {
   AddCircle,
@@ -11,8 +12,6 @@ import {
   Pause,
   Play,
   Trash,
-  TickCircle,
-  CloseCircle,
   Copy,
 } from "iconsax-react";
 import { usePlacements, useSites } from "@/hooks/usePublisher";
@@ -36,7 +35,7 @@ export default function PlacementsPage() {
     name: string;
     code: string;
   } | null>(null);
-  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
+  const toast = useToast();
   const [isSaving, setIsSaving] = useState(false);
   const [form, setForm] = useState({
     name: "",
@@ -45,14 +44,10 @@ export default function PlacementsPage() {
     description: "",
   });
 
-  function showToast(msg: string, ok = true) {
-    setToast({ msg, ok });
-    setTimeout(() => setToast(null), 3500);
-  }
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.siteId) return showToast("Select a site", false);
+    if (!form.siteId) return toast("Select a site", 'error');
     setIsSaving(true);
     try {
       await createPlacement({
@@ -61,11 +56,11 @@ export default function PlacementsPage() {
         format: form.format,
         description: form.description || undefined,
       });
-      showToast("Placement created");
+      toast("Placement created");
       setShowAddModal(false);
       setForm({ name: "", siteId: "", format: "banner", description: "" });
     } catch (err: any) {
-      showToast(err.message, false);
+      toast(err.message, 'error');
     } finally {
       setIsSaving(false);
     }
@@ -75,18 +70,18 @@ export default function PlacementsPage() {
     const newStatus = p.status === "active" ? "paused" : "active";
     try {
       await updatePlacement(p._id, { status: newStatus });
-      showToast(`Placement ${newStatus}`);
+      toast(`Placement ${newStatus}`);
     } catch (err: any) {
-      showToast(err.message, false);
+      toast(err.message, 'error');
     }
   }
 
   async function handleDelete(id: string) {
     try {
       await deletePlacement(id);
-      showToast("Placement deleted");
+      toast("Placement deleted");
     } catch (err: any) {
-      showToast(err.message, false);
+      toast(err.message, 'error');
     }
   }
 
@@ -95,30 +90,12 @@ export default function PlacementsPage() {
       const result = await getEmbedCode(p._id);
       setEmbedCode({ name: p.name, code: result.code });
     } catch (err: any) {
-      showToast(err.message, false);
+      toast(err.message, 'error');
     }
   }
 
   return (
     <div className="flex flex-col gap-6 max-w-7xl mx-auto">
-      {/* Toast */}
-      {toast && (
-        <div
-          className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl text-sm font-medium ${
-            toast.ok
-              ? "bg-emerald-400/10 border-emerald-400/20 text-emerald-400"
-              : "bg-[#f87171]/10 border-[#f87171]/20 text-[#f87171]"
-          }`}
-        >
-          {toast.ok ? (
-            <TickCircle size={16} color="currentColor" />
-          ) : (
-            <CloseCircle size={16} color="currentColor" />
-          )}
-          {toast.msg}
-        </div>
-      )}
-
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -408,7 +385,7 @@ export default function PlacementsPage() {
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(embedCode.code);
-                  showToast("Copied!");
+                  toast("Copied!");
                 }}
                 className="absolute top-2 right-2 p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
               >

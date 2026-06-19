@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useToast } from "@/components/ui/toast";
 import { useRouter } from "next/navigation";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import {
   ArrowLeft,
-  TickCircle,
   CloseCircle,
   InfoCircle,
   DocumentText,
@@ -74,7 +74,7 @@ export default function CreateCampaignPage() {
   const router = useRouter();
   const { createCampaign } = useCampaigns();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
+  const toast = useToast();
   const [hasDraft, setHasDraft] = useState(false);
   const [urlError, setUrlError] = useState("");
   const [showPreview, setShowPreview] = useState(false);
@@ -112,10 +112,6 @@ export default function CreateCampaignPage() {
     setHasDraft(false);
   }
 
-  function showToast(msg: string, ok = true) {
-    setToast({ msg, ok });
-    setTimeout(() => setToast(null), 3000);
-  }
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -131,11 +127,11 @@ export default function CreateCampaignPage() {
         ...formData,
         budget: parseFloat(formData.budget),
       });
-      showToast("Campaign created successfully");
+      toast("Campaign created successfully");
       clearDraft();
       setTimeout(() => router.push("/dashboard/campaigns"), 1000);
     } catch (err: any) {
-      showToast(err.message, false);
+      toast(err.message, 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -143,24 +139,6 @@ export default function CreateCampaignPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      {/* Toast */}
-      {toast && (
-        <div
-          className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl text-sm font-medium ${
-            toast.ok
-              ? "bg-emerald-400/10 border-emerald-400/20 text-emerald-400"
-              : "bg-[#f87171]/10 border-[#f87171]/20 text-[#f87171]"
-          }`}
-        >
-          {toast.ok ? (
-            <TickCircle size={16} color="currentColor" />
-          ) : (
-            <CloseCircle size={16} color="currentColor" />
-          )}
-          {toast.msg}
-        </div>
-      )}
-
       {/* Header */}
       <div className="flex items-center gap-3">
         <button
