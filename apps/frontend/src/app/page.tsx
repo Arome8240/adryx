@@ -166,7 +166,7 @@ function TopNav() {
       <div className="c-wrap c-row c-between" style={{ height: 60 }}>
         <BrandLogo />
         <div className="c-row gap-2" style={{ display: 'flex' as const }}>
-          {['Product', 'Publishers', 'Advertisers', 'Docs', 'Pricing'].map(l => (
+          {['Publishers', 'Advertisers', 'Docs', 'Pricing'].map(l => (
             <Link key={l} href={`/${l.toLowerCase()}`} className="c-nav-link">{l}</Link>
           ))}
         </div>
