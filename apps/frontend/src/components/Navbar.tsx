@@ -4,7 +4,6 @@ import Link from "next/link";
 import { HambergerMenu, CloseCircle } from "iconsax-react";
 
 const NAV_LINKS = [
-  { label: "Product",     href: "/features" },
   { label: "Publishers",  href: "/publishers" },
   { label: "Advertisers", href: "/dashboard" },
   { label: "Docs",        href: "/docs" },
@@ -30,8 +29,8 @@ export default function Navbar() {
           Adryx
         </Link>
 
-        {/* Desktop links */}
-        <div className="c-row" style={{ gap: 2, display: "flex" as const }}>
+        {/* Desktop links — hidden on mobile */}
+        <div className="hidden md:flex items-center" style={{ gap: 2 }}>
           {NAV_LINKS.map((l) => (
             <Link key={l.label} href={l.href} className="c-nav-link">
               {l.label}
@@ -39,8 +38,8 @@ export default function Navbar() {
           ))}
         </div>
 
-        {/* Desktop CTAs */}
-        <div className="c-row" style={{ gap: 10 }}>
+        {/* Desktop CTAs — hidden on mobile */}
+        <div className="hidden md:flex items-center" style={{ gap: 10 }}>
           <Link href="/login" className="c-btn-ghost" style={{ padding: "8px 16px", fontSize: 13 }}>
             Sign in
           </Link>
