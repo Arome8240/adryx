@@ -395,6 +395,11 @@ button:focus-visible, a:focus-visible, .input:focus-visible { outline: 2px solid
 }
 .c-btn-ghost:hover { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.16); }
 
+/* ─── Generic glass surface (used by publisher dashboard) ─────── */
+.glass {
+  background: var(--c-card);
+}
+
 /* ─── Cards ──────────────────────────────────────────────────────── */
 .c-card {
   position: relative; overflow: hidden;
