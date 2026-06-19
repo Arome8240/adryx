@@ -1,31 +1,36 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function AuthCallbackPage() {
   const router = useRouter();
   const params = useSearchParams();
+  const { setFromOAuth } = useAuth();
   const [error, setError] = useState<string | null>(null);
+  const ran = useRef(false);
 
   useEffect(() => {
+    // Strict-mode guard — only run once
+    if (ran.current) return;
+    ran.current = true;
+
     const token = params.get("token");
-    const refreshToken = params.get("refreshToken");
+    const refreshToken = params.get("refreshToken") ?? undefined;
 
     if (!token) {
       setError("Authentication failed — no token received.");
       return;
     }
 
-    try {
-      localStorage.setItem("accessToken", token);
-      if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
-    } catch {
-      // localStorage may be unavailable (private browsing, etc.)
-    }
-
-    // Redirect to dashboard
-    router.replace("/publishers");
-  }, [params, router]);
+    setFromOAuth(token, refreshToken)
+      .then((user) => {
+        router.replace(user.role === "publisher" ? "/publishers" : "/dashboard");
+      })
+      .catch((err: unknown) => {
+        setError(err instanceof Error ? err.message : "Sign-in failed. Please try again.");
+      });
+  }, [params, router, setFromOAuth]);
 
   if (error) {
     return (
@@ -41,20 +46,18 @@ export default function AuthCallbackPage() {
         <div
           style={{
             background: "rgba(255,255,255,.025)",
-            border: "1px solid rgba(255,80,80,.2)",
+            border: "1px solid rgba(248,113,113,.2)",
             borderRadius: 16,
             padding: "32px 40px",
             textAlign: "center",
             maxWidth: 420,
           }}
         >
-          <p style={{ color: "#f87171", fontWeight: 600, marginBottom: 8 }}>Sign-in error</p>
-          <p style={{ color: "rgba(245,245,245,.5)", fontSize: 14 }}>{error}</p>
-          <a
-            href="/login"
-            className="c-btn-y"
-            style={{ display: "inline-block", marginTop: 20, fontSize: 14 }}
-          >
+          <p style={{ color: "#f87171", fontWeight: 600, marginBottom: 8, fontSize: 15 }}>
+            Sign-in failed
+          </p>
+          <p style={{ color: "rgba(245,245,245,.5)", fontSize: 14, marginBottom: 20 }}>{error}</p>
+          <a href="/login" className="c-btn-y" style={{ display: "inline-block", fontSize: 14 }}>
             Back to sign in
           </a>
         </div>

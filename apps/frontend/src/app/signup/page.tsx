@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
 
 /* ── Icons ── */
 function GoogleIcon() {
@@ -139,9 +140,12 @@ function RightPanel() {
   );
 }
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+
 /* ── Signup page ── */
 export default function SignupPage() {
   const router = useRouter();
+  const { register } = useAuth();
   const [role, setRole] = useState<'publisher' | 'advertiser'>('publisher');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -156,13 +160,17 @@ export default function SignupPage() {
     setError('');
     setLoading(true);
     try {
-      await new Promise(r => setTimeout(r, 700));
-      router.push(role === 'publisher' ? '/publishers' : '/dashboard');
-    } catch {
-      setError('Something went wrong. Please try again.');
+      const user = await register({ email, password, name, role });
+      router.push(user.role === 'publisher' ? '/publishers' : '/dashboard');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
+  }
+
+  function handleOAuth(provider: 'google' | 'github') {
+    window.location.href = `${API_BASE}/auth/${provider}`;
   }
 
   return (
@@ -250,10 +258,10 @@ export default function SignupPage() {
             <div style={{ flex:1, height:1, background:'rgba(255,255,255,.08)' }}/>
           </div>
           <div style={{ display:'flex', gap:10, marginBottom:22 }}>
-            <button className="c-btn-ghost" style={{ flex:1, justifyContent:'center', gap:8, height:40, fontSize:13.5 }}>
+            <button className="c-btn-ghost" style={{ flex:1, justifyContent:'center', gap:8, height:40, fontSize:13.5 }} onClick={() => handleOAuth('google')}>
               <GoogleIcon/> Google
             </button>
-            <button className="c-btn-ghost" style={{ flex:1, justifyContent:'center', gap:8, height:40, fontSize:13.5 }}>
+            <button className="c-btn-ghost" style={{ flex:1, justifyContent:'center', gap:8, height:40, fontSize:13.5 }} onClick={() => handleOAuth('github')}>
               <GitHubIcon/> GitHub
             </button>
           </div>
