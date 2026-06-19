@@ -1,9 +1,38 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 
-export default function AuthCallbackPage() {
+function Spinner() {
+  return (
+    <main
+      style={{
+        minHeight: "100vh",
+        background: "#08080a",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexDirection: "column",
+        gap: 16,
+      }}
+    >
+      <div
+        style={{
+          width: 36,
+          height: 36,
+          borderRadius: "50%",
+          border: "2.5px solid rgba(235,255,69,.15)",
+          borderTopColor: "#EBFF45",
+          animation: "spin 0.7s linear infinite",
+        }}
+      />
+      <p style={{ color: "rgba(245,245,245,.45)", fontSize: 14 }}>Signing you in…</p>
+      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+    </main>
+  );
+}
+
+function CallbackHandler() {
   const router = useRouter();
   const params = useSearchParams();
   const { setFromOAuth } = useAuth();
@@ -11,7 +40,6 @@ export default function AuthCallbackPage() {
   const ran = useRef(false);
 
   useEffect(() => {
-    // Strict-mode guard — only run once
     if (ran.current) return;
     ran.current = true;
 
@@ -65,30 +93,13 @@ export default function AuthCallbackPage() {
     );
   }
 
+  return <Spinner />;
+}
+
+export default function AuthCallbackPage() {
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        background: "#08080a",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        flexDirection: "column",
-        gap: 16,
-      }}
-    >
-      <div
-        style={{
-          width: 36,
-          height: 36,
-          borderRadius: "50%",
-          border: "2.5px solid rgba(235,255,69,.15)",
-          borderTopColor: "#EBFF45",
-          animation: "spin 0.7s linear infinite",
-        }}
-      />
-      <p style={{ color: "rgba(245,245,245,.45)", fontSize: 14 }}>Signing you in…</p>
-      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-    </main>
+    <Suspense fallback={<Spinner />}>
+      <CallbackHandler />
+    </Suspense>
   );
 }

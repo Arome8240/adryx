@@ -183,6 +183,9 @@ function SingleToast({ item, onDismiss }: { item: ToastItem; onDismiss: () => vo
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
 
   const dismiss = useCallback((id: string) => {
     setToasts(prev => prev.filter(t => t.id !== id));
@@ -197,7 +200,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastCtx.Provider value={toast}>
       {children}
-      <div
+      {mounted && <div
         aria-live="polite"
         aria-atomic="false"
         style={{
