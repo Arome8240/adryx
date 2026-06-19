@@ -5,7 +5,7 @@ import { HambergerMenu, CloseCircle } from "iconsax-react";
 
 const NAV_LINKS = [
   { label: "Product",     href: "/features" },
-  { label: "Publishers",  href: "/publisher" },
+  { label: "Publishers",  href: "/publishers" },
   { label: "Advertisers", href: "/dashboard" },
   { label: "Docs",        href: "/docs" },
   { label: "Pricing",     href: "/pricing" },

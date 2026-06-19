@@ -1,30 +1,30 @@
 "use client";
 import Link from "next/link";
 
-const COLS: Record<string, { label: string; href: string }[]> = {
+const COLS: Record<string, { label: string; href: string; soon?: boolean }[]> = {
   Product: [
     { label: "Features",     href: "/features" },
     { label: "How it works", href: "/#how-it-works" },
     { label: "Pricing",      href: "/pricing" },
-    { label: "Changelog",    href: "#" },
+    { label: "Changelog",    href: "#", soon: true },
   ],
   Developers: [
     { label: "Documentation", href: "/docs" },
     { label: "SDK reference", href: "/docs" },
-    { label: "GitHub",        href: "https://github.com" },
-    { label: "Status",        href: "#" },
+    { label: "GitHub",        href: "https://github.com/adryx" },
+    { label: "Status",        href: "#", soon: true },
   ],
   Company: [
     { label: "About",    href: "/about" },
-    { label: "Blog",     href: "#" },
-    { label: "Careers",  href: "/contact" },
+    { label: "Careers",  href: "/careers" },
     { label: "Contact",  href: "/contact" },
+    { label: "Blog",     href: "#", soon: true },
   ],
   Legal: [
     { label: "Privacy",       href: "/privacy" },
     { label: "Terms",         href: "/terms" },
-    { label: "Cookie policy", href: "#" },
-    { label: "DPA",           href: "#" },
+    { label: "Cookie policy", href: "#", soon: true },
+    { label: "DPA",           href: "#", soon: true },
   ],
 };
 
@@ -64,26 +64,57 @@ export default function Footer() {
             <div key={group}>
               <p className="c-label" style={{ marginBottom: 16 }}>{group}</p>
               <div className="c-col" style={{ gap: 9 }}>
-                {links.map((l) => (
-                  <Link
-                    key={l.label}
-                    href={l.href}
-                    className="c-sm"
-                    style={{
-                      color: "rgba(245,245,245,.42)",
-                      textDecoration: "none",
-                      transition: "color .1s",
-                    }}
-                    onMouseEnter={(e) =>
-                      (e.currentTarget.style.color = "rgba(245,245,245,.75)")
-                    }
-                    onMouseLeave={(e) =>
-                      (e.currentTarget.style.color = "rgba(245,245,245,.42)")
-                    }
-                  >
-                    {l.label}
-                  </Link>
-                ))}
+                {links.map((l) =>
+                  l.soon ? (
+                    <span
+                      key={l.label}
+                      className="c-sm"
+                      style={{
+                        color: "rgba(245,245,245,.22)",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 6,
+                        cursor: "default",
+                      }}
+                    >
+                      {l.label}
+                      <span
+                        style={{
+                          fontSize: 9,
+                          fontWeight: 600,
+                          letterSpacing: ".06em",
+                          textTransform: "uppercase",
+                          color: "rgba(235,255,69,.5)",
+                          border: "1px solid rgba(235,255,69,.2)",
+                          borderRadius: 3,
+                          padding: "1px 5px",
+                          lineHeight: 1.6,
+                        }}
+                      >
+                        soon
+                      </span>
+                    </span>
+                  ) : (
+                    <Link
+                      key={l.label}
+                      href={l.href}
+                      className="c-sm"
+                      style={{
+                        color: "rgba(245,245,245,.42)",
+                        textDecoration: "none",
+                        transition: "color .1s",
+                      }}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.color = "rgba(245,245,245,.75)")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.color = "rgba(245,245,245,.42)")
+                      }
+                    >
+                      {l.label}
+                    </Link>
+                  )
+                )}
               </div>
             </div>
           ))}
