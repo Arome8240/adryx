@@ -37,8 +37,8 @@ export class Campaign {
   creativeUrl: string;
 
   // ERD additions
-  @Prop({ default: null, lowercase: true, trim: true })
-  escrowId: string | null; // ↗ on-chain CampaignEscrow address (set after escrow deploy)
+  @Prop({ type: String, default: null, lowercase: true, trim: true })
+  escrowId: string | null; // on-chain escrow address, set after deploy
 
   @Prop({ type: Object, default: {} })
   targeting: Record<string, unknown>; // JSONB: geo, segments, formats, etc.

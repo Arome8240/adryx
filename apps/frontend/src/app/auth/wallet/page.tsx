@@ -3,6 +3,61 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
+
+/* ── Freighter window type ─────────────────────────────────────────────────── */
+declare global {
+  interface Window {
+    freighter?: {
+      isConnected: () => Promise<{ isConnected: boolean }>;
+      getPublicKey: () => Promise<string>;
+      signMessage: (opts: { message: string; networkPassphrase?: string }) => Promise<{ signedMessage: string }>;
+    };
+  }
+}
+
+/* ── Icons ─────────────────────────────────────────────────────────────────── */
+function FreighterIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <rect width="24" height="24" rx="6" fill="#5B8FF9"/>
+      <path d="M7 8h6a3 3 0 010 6H7V8z" fill="#fff" fillOpacity=".9"/>
+      <path d="M7 14h4" stroke="#fff" strokeWidth="1.6" strokeLinecap="round"/>
+    </svg>
+  );
+}
+function LobstrIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <rect width="24" height="24" rx="6" fill="#0081C5"/>
+      <circle cx="12" cy="12" r="5" stroke="#fff" strokeWidth="1.6" fill="none"/>
+      <circle cx="12" cy="12" r="2" fill="#fff"/>
+    </svg>
+  );
+}
+function XBullIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <rect width="24" height="24" rx="6" fill="#1E293B"/>
+      <path d="M7 7l5 5 5-5M7 17l5-5 5 5" stroke="#EBFF45" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+function StellarIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <rect width="24" height="24" rx="6" fill="#3E1BDB"/>
+      <path d="M5 10l3.5-1.5L12 6l3.5 2.5L19 10M5 14l3.5 1.5L12 18l3.5-2.5L19 14M5 12h14" stroke="#fff" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+/* ── Spinner ── */
+function Spinner() {
+  return (
+    <div style={{ width: 18, height: 18, borderRadius: '50%', border: '2px solid rgba(235,255,69,.2)', borderTopColor: '#EBFF45', animation: 'spin 0.7s linear infinite', flexShrink: 0 }}/>
+  );
+}
 
 /* ── Brand logo ── */
 function BrandLogo() {
@@ -16,97 +71,14 @@ function BrandLogo() {
   );
 }
 
-/* ── Wallet configs ── */
-const WALLETS = [
-  {
-    id: 'metamask', name: 'MetaMask', description: 'Available as browser extension', color: '#f6851b',
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <path d="M21.5 2L13.6 8l1.5-3.5L21.5 2z" fill="#E2761B"/>
-        <path d="M2.5 2l7.8 6.1-1.4-3.6L2.5 2z" fill="#E4761B"/>
-        <path d="M18.7 16.8l-2.1 3.2 4.5 1.2 1.3-4.3-3.7-.1z" fill="#E4761B"/>
-        <path d="M1.6 16.9l1.3 4.3 4.5-1.2-2.1-3.2-3.7.1z" fill="#E4761B"/>
-        <path d="M7.1 10.6L5.8 12.5l4.8.2-.2-5.2-3.3 3.1z" fill="#E4761B"/>
-        <path d="M16.9 10.6l-3.4-3.2-.1 5.3 4.8-.2-1.3-1.9z" fill="#E4761B"/>
-        <path d="M7.4 20l2.9-1.4-2.5-1.9-.4 3.3z" fill="#E4761B"/>
-        <path d="M13.7 18.6l2.9 1.4-.4-3.3-2.5 1.9z" fill="#E4761B"/>
-      </svg>
-    ),
-  },
-  {
-    id: 'coinbase', name: 'Coinbase Wallet', description: 'Mobile app or browser extension', color: '#0052ff',
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="12" r="10" fill="#0052ff"/>
-        <circle cx="12" cy="12" r="4" fill="#fff"/>
-      </svg>
-    ),
-  },
-  {
-    id: 'walletconnect', name: 'WalletConnect', description: 'Connect any mobile wallet', color: '#3b99fc',
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <path d="M6.1 8.8a8.2 8.2 0 0111.8 0l.4.4a.4.4 0 010 .6l-1.4 1.4a.2.2 0 01-.3 0l-.5-.5a5.7 5.7 0 00-8.2 0l-.5.5a.2.2 0 01-.3 0L5.7 9.8a.4.4 0 010-.6l.4-.4zm14.6 2.7l1.3 1.3a.4.4 0 010 .6l-5.7 5.7a.4.4 0 01-.6 0L12 15.3l-3.7 3.8a.4.4 0 01-.6 0L2 13.4a.4.4 0 010-.6l1.3-1.3a.4.4 0 01.6 0l3.8 3.7 3.7-3.7a.4.4 0 01.6 0l3.7 3.7 3.8-3.7a.4.4 0 01.6 0z" fill="#3b99fc"/>
-      </svg>
-    ),
-  },
-  {
-    id: 'rainbow', name: 'Rainbow', description: 'The fun, simple Ethereum wallet', color: '#ff6b6b',
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <defs>
-          <linearGradient id="rw" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#ff6b6b"/>
-            <stop offset="33%" stopColor="#ffd166"/>
-            <stop offset="66%" stopColor="#06d6a0"/>
-            <stop offset="100%" stopColor="#118ab2"/>
-          </linearGradient>
-        </defs>
-        <circle cx="12" cy="12" r="10" fill="url(#rw)"/>
-        <path d="M7 14c0-2.8 2.2-5 5-5s5 2.2 5 5" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" fill="none"/>
-        <path d="M9 14c0-1.7 1.3-3 3-3s3 1.3 3 3" stroke="#fff" strokeWidth="1.4" strokeLinecap="round" fill="none"/>
-      </svg>
-    ),
-  },
-  {
-    id: 'phantom', name: 'Phantom', description: 'Solana, Ethereum & Polygon', color: '#5340bf',
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="12" r="10" fill="#5340bf"/>
-        <path d="M7 10.5c0-2.5 2-4.5 4.5-4.5H14c1.4 0 2.5 1.1 2.5 2.5S15.4 11 14 11h-1c-.6 0-1 .4-1 1s.4 1 1 1h.5c1.4 0 2.5 1.1 2.5 2.5S15.4 17 14 17h-2.5c-2.5 0-4.5-2-4.5-4.5" fill="#fff" fillOpacity=".9"/>
-      </svg>
-    ),
-  },
-  {
-    id: 'safe', name: 'Safe', description: 'Multi-signature smart account', color: '#12ff80',
-    icon: (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <rect x="3" y="3" width="18" height="18" rx="4" fill="#12ff80"/>
-        <path d="M8 12l3 3 5-5" stroke="#000" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    ),
-  },
-];
-
-/* ── Spinner ── */
-function Spinner({ color }: { color: string }) {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style={{ animation:'spin 1s linear infinite' }}>
-      <circle cx="9" cy="9" r="7" stroke={color} strokeWidth="2" strokeOpacity=".3"/>
-      <path d="M9 2a7 7 0 017 7" stroke={color} strokeWidth="2" strokeLinecap="round"/>
-    </svg>
-  );
-}
-
-/* ── Right panel: security card ── */
+/* ── Right panel ── */
 function RightPanel() {
   return (
     <div style={{ background:'#08080a', display:'flex', flexDirection:'column', justifyContent:'center', padding:'56px 52px', minHeight:'100vh', position:'relative', overflow:'hidden' }}>
       <div style={{ position:'absolute', top:'18%', left:'35%', width:520, height:520, borderRadius:'50%', background:'radial-gradient(ellipse, rgba(235,255,69,.07) 0%, transparent 65%)', pointerEvents:'none' }}/>
-      <div style={{ position:'absolute', bottom:'18%', right:'5%', width:240, height:240, borderRadius:'50%', background:'radial-gradient(ellipse, rgba(59,130,246,.05) 0%, transparent 65%)', pointerEvents:'none' }}/>
       <div style={{ position:'relative', zIndex:1 }}>
         {/* Security card */}
-        <div style={{ position:'relative', overflow:'hidden', border:'1px solid rgba(255,255,255,.08)', background:'rgba(255,255,255,.025)', borderRadius:12, padding:'22px 22px', marginBottom:28 }}>
+        <div style={{ position:'relative', overflow:'hidden', border:'1px solid rgba(255,255,255,.08)', background:'rgba(255,255,255,.025)', borderRadius:12, padding:'22px', marginBottom:28 }}>
           <div style={{ position:'absolute', left:0, top:0, bottom:0, width:2, background:'#EBFF45', borderRadius:'12px 0 0 12px' }}/>
           <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:18 }}>
             <div style={{ width:40, height:40, borderRadius:10, background:'rgba(74,222,128,.1)', border:'1px solid rgba(74,222,128,.2)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
@@ -116,21 +88,19 @@ function RightPanel() {
               </svg>
             </div>
             <div>
-              <div style={{ fontSize:14, fontWeight:560, color:'#f5f5f5', marginBottom:2 }}>Non-custodial connection</div>
+              <div style={{ fontSize:14, fontWeight:560, color:'#f5f5f5', marginBottom:2 }}>Non-custodial sign-in</div>
               <div style={{ fontSize:12, color:'rgba(245,245,245,.38)' }}>Your keys stay with you</div>
             </div>
           </div>
           <div style={{ display:'flex', flexDirection:'column', gap:9 }}>
             {[
-              'We never have access to your private keys',
-              'Sign-in only — no transaction approval needed',
+              'We never see your private keys',
+              'Sign-in only — no transaction approval',
               'Revocable anytime from your wallet',
             ].map(t => (
               <div key={t} style={{ display:'flex', alignItems:'center', gap:9, fontSize:13, color:'rgba(245,245,245,.5)' }}>
                 <div style={{ width:14, height:14, borderRadius:'50%', border:'1px solid rgba(74,222,128,.3)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-                  <svg width="7" height="7" viewBox="0 0 7 7" fill="none">
-                    <path d="M1 3.5l2 2 3-3" stroke="#4ade80" strokeWidth="1.2" strokeLinecap="round"/>
-                  </svg>
+                  <svg width="7" height="7" viewBox="0 0 7 7" fill="none"><path d="M1 3.5l2 2 3-3" stroke="#4ade80" strokeWidth="1.2" strokeLinecap="round"/></svg>
                 </div>
                 {t}
               </div>
@@ -138,9 +108,8 @@ function RightPanel() {
           </div>
         </div>
 
-        {/* Quote */}
         <p style={{ fontSize:14, lineHeight:1.62, color:'rgba(245,245,245,.55)', fontStyle:'italic', marginBottom:14 }}>
-          "Connecting my wallet took ten seconds. Having it on-chain means I can verify every payout myself."
+          "Connecting my wallet took ten seconds. Every payout is on-chain so I can verify it myself."
         </p>
         <div style={{ display:'flex', alignItems:'center', gap:10 }}>
           <div style={{ width:32, height:32, borderRadius:'50%', background:'rgba(235,255,69,.12)', border:'1px solid rgba(235,255,69,.2)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11.5, fontWeight:600, color:'#EBFF45', flexShrink:0 }}>DP</div>
@@ -157,15 +126,66 @@ function RightPanel() {
 /* ── Page ── */
 export default function WalletAuthPage() {
   const router = useRouter();
-  const [connecting, setConnecting] = useState<string | null>(null);
+  const { walletLogin } = useAuth();
+  const [status, setStatus] = useState<'idle' | 'connecting' | 'signing' | 'loading'>('idle');
+  const [error, setError] = useState('');
 
-  function handleConnect(walletId: string) {
-    setConnecting(walletId);
-    setTimeout(() => { router.push('/publishers'); }, 1600);
+  async function connectFreighter() {
+    setError('');
+    setStatus('connecting');
+
+    try {
+      if (!window.freighter) {
+        setStatus('idle');
+        setError('Freighter extension is not installed. Install it from freighter.app and refresh.');
+        return;
+      }
+
+      const { isConnected } = await window.freighter.isConnected();
+      if (!isConnected) {
+        setStatus('idle');
+        setError('Freighter is locked. Please unlock your wallet and try again.');
+        return;
+      }
+
+      // Get public key (G-address)
+      const publicKey = await window.freighter.getPublicKey();
+
+      // Build sign message — includes timestamp to prevent replay attacks
+      const message = `Sign in to Adryx\nAddress: ${publicKey}\nTimestamp: ${Date.now()}`;
+
+      setStatus('signing');
+
+      const { signedMessage } = await window.freighter.signMessage({ message });
+
+      setStatus('loading');
+
+      const user = await walletLogin(publicKey, signedMessage, message);
+      router.push(user.role === 'publisher' ? '/publishers' : '/dashboard');
+    } catch (err: unknown) {
+      setStatus('idle');
+      const msg = err instanceof Error ? err.message : String(err);
+      // Freighter user-rejected errors
+      if (msg.includes('User declined') || msg.includes('rejected') || msg.includes('cancelled')) {
+        setError('Signature request cancelled.');
+      } else {
+        setError(msg || 'Connection failed. Please try again.');
+      }
+    }
   }
+
+  const isWorking = status !== 'idle';
+  const statusLabel = {
+    connecting: 'Connecting…',
+    signing: 'Waiting for signature…',
+    loading: 'Signing in…',
+    idle: '',
+  }[status];
 
   return (
     <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', minHeight:'100vh', background:'#08080a' }} className="auth-shell">
+      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+
       {/* ── Left ── */}
       <div style={{ display:'flex', flexDirection:'column', justifyContent:'center', padding:'56px 64px', background:'#0f0f13', borderRight:'1px solid rgba(255,255,255,.06)', overflowY:'auto' }}>
         <div style={{ maxWidth:420, width:'100%', margin:'0 auto' }}>
@@ -173,48 +193,89 @@ export default function WalletAuthPage() {
 
           <h1 style={{ fontSize:28, fontWeight:560, letterSpacing:'-0.022em', color:'#f5f5f5', marginBottom:6, fontFamily:'var(--f-display)' }}>Connect your wallet</h1>
           <p style={{ fontSize:14, color:'rgba(245,245,245,.45)', marginBottom:32 }}>
-            Sign in with your crypto wallet. No password required.
+            Sign in with a Stellar wallet. No password required.
           </p>
 
-          <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-            {WALLETS.map(wallet => {
-              const isConnecting = connecting === wallet.id;
-              const isDisabled = connecting !== null && !isConnecting;
-              return (
-                <button
-                  key={wallet.id}
-                  onClick={() => !connecting && handleConnect(wallet.id)}
-                  disabled={isDisabled}
-                  style={{
-                    display:'flex', alignItems:'center', gap:14,
-                    padding:'13px 16px', borderRadius:10, cursor: isDisabled ? 'not-allowed' : 'pointer',
-                    background: isConnecting ? `${wallet.color}14` : 'rgba(255,255,255,.04)',
-                    border: isConnecting ? `1.5px solid ${wallet.color}60` : '1px solid rgba(255,255,255,.09)',
-                    opacity: isDisabled ? 0.38 : 1,
-                    transition:'border-color .12s, background .12s',
-                    width:'100%', textAlign:'left',
-                  }}
-                >
-                  <div style={{ width:40, height:40, borderRadius:10, overflow:'hidden', background:`${wallet.color}18`, display:'flex', alignItems:'center', justifyContent:'center', border:`1px solid ${wallet.color}28`, flexShrink:0 }}>
-                    {wallet.icon}
-                  </div>
-                  <div style={{ flex:1 }}>
-                    <div style={{ fontSize:14, fontWeight:550, color:'rgba(245,245,245,.9)', marginBottom:1 }}>{wallet.name}</div>
-                    <div style={{ fontSize:12, color:'rgba(245,245,245,.35)' }}>{wallet.description}</div>
-                  </div>
-                  <div style={{ flexShrink:0 }}>
-                    {isConnecting ? (
-                      <Spinner color={wallet.color}/>
-                    ) : (
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                        <path d="M6 3l5 5-5 5" stroke="rgba(245,245,245,.3)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    )}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+          {/* Error banner */}
+          {error && (
+            <div style={{ background:'rgba(248,113,113,.1)', border:'1px solid rgba(248,113,113,.2)', borderRadius:10, padding:'12px 16px', fontSize:13.5, color:'#f87171', marginBottom:20, lineHeight:1.5 }}>
+              {error}
+            </div>
+          )}
+
+          {/* Status label */}
+          {isWorking && (
+            <div style={{ display:'flex', alignItems:'center', gap:10, background:'rgba(235,255,69,.06)', border:'1px solid rgba(235,255,69,.15)', borderRadius:10, padding:'12px 16px', fontSize:13.5, color:'rgba(235,255,69,.8)', marginBottom:20 }}>
+              <Spinner/>
+              {statusLabel}
+            </div>
+          )}
+
+          {/* ── Freighter ── */}
+          <button
+            onClick={connectFreighter}
+            disabled={isWorking}
+            style={{
+              display:'flex', alignItems:'center', gap:14,
+              padding:'14px 16px', borderRadius:12, cursor: isWorking ? 'not-allowed' : 'pointer',
+              background: isWorking ? 'rgba(91,143,249,.1)' : 'rgba(255,255,255,.04)',
+              border: isWorking ? '1.5px solid rgba(91,143,249,.4)' : '1px solid rgba(255,255,255,.09)',
+              width:'100%', textAlign:'left', marginBottom:10,
+              transition:'border-color .12s, background .12s',
+              opacity: isWorking ? 0.85 : 1,
+            }}
+          >
+            <div style={{ width:44, height:44, borderRadius:10, overflow:'hidden', background:'rgba(91,143,249,.15)', display:'flex', alignItems:'center', justifyContent:'center', border:'1px solid rgba(91,143,249,.25)', flexShrink:0 }}>
+              <FreighterIcon/>
+            </div>
+            <div style={{ flex:1 }}>
+              <div style={{ fontSize:14, fontWeight:560, color:'rgba(245,245,245,.9)', marginBottom:2 }}>Freighter</div>
+              <div style={{ fontSize:12, color:'rgba(245,245,245,.38)' }}>Stellar browser extension · freighter.app</div>
+            </div>
+            <div style={{ flexShrink:0 }}>
+              {isWorking
+                ? <Spinner/>
+                : <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="rgba(245,245,245,.3)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              }
+            </div>
+          </button>
+
+          {/* ── Other wallets — coming soon ── */}
+          {([
+            { name: 'Lobstr', desc: 'Popular Stellar mobile & web wallet', Icon: LobstrIcon },
+            { name: 'xBull', desc: 'Open-source Stellar wallet', Icon: XBullIcon },
+            { name: 'Stellar native', desc: 'Any Stellar Horizon-compatible wallet', Icon: StellarIcon },
+          ] as const).map(({ name, desc, Icon }) => (
+            <div
+              key={name}
+              style={{
+                display:'flex', alignItems:'center', gap:14,
+                padding:'14px 16px', borderRadius:12,
+                background:'rgba(255,255,255,.02)',
+                border:'1px solid rgba(255,255,255,.06)',
+                width:'100%', marginBottom:8, opacity:0.45,
+                position:'relative',
+              }}
+            >
+              <div style={{ width:44, height:44, borderRadius:10, overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                <Icon/>
+              </div>
+              <div style={{ flex:1 }}>
+                <div style={{ fontSize:14, fontWeight:550, color:'rgba(245,245,245,.6)', marginBottom:2 }}>{name}</div>
+                <div style={{ fontSize:12, color:'rgba(245,245,245,.28)' }}>{desc}</div>
+              </div>
+              <span style={{ fontSize:9, fontWeight:600, letterSpacing:'.08em', textTransform:'uppercase', color:'rgba(235,255,69,.5)', border:'1px solid rgba(235,255,69,.18)', borderRadius:4, padding:'2px 6px' }}>
+                Soon
+              </span>
+            </div>
+          ))}
+
+          <p style={{ fontSize:12.5, color:'rgba(245,245,245,.28)', textAlign:'center', marginTop:18, lineHeight:1.6 }}>
+            Don't have a Stellar wallet?{' '}
+            <a href="https://freighter.app" target="_blank" rel="noopener noreferrer" style={{ color:'#EBFF45' }}>
+              Install Freighter
+            </a>
+          </p>
 
           <div style={{ marginTop:28, textAlign:'center' }}>
             <Link href="/login" style={{ display:'inline-flex', alignItems:'center', gap:6, fontSize:13.5, color:'rgba(245,245,245,.38)', textDecoration:'none' }}>
