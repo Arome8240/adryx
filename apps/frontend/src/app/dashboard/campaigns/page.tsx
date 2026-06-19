@@ -2,14 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { useWallet, useConnection } from "@solana/wallet-adapter-react";
-import { PublicKey, Transaction } from "@solana/web3.js";
-import {
-  getAssociatedTokenAddress,
-  createTransferInstruction,
-  USDC_MINT_DEVNET,
-  usdcToRaw,
-} from "@/lib/usdc";
+import { useStellarWallet } from "@/components/providers/WalletProvider";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import { apiClient } from "@/lib/api-client";
 import WalletButton from "@/components/dashboard/WalletButton";
@@ -72,8 +65,7 @@ const inputCls =
 
 export default function CampaignsPage() {
   const router = useRouter();
-  const { publicKey, sendTransaction } = useWallet();
-  const { connection } = useConnection();
+  const { address: publicKey } = useStellarWallet();
   const {
     campaigns,
     isLoading,
@@ -143,65 +135,17 @@ export default function CampaignsPage() {
 
   // Fund
   async function handleFund() {
-    if (!publicKey) return showToast("Connect your wallet first", false);
     const amount = parseFloat(fundingAmount);
     if (!fundingId || isNaN(amount) || amount <= 0)
       return showToast("Enter a valid amount", false);
+    if (!publicKey) return showToast("Connect your Stellar wallet first", false);
     setIsFunding(true);
     try {
-      const solanaInfo = await apiClient.getSolanaInfo();
-      const programId = new PublicKey(solanaInfo.programId);
-
-      // Derive escrow PDA
-      const [escrowPda] = PublicKey.findProgramAddressSync(
-        [Buffer.from("campaign"), publicKey.toBuffer(), Buffer.from(fundingId)],
-        programId,
-      );
-
-      // Get advertiser's USDC associated token account
-      const senderAta = await getAssociatedTokenAddress(
-        USDC_MINT_DEVNET,
-        publicKey,
-      );
-
-      // Get (or derive) escrow's USDC associated token account
-      const escrowAta = await getAssociatedTokenAddress(
-        USDC_MINT_DEVNET,
-        escrowPda,
-        true,
-      );
-
-      // Build SPL token transfer instruction
-      const rawAmount = usdcToRaw(amount);
-      const transferIx = createTransferInstruction(
-        senderAta,
-        escrowAta,
-        publicKey,
-        rawAmount,
-      );
-
-      const tx = new Transaction().add(transferIx);
-      const { blockhash } = await connection.getLatestBlockhash();
-      tx.recentBlockhash = blockhash;
-      tx.feePayer = publicKey;
-
-      showToast("Approve the transaction in your wallet…", true);
-      const signature = await sendTransaction(tx, connection);
-      await connection.confirmTransaction(signature, "confirmed");
-
-      await fundCampaign(fundingId, publicKey.toString(), amount, signature);
-      showToast(
-        `Funded $${amount.toFixed(2)} USDC! Tx: ${signature.slice(0, 12)}…`,
-      );
-      setFundingId(null);
-      setFundingAmount("");
-    } catch (e: any) {
-      showToast(
-        e.message?.includes("User rejected")
-          ? "Transaction cancelled"
-          : (e.message ?? "Transaction failed"),
-        false,
-      );
+      await fundCampaign(fundingId, publicKey, amount);
+      showToast("Campaign funded successfully!", true);
+      setFundModal(null);
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : "Funding failed", false);
     } finally {
       setIsFunding(false);
     }

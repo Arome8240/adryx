@@ -1,34 +1,84 @@
 'use client';
 
-import { useMemo } from 'react';
-import { ConnectionProvider, WalletProvider as SolanaWalletProvider } from '@solana/wallet-adapter-react';
-import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
-import { PhantomWalletAdapter, SolflareWalletAdapter } from '@solana/wallet-adapter-wallets';
-import { clusterApiUrl } from '@solana/web3.js';
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 
-// Import wallet adapter CSS
-import '@solana/wallet-adapter-react-ui/styles.css';
+// Freighter browser extension API (injected as window.freighter)
+declare global {
+  interface Window {
+    freighter?: {
+      isConnected: () => Promise<{ isConnected: boolean }>;
+      getPublicKey: () => Promise<string>;
+      signMessage: (opts: { message: string; networkPassphrase?: string }) => Promise<{ signedMessage: string }>;
+      signTransaction: (xdr: string, opts?: { network?: string; networkPassphrase?: string }) => Promise<{ signedTransaction: string }>;
+    };
+  }
+}
+
+interface StellarWalletState {
+  address: string | null;
+  connected: boolean;
+  connecting: boolean;
+  connect: () => Promise<string>;
+  disconnect: () => void;
+  signTransaction: (xdr: string) => Promise<string>;
+}
+
+const StellarWalletContext = createContext<StellarWalletState>({
+  address: null,
+  connected: false,
+  connecting: false,
+  connect: async () => { throw new Error('WalletProvider not mounted'); },
+  disconnect: () => {},
+  signTransaction: async () => { throw new Error('WalletProvider not mounted'); },
+});
 
 export function WalletProvider({ children }: { children: React.ReactNode }) {
-  // Use devnet
-  const endpoint = useMemo(() => clusterApiUrl('devnet'), []);
+  const { user } = useAuth();
+  const [address, setAddress] = useState<string | null>(null);
+  const [connecting, setConnecting] = useState(false);
 
-  // Configure wallets
-  const wallets = useMemo(
-    () => [
-      new PhantomWalletAdapter(),
-      new SolflareWalletAdapter(),
-    ],
-    []
-  );
+  // Seed address from the auth user's linked Stellar wallet on mount / user change
+  useEffect(() => {
+    if (user?.walletAddress) setAddress(user.walletAddress);
+  }, [user?.walletAddress]);
+
+  const connect = useCallback(async (): Promise<string> => {
+    if (!window.freighter) {
+      throw new Error('Freighter extension is not installed. Visit freighter.app to install it.');
+    }
+    setConnecting(true);
+    try {
+      const { isConnected } = await window.freighter.isConnected();
+      if (!isConnected) throw new Error('Freighter is locked. Please unlock your wallet first.');
+      const pubKey = await window.freighter.getPublicKey();
+      setAddress(pubKey);
+      return pubKey;
+    } finally {
+      setConnecting(false);
+    }
+  }, []);
+
+  const disconnect = useCallback(() => {
+    if (!user?.walletAddress) setAddress(null);
+  }, [user?.walletAddress]);
+
+  const signTransaction = useCallback(async (xdr: string): Promise<string> => {
+    if (!window.freighter) throw new Error('Freighter not available');
+    const network = process.env.NEXT_PUBLIC_STELLAR_NETWORK === 'mainnet' ? 'MAINNET' : 'TESTNET';
+    const { signedTransaction } = await window.freighter.signTransaction(xdr, { network });
+    return signedTransaction;
+  }, []);
 
   return (
-    <ConnectionProvider endpoint={endpoint}>
-      <SolanaWalletProvider wallets={wallets} autoConnect>
-        <WalletModalProvider>
-          {children}
-        </WalletModalProvider>
-      </SolanaWalletProvider>
-    </ConnectionProvider>
+    <StellarWalletContext.Provider
+      value={{ address, connected: !!address, connecting, connect, disconnect, signTransaction }}
+    >
+      {children}
+    </StellarWalletContext.Provider>
   );
+}
+
+export function useStellarWallet(): StellarWalletState {
+  return useContext(StellarWalletContext);
 }

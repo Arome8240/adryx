@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useStellarWallet } from "@/components/providers/WalletProvider";
 import { useAuth } from "@/hooks/useAuth";
 import { apiClient } from "@/lib/api-client";
 import WalletButton from "@/components/dashboard/WalletButton";
@@ -108,7 +108,7 @@ function Toggle({
 
 export default function PublisherSettingsPage() {
   const { user, loadUser } = useAuth();
-  const { publicKey } = useWallet();
+  const { address: publicKey } = useStellarWallet();
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
 
   // Profile
@@ -432,7 +432,7 @@ export default function PublisherSettingsPage() {
               <>
                 <p className="text-xs text-white/40 mb-1">Connected wallet</p>
                 <p className="text-sm font-mono text-white/70 break-all">
-                  {publicKey.toString()}
+                  {publicKey}
                 </p>
               </>
             ) : (
