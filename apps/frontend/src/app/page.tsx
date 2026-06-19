@@ -246,7 +246,7 @@ function Hero() {
         {/* Eyebrow */}
         <div className="c-eyebrow fade-up-1" style={{ marginBottom: 28 }}>
           <span className="c-dot" />
-          New · USDC payouts now on Base
+          New · USDC payouts now on Stellar
         </div>
 
         {/* Headline */}
@@ -288,7 +288,7 @@ function Hero() {
 
 /* ─── LogoBar ──────────────────────────────────────────────────────── */
 function LogoBar() {
-  const brands = ['Mirror', 'Layer3', 'Farcaster', 'Lens', 'Zora', 'Stargate', 'Optimism', 'Polygon', 'Linea'];
+  const brands = ['StellarX', 'Lobstr', 'Aquarius', 'Ultrastellar', 'Stellar.org', 'Kado', 'MoneyGram', 'SDF', 'Bitso'];
   return (
     <div style={{ borderTop: '1px solid rgba(255,255,255,.07)', borderBottom: '1px solid rgba(255,255,255,.07)', padding: '36px 0', background: '#0f0f13' }}>
       <div className="c-wrap" style={{ textAlign: 'center' }}>
@@ -369,7 +369,7 @@ function HowItWorks() {
     { n: '01', title: 'Publisher embeds Adryx', desc: 'One async script tag — no frameworks, no bundle impact.', icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M5 5l-3 4 3 4M13 5l3 4-3 4M10 3l-2 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg> },
     { n: '02', title: 'Auction runs in 38ms', desc: 'Second-price auction selects the winning bid in real-time.', icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2v4M9 12v4M5 6L2.5 3.5M13 12l2.5 2.5M2 9h4M12 9h4M5 12L2.5 14.5M13 6l2.5-2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg> },
     { n: '03', title: 'Impression is attested', desc: 'Human verification proof is written on-chain. Bots earn nothing.', icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2C5 2 2 5 2 9s3 7 7 7 7-3 7-7-3-7-7-7z" stroke="currentColor" strokeWidth="1.5" /><path d="M6 9l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg> },
-    { n: '04', title: 'USDC settles weekly', desc: 'Every Friday, publisher balances sweep to their on-chain wallet in USDC.', icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="5" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.5" /><path d="M6 5V4a3 3 0 016 0v1" stroke="currentColor" strokeWidth="1.5" /><circle cx="9" cy="10" r="1.5" fill="currentColor" /></svg> },
+    { n: '04', title: 'USDC settles weekly', desc: 'Every Friday, publisher balances sweep to their Stellar wallet in USDC via Soroban smart contracts.', icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="5" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.5" /><path d="M6 5V4a3 3 0 016 0v1" stroke="currentColor" strokeWidth="1.5" /><circle cx="9" cy="10" r="1.5" fill="currentColor" /></svg> },
   ];
 
   return (
@@ -475,7 +475,7 @@ function Features() {
             <div className="accent-bar" />
             <p className="c-label" style={{ marginBottom: 8 }}>Transparency</p>
             <h3 className="c-h3" style={{ marginBottom: 12 }}>Every impression, proven on-chain.</h3>
-            <p className="c-sm c-muted" style={{ marginBottom: 22, maxWidth: 440 }}>Each ad render writes an attestation to Base. Advertisers can verify every dollar spent; publishers can audit every cent earned.</p>
+            <p className="c-sm c-muted" style={{ marginBottom: 22, maxWidth: 440 }}>Each ad render writes an attestation to Stellar. Advertisers can verify every dollar spent; publishers can audit every cent earned.</p>
             <ProofVisual />
           </div>
 
@@ -527,7 +527,7 @@ function Features() {
             <p className="c-label" style={{ marginBottom: 8 }}>Targeting</p>
             <h3 className="c-h4" style={{ marginBottom: 14 }}>Wallet-based audience segments</h3>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {['DeFi users', 'NFT holders', 'L2 native', 'Early adopters', 'DAO voters', 'Stakers'].map(t => (
+              {['XLM holders', 'USDC holders', 'Soroban users', 'AMM LPs', 'Anchor users', 'Stellar DEX'].map(t => (
                 <span key={t} className="c-badge c-badge-acc">{t}</span>
               ))}
             </div>
@@ -537,14 +537,20 @@ function Features() {
           <div className="c-card" style={{ gridColumn: 'span 2' }}>
             <div className="accent-bar" />
             <p className="c-label" style={{ marginBottom: 8 }}>Payments</p>
-            <h3 className="c-h4" style={{ marginBottom: 14 }}>Multi-chain USDC payouts</h3>
-            <div style={{ display: 'flex', gap: 8 }}>
-              {[{ label: 'Base', color: '#0052ff' }, { label: 'Optimism', color: '#ff0420' }, { label: 'Polygon', color: '#8247e5' }, { label: 'Linea', color: '#232323' }].map(c => (
-                <div key={c.label} title={c.label} style={{ width: 32, height: 32, borderRadius: '50%', background: c.color, border: '2px solid rgba(255,255,255,.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: '#fff', fontWeight: 700 }}>
-                  {c.label[0]}
+            <h3 className="c-h4" style={{ marginBottom: 14 }}>Stellar USDC payouts</h3>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {[
+                { label: 'XLM',  color: '#000000', abbr: 'XLM' },
+                { label: 'USDC', color: '#2775CA', abbr: '$' },
+                { label: 'AQUA', color: '#00b4d8', abbr: 'AQ' },
+                { label: 'yXLM', color: '#5e35b1', abbr: 'yX' },
+              ].map(c => (
+                <div key={c.label} title={c.label} style={{ width: 32, height: 32, borderRadius: '50%', background: c.color, border: '2px solid rgba(255,255,255,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: '#fff', fontWeight: 700, letterSpacing: '-0.02em' }}>
+                  {c.abbr}
                 </div>
               ))}
             </div>
+            <p className="c-xs c-muted" style={{ marginTop: 10 }}>Powered by Soroban smart contracts</p>
           </div>
 
           {/* Control — span 2 */}
@@ -648,7 +654,7 @@ function Compare() {
 function Testimonials() {
   const quotes = [
     { quote: 'Switching to Adryx doubled our effective CPM and we actually get paid on time — every Friday, in USDC.', name: 'Marina Voss', title: 'Head of Revenue, Tessera Wire', initials: 'MV' },
-    { quote: 'The transparency is unreal. I can verify every impression we paid for on Base. No more trusting a black box.', name: 'Daniel Park', title: 'Growth Lead, Onchain Labs', initials: 'DP' },
+    { quote: 'The transparency is unreal. I can verify every impression we paid for on Stellar. No more trusting a black box.', name: 'Daniel Park', title: 'Growth Lead, Onchain Labs', initials: 'DP' },
     { quote: 'Our DeFi audience segment performed 3x better than generic programmatic. Wallet-based targeting is a game-changer.', name: 'Asha Rao', title: 'Marketing Director, Meridian Finance', initials: 'AR' },
   ];
   return (
@@ -713,7 +719,7 @@ function SiteFooter() {
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr', gap: 32, marginBottom: 48 }}>
           <div className="c-col" style={{ gap: 14 }}>
             <BrandLogo />
-            <p className="c-sm c-muted" style={{ maxWidth: 240 }}>Internet advertising, settled in stablecoins. USDC payouts for every verified impression.</p>
+            <p className="c-sm c-muted" style={{ maxWidth: 240 }}>Internet advertising, settled in stablecoins. USDC payouts on Stellar for every verified impression.</p>
           </div>
           {Object.entries(cols).map(([group, links]) => (
             <div key={group}>
