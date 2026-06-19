@@ -1,5 +1,57 @@
 @import "tailwindcss";
 
+/* ─── Tailwind v4 design tokens (Celina system) ─────────────────── */
+/* All --c-* vars bridged here so Tailwind generates utilities:      */
+/* bg-acc, text-fg-2, border-line, font-display, rounded-lg, etc.   */
+@theme inline {
+  /* Colours */
+  --color-acc:        var(--c-acc);
+  --color-acc-soft:   var(--c-acc-soft);
+  --color-acc-ink:    var(--c-acc-ink);
+  --color-bg:         var(--c-bg);
+  --color-bg-2:       var(--c-bg-2);
+  --color-bg-3:       var(--c-bg-3);
+  --color-bg-4:       var(--c-bg-4);
+  --color-surface:    var(--c-surface);
+  --color-surface-2:  var(--c-surface-2);
+  --color-fg:         var(--c-fg);
+  --color-fg-2:       var(--c-fg-2);
+  --color-fg-3:       var(--c-fg-3);
+  --color-fg-4:       var(--c-fg-4);
+  --color-fg-5:       var(--c-fg-5);
+  --color-line:       var(--c-line);
+  --color-line-2:     var(--c-line-2);
+  --color-line-3:     var(--c-line-3);
+  --color-ok:         var(--c-ok);
+  --color-ok-soft:    var(--c-ok-soft);
+  --color-warn:       var(--c-warn);
+  --color-warn-soft:  var(--c-warn-soft);
+  --color-bad:        var(--c-bad);
+  --color-bad-soft:   var(--c-bad-soft);
+  --color-card:       var(--c-card);
+
+  /* Typography */
+  --font-display: var(--f-display);
+  --font-sans:    var(--f-sans);
+  --font-mono:    var(--f-mono);
+
+  /* Border radius */
+  --radius-xs:   var(--r-1);
+  --radius-sm:   var(--r-2);
+  --radius-md:   var(--r-3);
+  --radius-lg:   var(--r-5);
+  --radius-xl:   var(--r-6);
+  --radius-2xl:  var(--r-7);
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-card: var(--sh-card);
+  --shadow-pop:  var(--sh-pop);
+  --shadow-sm:   var(--sh-2);
+  --shadow-md:   var(--sh-3);
+  --shadow-lg:   var(--sh-4);
+}
+
 /* Adryx design tokens */
 :root {
   --c-bg:        #ffffff;
@@ -36,44 +88,54 @@
   --sh-4: 0 20px 50px -20px rgba(15,15,20,.18), 0 8px 16px -8px rgba(15,15,20,.08);
   --sh-card: 0 0 0 1px var(--c-line), 0 1px 2px rgba(15,15,20,.03);
   --sh-pop:  0 0 0 1px var(--c-line-2), 0 16px 40px -12px rgba(15,15,20,.18);
+  --c-card:      rgba(255,255,255,.04);
+  --c-ok-soft:   #ecfdf5;
+  --c-bad-soft:  #fef2f2;
+  --c-warn-soft: #fff7ed;
 }
 
-/* ─── Dark theme ──────────────────────────────────────────────────── */
+/* ─── Dark theme (Celina) ─────────────────────────────────────────── */
 [data-theme="dark"] {
-  --c-bg:        #09090b;
-  --c-bg-2:      #0f0f12;
-  --c-bg-3:      #18181c;
-  --c-bg-4:      #222228;
-  --c-surface:   #0f0f12;
-  --c-surface-2: #18181c;
-  --c-fg:        #fafafa;
-  --c-fg-2:      #e4e4e8;
-  --c-fg-3:      #a0a0b0;
-  --c-fg-4:      #60607a;
-  --c-fg-5:      #3a3a52;
-  --c-line:      #1e1e26;
-  --c-line-2:    #28283a;
-  --c-line-3:    #34344a;
-  --c-acc-soft:  rgba(59,130,246,.16);
-  --c-acc-ink:   #93c5fd;
-  --c-ok:        #22c55e;
-  --c-ok-soft:   rgba(34,197,94,.12);
-  --c-warn:      #f59e0b;
-  --c-warn-soft: rgba(245,158,11,.12);
+  --c-bg:        #08080a;
+  --c-bg-2:      #0f0f13;
+  --c-bg-3:      #171719;
+  --c-bg-4:      #1e1e22;
+  --c-surface:   #0f0f13;
+  --c-surface-2: #171719;
+  --c-fg:        #f5f5f5;
+  --c-fg-2:      rgba(245,245,245,.72);
+  --c-fg-3:      rgba(245,245,245,.5);
+  --c-fg-4:      rgba(245,245,245,.3);
+  --c-fg-5:      rgba(245,245,245,.16);
+  --c-line:      rgba(255,255,255,.08);
+  --c-line-2:    rgba(255,255,255,.12);
+  --c-line-3:    rgba(255,255,255,.18);
+  /* Celina yellow accent */
+  --c-acc:       #EBFF45;
+  --c-acc-2:     #d4e63c;
+  --c-acc-soft:  rgba(235,255,69,.12);
+  --c-acc-ink:   #0e0e00;
+  --c-card:      rgba(255,255,255,.025);
+  --c-ok:        #4ade80;
+  --c-ok-soft:   rgba(74,222,128,.12);
+  --c-warn:      #fbbf24;
+  --c-warn-soft: rgba(251,191,36,.12);
   --c-bad:       #f87171;
   --c-bad-soft:  rgba(248,113,113,.12);
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --c-bg:        #09090b; --c-bg-2:      #0f0f12;
-    --c-bg-3:      #18181c; --c-bg-4:      #222228;
-    --c-surface:   #0f0f12; --c-surface-2: #18181c;
-    --c-fg:        #fafafa; --c-fg-2:      #e4e4e8;
-    --c-fg-3:      #a0a0b0; --c-fg-4:      #60607a; --c-fg-5: #3a3a52;
-    --c-line:      #1e1e26; --c-line-2:    #28283a; --c-line-3: #34344a;
-    --c-acc-soft:  rgba(59,130,246,.16); --c-acc-ink: #93c5fd;
-    --c-ok:        #22c55e; --c-ok-soft:   rgba(34,197,94,.12);
-    --c-warn:      #f59e0b; --c-warn-soft: rgba(245,158,11,.12);
+    --c-bg:        #08080a; --c-bg-2:      #0f0f13;
+    --c-bg-3:      #171719; --c-bg-4:      #1e1e22;
+    --c-surface:   #0f0f13; --c-surface-2: #171719;
+    --c-fg:        #f5f5f5; --c-fg-2:      rgba(245,245,245,.72);
+    --c-fg-3:      rgba(245,245,245,.5); --c-fg-4: rgba(245,245,245,.3); --c-fg-5: rgba(245,245,245,.16);
+    --c-line:      rgba(255,255,255,.08); --c-line-2: rgba(255,255,255,.12); --c-line-3: rgba(255,255,255,.18);
+    --c-acc:       #EBFF45; --c-acc-2: #d4e63c;
+    --c-acc-soft:  rgba(235,255,69,.12); --c-acc-ink: #0e0e00;
+    --c-card:      rgba(255,255,255,.025);
+    --c-ok:        #4ade80; --c-ok-soft:   rgba(74,222,128,.12);
+    --c-warn:      #fbbf24; --c-warn-soft: rgba(251,191,36,.12);
     --c-bad:       #f87171; --c-bad-soft:  rgba(248,113,113,.12);
   }
 }
@@ -276,3 +338,169 @@ input, textarea, select { font-family: inherit; font-size: inherit; color: inher
 .logo-strip .lg { color: var(--c-fg-4); font-weight: 560; letter-spacing: -0.01em; font-size: 17px; opacity: .85; }
 button:focus-visible, a:focus-visible, .input:focus-visible { outline: 2px solid var(--c-acc); outline-offset: 2px; border-radius: var(--r-2); }
 @media (max-width: 980px) { .topnav-links { display: none !important; } .auth-shell { grid-template-columns: 1fr !important; } .auth-shell > div:last-child { display: none; } }
+
+/* ═══════════════════════════════════════════════════════════════════
+   CELINA COMPONENT SYSTEM
+   Dark-first components using --c-* tokens.
+   These compose with Tailwind utilities (bg-acc, text-fg-2, etc.).
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ─── Animations ─────────────────────────────────────────────────── */
+@keyframes cdot     { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:.5; transform:scale(.8); } }
+@keyframes c-fadeup { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+@keyframes c-glow   { 0%,100% { opacity:.6; } 50% { opacity:1; } }
+
+.c-dot  { animation: cdot 2.2s ease-in-out infinite; }
+.c-anim { animation: c-fadeup .6s ease both; }
+.c-anim-d1 { animation-delay: .1s; }
+.c-anim-d2 { animation-delay: .2s; }
+.c-anim-d3 { animation-delay: .3s; }
+
+/* ─── Navigation ─────────────────────────────────────────────────── */
+.c-nav {
+  position: sticky; top: 0; z-index: 40;
+  background: rgba(8,8,10,.72);
+  backdrop-filter: saturate(180%) blur(16px);
+  -webkit-backdrop-filter: saturate(180%) blur(16px);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+
+/* ─── Yellow CTA button ──────────────────────────────────────────── */
+.c-btn-y {
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 44px; padding: 0 22px;
+  background: var(--c-acc); color: var(--c-acc-ink);
+  border-radius: 6px; border: none;
+  font-size: 15px; font-weight: 560; letter-spacing: -0.01em;
+  cursor: pointer; white-space: nowrap;
+  transition: background .12s ease, transform .08s ease, box-shadow .12s ease;
+}
+.c-btn-y:hover {
+  background: color-mix(in srgb, var(--c-acc) 85%, #fff 15%);
+  box-shadow: 0 0 0 4px var(--c-acc-soft);
+  transform: translateY(-1px);
+}
+.c-btn-y:active { transform: translateY(0); }
+.c-btn-y-sm { height: 36px; padding: 0 16px; font-size: 13.5px; }
+.c-btn-y-lg { height: 52px; padding: 0 28px; font-size: 16px; }
+
+/* Ghost button styled for dark surface */
+.c-btn-ghost {
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 44px; padding: 0 22px;
+  background: rgba(255,255,255,.06); color: var(--c-fg);
+  border-radius: 6px; border: 1px solid rgba(255,255,255,.1);
+  font-size: 15px; font-weight: 510; cursor: pointer; white-space: nowrap;
+  transition: background .12s ease, border-color .12s ease;
+}
+.c-btn-ghost:hover { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.16); }
+
+/* ─── Cards ──────────────────────────────────────────────────────── */
+.c-card {
+  position: relative; overflow: hidden;
+  border: 1px solid var(--c-line);
+  background: var(--c-card);
+  border-radius: 12px;
+  transition: border-color .2s ease, background .2s ease;
+}
+.c-card:hover { border-color: var(--c-line-2); background: rgba(255,255,255,.04); }
+
+/* Left accent stripe — revealed on hover */
+.c-card .accent-bar {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+  background: var(--c-acc); opacity: 0;
+  transition: opacity .2s ease;
+  border-radius: 12px 0 0 12px;
+}
+.c-card:hover .accent-bar { opacity: 1; }
+
+/* Glowing card variant */
+.c-card-glow {
+  box-shadow: 0 0 0 1px var(--c-line), 0 0 40px -10px rgba(235,255,69,.08);
+  transition: box-shadow .3s ease;
+}
+.c-card-glow:hover { box-shadow: 0 0 0 1px rgba(235,255,69,.3), 0 0 60px -10px rgba(235,255,69,.15); }
+
+/* ─── Eyebrow pill ───────────────────────────────────────────────── */
+.c-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 4px 12px;
+  border: 1px solid rgba(235,255,69,.28);
+  background: rgba(235,255,69,.08);
+  border-radius: 999px;
+  font-size: 11.5px; font-weight: 560;
+  text-transform: uppercase; letter-spacing: .1em;
+  color: var(--c-acc);
+}
+.c-eyebrow .c-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--c-acc); display: inline-block; }
+
+/* Neutral eyebrow (no accent) */
+.c-eyebrow-n {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 4px 12px;
+  border: 1px solid var(--c-line-2);
+  background: rgba(255,255,255,.04);
+  border-radius: 999px;
+  font-size: 11.5px; font-weight: 560;
+  text-transform: uppercase; letter-spacing: .1em;
+  color: var(--c-fg-3);
+}
+
+/* ─── Corner bracket decoration ─────────────────────────────────── */
+.c-corner {
+  position: relative;
+}
+.c-corner::before, .c-corner::after {
+  content: '';
+  position: absolute;
+  width: 10px; height: 10px;
+  border-color: rgba(235,255,69,.35);
+  border-style: solid;
+}
+.c-corner::before { top: 0; left: 0; border-width: 1px 0 0 1px; }
+.c-corner::after  { bottom: 0; right: 0; border-width: 0 1px 1px 0; }
+
+/* ─── Glassmorphism surface ──────────────────────────────────────── */
+.c-glass {
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ─── Accent text / highlight ────────────────────────────────────── */
+.c-acc  { color: var(--c-acc); }
+.c-muted { color: var(--c-fg-3); }
+.c-muted-2 { color: var(--c-fg-4); }
+
+/* ─── Gradient text ──────────────────────────────────────────────── */
+.c-text-grad {
+  background: linear-gradient(135deg, var(--c-fg) 0%, var(--c-acc) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ─── Section divider glow line ──────────────────────────────────── */
+.c-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(235,255,69,.2), transparent);
+}
+
+/* ─── Stat / metric block ────────────────────────────────────────── */
+.c-stat { display: flex; flex-direction: column; gap: 6px; }
+.c-stat-value {
+  font-size: clamp(32px, 4vw, 52px);
+  font-weight: 560; letter-spacing: -0.03em;
+  color: var(--c-fg);
+  font-family: var(--f-display);
+}
+.c-stat-label { font-size: 13px; color: var(--c-fg-3); letter-spacing: .02em; text-transform: uppercase; }
+
+/* ─── Hero glow orbs ─────────────────────────────────────────────── */
+.c-orb {
+  position: absolute; border-radius: 50%; pointer-events: none; filter: blur(80px);
+  animation: c-glow 4s ease-in-out infinite;
+}
+.c-orb-acc  { background: rgba(235,255,69,.12); }
+.c-orb-blue { background: rgba(59,130,246,.08); }
