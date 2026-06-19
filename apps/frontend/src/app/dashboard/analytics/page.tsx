@@ -214,14 +214,14 @@ function AnalyticsContent() {
 
           {/* Date range */}
           <div className="flex items-center gap-1 glass rounded-xl p-1 border border-white/8">
-            <Calendar size={16} color="#f7931a" className="ml-2" />
+            <Calendar size={16} color="#EBFF45" className="ml-2" />
             {ranges.map((r, i) => (
               <button
                 key={r.label}
                 onClick={() => setRangeIdx(i)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                   rangeIdx === i
-                    ? "bg-[#f7931a]/20 text-[#f7931a]"
+                    ? "bg-[#EBFF45]/15 text-[#EBFF45]"
                     : "text-white/40 hover:text-white"
                 }`}
               >
@@ -550,7 +550,7 @@ function AnalyticsContent() {
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/8">
           <div className="flex items-center gap-2">
-            <Flash size={15} color="#f7931a" />
+            <Flash size={15} color="#EBFF45" />
             <h3 className="text-base font-semibold text-white">
               Top Performing Campaigns
             </h3>

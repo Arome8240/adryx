@@ -125,9 +125,9 @@ export default function OverviewPage() {
         </div>
         <button
           onClick={() => router.push("/dashboard/create")}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#f7931a] hover:bg-[#f7931a]/90 text-white text-sm font-semibold transition-colors"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#EBFF45] hover:bg-[#EBFF45]/90 text-[#0e0e00] text-sm font-bold transition-colors"
         >
-          <AddCircle size={16} color="white" />
+          <AddCircle size={16} color="#0e0e00" />
           New Campaign
         </button>
       </div>
@@ -152,8 +152,8 @@ export default function OverviewPage() {
             label="Total Budget"
             value={`${dashboard.totalBudget.toFixed(2)} USDC`}
             sub={`${dashboard.totalSpent.toFixed(2)} USDC spent`}
-            icon={<EmptyWallet size={16} color="#f7931a" />}
-            accent="#f7931a"
+            icon={<EmptyWallet size={16} color="#EBFF45" />}
+            accent="#EBFF45"
           />
           <StatCard
             label="Impressions"
@@ -178,8 +178,8 @@ export default function OverviewPage() {
           {
             label: "New Campaign",
             desc: "Launch a new ad campaign",
-            icon: <AddCircle size={20} color="#f7931a" />,
-            accent: "#f7931a",
+            icon: <AddCircle size={20} color="#EBFF45" />,
+            accent: "#EBFF45",
             href: "/dashboard/create",
           },
           {
@@ -298,7 +298,7 @@ export default function OverviewPage() {
         <div className="rounded-2xl bg-[#0d0d1a] border border-white/8 overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b border-white/8">
             <div className="flex items-center gap-2">
-              <Flash size={15} color="#f7931a" />
+              <Flash size={15} color="#EBFF45" />
               <p className="text-sm font-semibold text-white">Top Campaigns</p>
             </div>
             <button

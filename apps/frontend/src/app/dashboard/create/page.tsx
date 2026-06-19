@@ -68,7 +68,7 @@ function Field({
 }
 
 const inputCls =
-  "w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-white/20 outline-none focus:border-[#f7931a]/50 transition-colors";
+  "w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-white/20 outline-none focus:border-[#EBFF45]/40 transition-colors";
 
 export default function CreateCampaignPage() {
   const router = useRouter();
@@ -226,12 +226,12 @@ export default function CreateCampaignPage() {
                 }
                 className={`flex flex-col items-start px-4 py-3 rounded-xl border text-left transition-all ${
                   formData.format === f.value
-                    ? "border-[#f7931a]/50 bg-[#f7931a]/8"
+                    ? "border-[#EBFF45]/50 bg-[#EBFF45]/8"
                     : "border-white/8 bg-white/3 hover:border-white/15"
                 }`}
               >
                 <span
-                  className={`text-sm font-semibold ${formData.format === f.value ? "text-[#f7931a]" : "text-white/70"}`}
+                  className={`text-sm font-semibold ${formData.format === f.value ? "text-[#EBFF45]" : "text-white/70"}`}
                 >
                   {f.label}
                 </span>
@@ -381,7 +381,7 @@ export default function CreateCampaignPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="flex-1 px-4 py-3 rounded-xl bg-[#f7931a] hover:bg-[#f7931a]/90 text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="flex-1 px-4 py-3 rounded-xl bg-[#EBFF45] hover:bg-[#EBFF45]/90 text-[#0e0e00] text-sm font-bold disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             {isSubmitting ? "Creating…" : "Create Campaign"}
           </button>
@@ -432,7 +432,7 @@ export default function CreateCampaignPage() {
                     {formData.targetUrl}
                   </p>
                 )}
-                <span className="inline-block mt-1.5 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#f7931a]/15 text-[#f7931a] capitalize">
+                <span className="inline-block mt-1.5 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#EBFF45]/15 text-[#EBFF45] capitalize">
                   {formData.format}
                 </span>
               </div>

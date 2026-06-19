@@ -148,9 +148,9 @@ export default function DashboardNav() {
               className="relative w-9 h-9 rounded-xl glass border border-white/10 flex items-center justify-center text-white/50 hover:text-white transition-colors"
               aria-label="Notifications"
             >
-              <Notification size={16} color="#f7931a" />
+              <Notification size={16} color="#EBFF45" />
               {notifCount > 0 && (
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#f7931a]" />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#EBFF45]" />
               )}
             </button>
             <NotificationsPanel
@@ -171,7 +171,7 @@ export default function DashboardNav() {
               className="flex items-center gap-2 hover:opacity-80 transition-opacity"
               aria-label="Profile menu"
             >
-              <div className="w-8 h-8 rounded-full bg-linear-to-br from-[#f7931a] to-[#a855f7] flex items-center justify-center text-xs font-bold text-white">
+              <div className="w-8 h-8 rounded-full bg-linear-to-br from-[#EBFF45] to-[#a0f045] flex items-center justify-center text-xs font-bold text-[#0e0e00]">
                 {user ? getInitial(user.name) : "?"}
               </div>
               <div className="hidden sm:flex flex-col items-start">
@@ -188,7 +188,7 @@ export default function DashboardNav() {
               <div className="absolute right-0 top-full mt-2 w-60 rounded-2xl bg-[#13131f] border border-white/10 shadow-xl shadow-black/40 overflow-hidden">
                 <div className="px-4 py-3 border-b border-white/8">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-[#f7931a] to-[#a855f7] flex items-center justify-center text-sm font-bold text-white shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-[#EBFF45] to-[#a0f045] flex items-center justify-center text-sm font-bold text-[#0e0e00] shrink-0">
                       {user ? getInitial(user.name) : "?"}
                     </div>
                     <div className="min-w-0">
@@ -200,7 +200,7 @@ export default function DashboardNav() {
                           {user.email}
                         </p>
                       )}
-                      <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded-md bg-[#f7931a]/15 text-[#f7931a] text-[10px] font-semibold capitalize">
+                      <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded-md bg-[#EBFF45]/15 text-[#EBFF45] text-[10px] font-semibold capitalize">
                         {user?.role}
                       </span>
                     </div>
@@ -246,8 +246,8 @@ export default function DashboardNav() {
           <aside className="absolute left-0 top-0 bottom-0 w-64 bg-[#0d0d1a] border-r border-white/8 flex flex-col">
             <div className="px-6 py-5 border-b border-white/8 flex items-center justify-between">
               <Link href="/" className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[#f7931a] to-[#a855f7] flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">A</span>
+                <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[#EBFF45] to-[#a0f045] flex items-center justify-center">
+                  <span className="text-[#0e0e00] font-bold text-sm">A</span>
                 </div>
                 <span className="font-bold text-base">Adryx</span>
               </Link>
@@ -258,14 +258,14 @@ export default function DashboardNav() {
 
             {user && (
               <div className="px-4 py-3 border-b border-white/8 flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-linear-to-br from-[#f7931a] to-[#a855f7] flex items-center justify-center text-sm font-bold text-white shrink-0">
+                <div className="w-9 h-9 rounded-full bg-linear-to-br from-[#EBFF45] to-[#a0f045] flex items-center justify-center text-sm font-bold text-[#0e0e00] shrink-0">
                   {getInitial(user.name)}
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-white truncate">
                     {user.name}
                   </p>
-                  <span className="text-[10px] text-[#f7931a] capitalize">
+                  <span className="text-[10px] text-[#EBFF45] capitalize">
                     {user.role}
                   </span>
                 </div>
@@ -282,12 +282,12 @@ export default function DashboardNav() {
                     onClick={() => setMobileOpen(false)}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                       active
-                        ? "bg-[#f7931a]/15 text-[#f7931a]"
+                        ? "bg-[#EBFF45]/12 text-[#EBFF45]"
                         : "text-white/50 hover:text-white hover:bg-white/5"
                     }`}
                   >
                     <span
-                      className={active ? "text-[#f7931a]" : "text-white/40"}
+                      className={active ? "text-[#EBFF45]" : "text-white/40"}
                     >
                       {item.icon}
                     </span>

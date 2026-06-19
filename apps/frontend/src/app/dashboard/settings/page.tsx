@@ -14,7 +14,7 @@ import {
 } from "iconsax-react";
 
 const inputCls =
-  "w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-white/20 outline-none focus:border-[#f7931a]/50 transition-colors";
+  "w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-white/20 outline-none focus:border-[#EBFF45]/40 transition-colors";
 
 const TIMEZONES = [
   "UTC",
@@ -197,7 +197,7 @@ export default function SettingsPage() {
             <button
               type="submit"
               disabled={savingProfile}
-              className="px-5 py-2.5 rounded-xl bg-[#f7931a] hover:bg-[#f7931a]/90 text-white text-sm font-semibold disabled:opacity-40 transition-colors"
+              className="px-5 py-2.5 rounded-xl bg-[#EBFF45] hover:bg-[#EBFF45]/90 text-[#0e0e00] text-sm font-bold disabled:opacity-40 transition-colors"
             >
               {savingProfile ? "Saving…" : "Save Profile"}
             </button>
@@ -252,7 +252,7 @@ export default function SettingsPage() {
       {/* Notifications */}
       <Section
         title="Notification Preferences"
-        icon={<Notification size={16} color="#f7931a" />}
+        icon={<Notification size={16} color="#EBFF45" />}
       >
         <div>
           <label className="block text-xs font-semibold text-white/40 uppercase tracking-wider mb-3">
@@ -269,7 +269,7 @@ export default function SettingsPage() {
                 onClick={() => handleSaveBudgetThreshold(t)}
                 className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
                   budgetThreshold === t
-                    ? "bg-[#f7931a]/20 text-[#f7931a] border border-[#f7931a]/30"
+                    ? "bg-[#EBFF45]/15 text-[#EBFF45] border border-[#EBFF45]/30"
                     : "bg-white/5 text-white/50 border border-white/8 hover:border-white/20"
                 }`}
               >

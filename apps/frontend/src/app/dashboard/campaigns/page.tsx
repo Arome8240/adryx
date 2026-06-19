@@ -62,7 +62,7 @@ function daysLeft(endDate: string) {
 }
 
 const inputCls =
-  "w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-white/20 outline-none focus:border-[#f7931a]/50 transition-colors";
+  "w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-white/20 outline-none focus:border-[#EBFF45]/40 transition-colors";
 
 export default function CampaignsPage() {
   const router = useRouter();
@@ -283,9 +283,9 @@ export default function CampaignsPage() {
           <WalletButton />
           <button
             onClick={() => router.push("/dashboard/create")}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#f7931a] hover:bg-[#f7931a]/90 text-white text-sm font-semibold transition-colors"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#EBFF45] hover:bg-[#EBFF45]/90 text-[#0e0e00] text-sm font-bold transition-colors"
           >
-            <AddCircle size={16} color="white" />
+            <AddCircle size={16} color="#0e0e00" />
             New Campaign
           </button>
         </div>
@@ -316,7 +316,7 @@ export default function CampaignsPage() {
               onClick={() => setFilterStatus(s)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-all ${
                 filterStatus === s
-                  ? "bg-[#f7931a]/20 text-[#f7931a]"
+                  ? "bg-[#EBFF45]/15 text-[#EBFF45]"
                   : "text-white/40 hover:text-white"
               }`}
             >
@@ -411,9 +411,9 @@ export default function CampaignsPage() {
           {!search && filterStatus === "all" && (
             <button
               onClick={() => router.push("/dashboard/create")}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#f7931a] hover:bg-[#f7931a]/90 text-white text-sm font-semibold transition-colors"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#EBFF45] hover:bg-[#EBFF45]/90 text-[#0e0e00] text-sm font-bold transition-colors"
             >
-              <AddCircle size={16} color="white" />
+              <AddCircle size={16} color="#0e0e00" />
               Create Campaign
             </button>
           )}
@@ -436,7 +436,7 @@ export default function CampaignsPage() {
                       type="checkbox"
                       checked={selected.has(c._id)}
                       onChange={() => toggleSelect(c._id)}
-                      className="mt-1 shrink-0 accent-[#f7931a] cursor-pointer"
+                      className="mt-1 shrink-0 accent-[#EBFF45] cursor-pointer"
                     />
                     <div className="min-w-0">
                       <div className="flex items-center gap-2.5 flex-wrap">
@@ -617,7 +617,7 @@ export default function CampaignsPage() {
               <button
                 onClick={handleFund}
                 disabled={isFunding || !publicKey}
-                className="flex-1 px-4 py-2.5 rounded-xl bg-[#f7931a] hover:bg-[#f7931a]/90 text-white text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="flex-1 px-4 py-2.5 rounded-xl bg-[#EBFF45] hover:bg-[#EBFF45]/90 text-[#0e0e00] text-sm font-bold disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 {isFunding ? "Funding…" : "Fund Campaign"}
               </button>
@@ -680,7 +680,7 @@ export default function CampaignsPage() {
                       }
                       className={`px-3 py-2 rounded-xl border text-sm capitalize transition-all ${
                         editForm.format === f
-                          ? "border-[#f7931a]/50 bg-[#f7931a]/8 text-[#f7931a]"
+                          ? "border-[#EBFF45]/50 bg-[#EBFF45]/8 text-[#EBFF45]"
                           : "border-white/8 text-white/50 hover:border-white/15"
                       }`}
                     >
@@ -701,7 +701,7 @@ export default function CampaignsPage() {
               <button
                 onClick={handleSaveEdit}
                 disabled={isSaving}
-                className="flex-1 px-4 py-2.5 rounded-xl bg-[#f7931a] hover:bg-[#f7931a]/90 text-white text-sm font-semibold disabled:opacity-40 transition-colors"
+                className="flex-1 px-4 py-2.5 rounded-xl bg-[#EBFF45] hover:bg-[#EBFF45]/90 text-[#0e0e00] text-sm font-bold disabled:opacity-40 transition-colors"
               >
                 {isSaving ? "Saving…" : "Save Changes"}
               </button>

@@ -15,35 +15,35 @@ const navItems = [
     label: "Overview",
     href: "/dashboard",
     icon: (active: boolean) => (
-      <Home2 size={20} color={active ? "#f7931a" : "#6366f1"} />
+      <Home2 size={20} color={active ? "#EBFF45" : "#6366f1"} />
     ),
   },
   {
     label: "Campaigns",
     href: "/dashboard/campaigns",
     icon: (active: boolean) => (
-      <Chart size={20} color={active ? "#f7931a" : "#a855f7"} />
+      <Chart size={20} color={active ? "#EBFF45" : "#a855f7"} />
     ),
   },
   {
     label: "Analytics",
     href: "/dashboard/analytics",
     icon: (active: boolean) => (
-      <PresentionChart size={20} color={active ? "#f7931a" : "#3b82f6"} />
+      <PresentionChart size={20} color={active ? "#EBFF45" : "#3b82f6"} />
     ),
   },
   {
     label: "Wallet",
     href: "/dashboard/wallet",
     icon: (active: boolean) => (
-      <EmptyWallet size={20} color={active ? "#f7931a" : "#f59e0b"} />
+      <EmptyWallet size={20} color={active ? "#EBFF45" : "#f59e0b"} />
     ),
   },
   {
     label: "Settings",
     href: "/dashboard/settings",
     icon: (active: boolean) => (
-      <Setting2 size={20} color={active ? "#f7931a" : "#6b7280"} />
+      <Setting2 size={20} color={active ? "#EBFF45" : "#6b7280"} />
     ),
   },
 ];
@@ -56,8 +56,8 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="px-6 py-5 border-b border-white/8">
         <Link href="/" className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[#f7931a] to-[#a855f7] flex items-center justify-center">
-            <span className="text-white font-bold text-sm">A</span>
+          <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[#EBFF45] to-[#a0f045] flex items-center justify-center">
+            <span className="text-[#0e0e00] font-bold text-sm">A</span>
           </div>
           <span className="font-bold text-base tracking-tight">Adryx</span>
         </Link>
@@ -76,14 +76,14 @@ export default function Sidebar() {
               href={item.href}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
                 active
-                  ? "bg-[#f7931a]/15 text-[#f7931a]"
+                  ? "bg-[#EBFF45]/12 text-[#EBFF45]"
                   : "text-white/50 hover:text-white hover:bg-white/5"
               }`}
             >
               <span>{item.icon(active)}</span>
               {item.label}
               {active && (
-                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[#f7931a]" />
+                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[#EBFF45]" />
               )}
             </Link>
           );

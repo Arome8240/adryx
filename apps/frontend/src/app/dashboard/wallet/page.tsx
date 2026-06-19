@@ -271,7 +271,7 @@ export default function WalletPage() {
             onClick={() => setShowReloadSettings((v) => !v)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-colors ${
               showReloadSettings
-                ? "bg-[#f7931a]/15 border-[#f7931a]/30 text-[#f7931a]"
+                ? "bg-[#EBFF45]/15 border-[#EBFF45]/30 text-[#EBFF45]"
                 : "bg-white/5 border-white/10 text-white/40 hover:text-white"
             }`}
           >
@@ -297,13 +297,13 @@ export default function WalletPage() {
                 value={reloadInput}
                 onChange={(e) => setReloadInput(e.target.value)}
                 placeholder="0"
-                className="w-24 pl-6 pr-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-[#f7931a]/50 transition-colors"
+                className="w-24 pl-6 pr-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-[#EBFF45]/40 transition-colors"
               />
             </div>
             <span className="text-xs text-white/30">USDC (0 = disabled)</span>
             <button
               onClick={saveAutoReload}
-              className="px-3 py-1.5 rounded-xl bg-[#f7931a] hover:bg-[#f7931a]/90 text-white text-xs font-semibold transition-colors"
+              className="px-3 py-1.5 rounded-xl bg-[#EBFF45] hover:bg-[#EBFF45]/90 text-[#0e0e00] text-xs font-bold transition-colors"
             >
               Save
             </button>
