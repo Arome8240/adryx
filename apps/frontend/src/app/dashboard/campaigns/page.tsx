@@ -153,53 +153,17 @@ export default function CampaignsPage() {
 
   // Top-up
   async function handleTopUp() {
-    if (!publicKey) return showToast("Connect your wallet first", false);
     const amount = parseFloat(topUpAmount);
     if (!topUpId || isNaN(amount) || amount <= 0)
       return showToast("Enter a valid amount", false);
+    if (!publicKey) return showToast("Connect your Stellar wallet first", false);
     setIsTopUp(true);
     try {
-      const solanaInfo = await apiClient.getSolanaInfo();
-      const programId = new PublicKey(solanaInfo.programId);
-      const [escrowPda] = PublicKey.findProgramAddressSync(
-        [Buffer.from("campaign"), publicKey.toBuffer(), Buffer.from(topUpId)],
-        programId,
-      );
-      const senderAta = await getAssociatedTokenAddress(
-        USDC_MINT_DEVNET,
-        publicKey,
-      );
-      const escrowAta = await getAssociatedTokenAddress(
-        USDC_MINT_DEVNET,
-        escrowPda,
-        true,
-      );
-      const rawAmount = usdcToRaw(amount);
-      const transferIx = createTransferInstruction(
-        senderAta,
-        escrowAta,
-        publicKey,
-        rawAmount,
-      );
-      const tx = new Transaction().add(transferIx);
-      const { blockhash } = await connection.getLatestBlockhash();
-      tx.recentBlockhash = blockhash;
-      tx.feePayer = publicKey;
-      showToast("Approve the transaction in your wallet…", true);
-      const signature = await sendTransaction(tx, connection);
-      await connection.confirmTransaction(signature, "confirmed");
-      await apiClient.topUpCampaign(topUpId, amount, signature);
-      await refetch();
-      showToast(`Added $${amount.toFixed(2)} USDC to campaign!`);
-      setTopUpId(null);
-      setTopUpAmount("");
-    } catch (e: any) {
-      showToast(
-        e.message?.includes("User rejected")
-          ? "Transaction cancelled"
-          : (e.message ?? "Failed"),
-        false,
-      );
+      await topUpCampaign(topUpId, topUpAmount);
+      showToast("Campaign topped up!", true);
+      setTopUpModal(null);
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : "Top-up failed", false);
     } finally {
       setIsTopUp(false);
     }
