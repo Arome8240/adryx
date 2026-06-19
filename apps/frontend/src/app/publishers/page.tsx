@@ -34,7 +34,7 @@ function StatCard({
   accent: string;
 }) {
   return (
-    <div className="rounded-2xl bg-[#0d0d1a] border border-white/8 p-5 flex flex-col gap-3">
+    <div className="rounded-2xl bg-[#0f0f13] border border-white/8 p-5 flex flex-col gap-3">
       <div className="flex items-center justify-between">
         <p className="text-xs font-semibold text-white/40 uppercase tracking-wider">
           {label}
@@ -108,7 +108,7 @@ export default function PublishersPage() {
           {[...Array(4)].map((_, i) => (
             <div
               key={i}
-              className="rounded-2xl bg-[#0d0d1a] border border-white/8 p-5 animate-pulse space-y-3"
+              className="rounded-2xl bg-[#0f0f13] border border-white/8 p-5 animate-pulse space-y-3"
             >
               <div className="h-3 bg-white/8 rounded w-1/3" />
               <div className="h-7 bg-white/8 rounded w-1/2" />
@@ -121,22 +121,22 @@ export default function PublishersPage() {
             label="Total Earnings"
             value={`$${parseFloat(dashboard.totalEarnings).toFixed(2)}`}
             sub="USDC lifetime"
-            icon={<DollarCircle size={16} color="#4ade80" />}
-            accent="#4ade80"
+            icon={<DollarCircle size={16} color="#EBFF45" />}
+            accent="#EBFF45"
           />
           <StatCard
             label="Impressions"
             value={dashboard.impressions.toLocaleString()}
             sub={`${dashboard.clicks.toLocaleString()} clicks`}
-            icon={<Eye size={16} color="#a855f7" />}
-            accent="#a855f7"
+            icon={<Eye size={16} color="#EBFF45" />}
+            accent="#EBFF45"
           />
           <StatCard
             label="CTR"
             value={`${dashboard.ctr}%`}
             sub={`${dashboard.totalPlacements} placements`}
-            icon={<MouseCircle size={16} color="#22d3ee" />}
-            accent="#22d3ee"
+            icon={<MouseCircle size={16} color="#d4e63c" />}
+            accent="#d4e63c"
           />
           <StatCard
             label="eCPM"
@@ -164,7 +164,7 @@ export default function PublishersPage() {
           </div>
           <Link
             href="/publishers/analytics"
-            className="text-xs text-[#a855f7] hover:text-[#c084fc] transition-colors"
+            className="text-xs text-[#EBFF45] hover:text-[#c084fc] transition-colors"
           >
             Full analytics →
           </Link>
@@ -181,7 +181,7 @@ export default function PublishersPage() {
           <PerformanceChart
             data={earningsChart}
             lines={[
-              { key: "earnings", color: "#4ade80", label: "Earnings (USDC)" },
+              { key: "earnings", color: "#EBFF45", label: "Earnings (USDC)" },
             ]}
             height={200}
           />
@@ -191,15 +191,15 @@ export default function PublishersPage() {
       {/* Bottom two-column */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Top placements */}
-        <div className="rounded-2xl bg-[#0d0d1a] border border-white/8 overflow-hidden">
+        <div className="rounded-2xl bg-[#0f0f13] border border-white/8 overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b border-white/8">
             <div className="flex items-center gap-2">
-              <Flash size={15} color="#4ade80" />
+              <Flash size={15} color="#EBFF45" />
               <p className="text-sm font-semibold text-white">Top Placements</p>
             </div>
             <Link
               href="/publishers/placements"
-              className="text-xs text-[#a855f7] hover:text-[#c084fc] transition-colors"
+              className="text-xs text-[#EBFF45] hover:text-[#c084fc] transition-colors"
             >
               All placements →
             </Link>
@@ -248,7 +248,7 @@ export default function PublishersPage() {
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-sm font-bold text-[#4ade80]">
+                    <p className="text-sm font-bold text-[#EBFF45]">
                       ${p.earnings.toFixed(2)}
                     </p>
                     <p className="text-[10px] text-white/30">USDC</p>
@@ -260,17 +260,17 @@ export default function PublishersPage() {
         </div>
 
         {/* Activity feed */}
-        <div className="rounded-2xl bg-[#0d0d1a] border border-white/8 overflow-hidden">
+        <div className="rounded-2xl bg-[#0f0f13] border border-white/8 overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b border-white/8">
             <div className="flex items-center gap-2">
-              <Clock size={15} color="#a855f7" />
+              <Clock size={15} color="#EBFF45" />
               <p className="text-sm font-semibold text-white">
                 Recent Activity
               </p>
             </div>
             <Link
               href="/publishers/placements"
-              className="text-xs text-[#a855f7] hover:text-[#c084fc] transition-colors"
+              className="text-xs text-[#EBFF45] hover:text-[#c084fc] transition-colors"
             >
               All placements →
             </Link>
@@ -298,7 +298,7 @@ export default function PublishersPage() {
                   key={String(item.placementId) + i}
                   className="flex items-start gap-3 px-3 py-2.5 rounded-xl hover:bg-white/3 transition-colors"
                 >
-                  <span className="w-2 h-2 rounded-full mt-1.5 shrink-0 bg-[#4ade80]" />
+                  <span className="w-2 h-2 rounded-full mt-1.5 shrink-0 bg-[#EBFF45]" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-white/80 truncate">
                       <span className="font-medium">{item.name}</span>

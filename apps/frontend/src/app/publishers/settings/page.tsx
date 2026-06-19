@@ -17,7 +17,7 @@ import {
 } from "iconsax-react";
 
 const inputCls =
-  "w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-white/20 outline-none focus:border-[#4ade80]/50 transition-colors";
+  "w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-white/20 outline-none focus:border-[#EBFF45]/50 transition-colors";
 
 const TIMEZONES = [
   "UTC",
@@ -66,7 +66,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl bg-[#0d0d1a] border border-white/8 p-5 space-y-5">
+    <div className="rounded-2xl bg-[#0f0f13] border border-white/8 p-5 space-y-5">
       <div className="flex items-center gap-2 pb-1 border-b border-white/8">
         {icon}
         <p className="text-sm font-semibold text-white">{title}</p>
@@ -97,7 +97,7 @@ function Toggle({
       </div>
       <button onClick={() => onChange(!enabled)} className="shrink-0 mt-0.5">
         {enabled ? (
-          <ToggleOn size={28} color="#4ade80" variant="Bold" />
+          <ToggleOn size={28} color="#EBFF45" variant="Bold" />
         ) : (
           <ToggleOff size={28} color="#ffffff30" variant="Bold" />
         )}
@@ -221,7 +221,7 @@ export default function PublisherSettingsPage() {
       </div>
 
       {/* Profile */}
-      <Section title="Profile" icon={<User size={16} color="#4ade80" />}>
+      <Section title="Profile" icon={<User size={16} color="#EBFF45" />}>
         <form onSubmit={handleSaveProfile} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-white/40 uppercase tracking-wider mb-1.5">
@@ -274,7 +274,7 @@ export default function PublisherSettingsPage() {
             <button
               type="submit"
               disabled={savingProfile}
-              className="px-5 py-2.5 rounded-xl bg-[#4ade80] hover:bg-[#4ade80]/90 text-black text-sm font-bold disabled:opacity-40 transition-colors"
+              className="px-5 py-2.5 rounded-xl bg-[#EBFF45] hover:bg-[#EBFF45]/90 text-black text-sm font-bold disabled:opacity-40 transition-colors"
             >
               {savingProfile ? "Saving…" : "Save Profile"}
             </button>
@@ -350,7 +350,7 @@ export default function PublisherSettingsPage() {
                       earningsThreshold: parseFloat(e.target.value) || 0,
                     })
                   }
-                  className="w-28 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-[#4ade80]/50 transition-colors"
+                  className="w-28 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-[#EBFF45]/50 transition-colors"
                 />
                 <span className="text-xs text-white/30">USDC / day</span>
               </div>
@@ -424,7 +424,7 @@ export default function PublisherSettingsPage() {
       {/* Wallet */}
       <Section
         title="Connected Wallet"
-        icon={<EmptyWallet size={16} color="#4ade80" />}
+        icon={<EmptyWallet size={16} color="#EBFF45" />}
       >
         <div className="flex items-center justify-between gap-4">
           <div>

@@ -147,7 +147,7 @@ export default function PlacementsPage() {
           {[...Array(3)].map((_, i) => (
             <div
               key={i}
-              className="rounded-2xl bg-[#0d0d1a] border border-white/8 p-5 animate-pulse"
+              className="rounded-2xl bg-[#0f0f13] border border-white/8 p-5 animate-pulse"
             >
               <div className="h-4 bg-white/10 rounded w-1/3 mb-2" />
               <div className="h-3 bg-white/5 rounded w-1/2" />
@@ -176,7 +176,7 @@ export default function PlacementsPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: i * 0.06 }}
-              className="rounded-2xl bg-[#0d0d1a] border border-white/8 p-5 hover:border-white/15 transition-colors"
+              className="rounded-2xl bg-[#0f0f13] border border-white/8 p-5 hover:border-white/15 transition-colors"
             >
               <div className="flex items-start justify-between gap-4 mb-4">
                 <div className="min-w-0">
@@ -216,12 +216,12 @@ export default function PlacementsPage() {
                   {
                     label: "Impressions",
                     value: (p.impressions ?? 0).toLocaleString(),
-                    icon: <Eye size={12} color="#a855f7" />,
+                    icon: <Eye size={12} color="#EBFF45" />,
                   },
                   {
                     label: "Clicks",
                     value: (p.clicks ?? 0).toLocaleString(),
-                    icon: <MouseCircle size={12} color="#22d3ee" />,
+                    icon: <MouseCircle size={12} color="#d4e63c" />,
                   },
                   {
                     label: "CTR",
@@ -231,7 +231,7 @@ export default function PlacementsPage() {
                   {
                     label: "Earnings",
                     value: `$${parseFloat(p.earnings ?? "0").toFixed(2)}`,
-                    icon: <DollarCircle size={12} color="#4ade80" />,
+                    icon: <DollarCircle size={12} color="#EBFF45" />,
                   },
                 ].map((s) => (
                   <div
@@ -253,7 +253,7 @@ export default function PlacementsPage() {
               <div className="flex items-center gap-2 flex-wrap">
                 <button
                   onClick={() => handleGetCode(p)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#a855f7]/10 hover:bg-[#a855f7]/20 text-[#a855f7] text-xs font-semibold transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#EBFF45]/10 hover:bg-[#EBFF45]/20 text-[#EBFF45] text-xs font-semibold transition-colors"
                 >
                   <Code1 size={13} color="currentColor" /> Get Code
                 </button>
@@ -294,7 +294,7 @@ export default function PlacementsPage() {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setShowAddModal(false)}
           />
-          <div className="relative w-full max-w-md rounded-2xl bg-[#13131f] border border-white/10 shadow-2xl p-6">
+          <div className="relative w-full max-w-md rounded-2xl bg-[#0f0f13] border border-white/10 shadow-2xl p-6">
             <h2 className="text-base font-bold text-white mb-5">
               New Placement
             </h2>
@@ -396,13 +396,13 @@ export default function PlacementsPage() {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setEmbedCode(null)}
           />
-          <div className="relative w-full max-w-lg rounded-2xl bg-[#13131f] border border-white/10 shadow-2xl p-6">
+          <div className="relative w-full max-w-lg rounded-2xl bg-[#0f0f13] border border-white/10 shadow-2xl p-6">
             <h2 className="text-base font-bold text-white mb-1">Embed Code</h2>
             <p className="text-xs text-white/40 mb-4">
               Paste this into your site where you want the ad to appear.
             </p>
             <div className="relative">
-              <pre className="text-xs text-[#4ade80] bg-white/5 border border-white/10 rounded-xl p-4 overflow-x-auto whitespace-pre-wrap break-all max-h-48">
+              <pre className="text-xs text-[#EBFF45] bg-white/5 border border-white/10 rounded-xl p-4 overflow-x-auto whitespace-pre-wrap break-all max-h-48">
                 {embedCode.code}
               </pre>
               <button

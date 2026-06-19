@@ -157,7 +157,7 @@ export default function EarningsPage() {
           [...Array(3)].map((_, i) => (
             <div
               key={i}
-              className="rounded-2xl bg-[#0d0d1a] border border-white/8 p-5 animate-pulse"
+              className="rounded-2xl bg-[#0f0f13] border border-white/8 p-5 animate-pulse"
             >
               <div className="h-3 bg-white/8 rounded w-1/3 mb-3" />
               <div className="h-7 bg-white/8 rounded w-1/2" />
@@ -169,7 +169,7 @@ export default function EarningsPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.1 }}
-              className="rounded-2xl bg-[#0d0d1a] border p-5 relative overflow-hidden"
+              className="rounded-2xl bg-[#0f0f13] border p-5 relative overflow-hidden"
               style={{ borderColor: `${tokenColor}30` }}
             >
               <div
@@ -194,13 +194,13 @@ export default function EarningsPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.15 }}
-              className="rounded-2xl bg-[#0d0d1a] border border-white/8 p-5"
+              className="rounded-2xl bg-[#0f0f13] border border-white/8 p-5"
             >
               <div className="flex items-center justify-between mb-3">
                 <p className="text-xs font-semibold text-white/40 uppercase tracking-wider">
                   Total Clicks
                 </p>
-                <TrendUp size={18} color="#22d3ee" variant="Bold" />
+                <TrendUp size={18} color="#d4e63c" variant="Bold" />
               </div>
               <p className="text-3xl font-bold text-white">
                 {(dashboard?.clicks ?? 0).toLocaleString()}
@@ -212,7 +212,7 @@ export default function EarningsPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.2 }}
-              className="rounded-2xl bg-[#0d0d1a] border border-white/8 p-5"
+              className="rounded-2xl bg-[#0f0f13] border border-white/8 p-5"
             >
               <div className="flex items-center justify-between mb-3">
                 <p className="text-xs font-semibold text-white/40 uppercase tracking-wider">
@@ -250,7 +250,7 @@ export default function EarningsPage() {
           </p>
           {breakdown && (
             <div className="flex items-center gap-3 mt-2">
-              <span className="text-xs text-[#4ade80] font-semibold">
+              <span className="text-xs text-[#EBFF45] font-semibold">
                 ${formatToken(breakdown.pendingEarnings)} pending
               </span>
               <span className="text-white/20">·</span>

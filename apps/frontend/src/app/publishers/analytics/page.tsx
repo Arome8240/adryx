@@ -67,14 +67,14 @@ export default function PublisherAnalyticsPage() {
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1 glass rounded-xl p-1 border border-white/8">
-            <Calendar size={16} color="#4ade80" className="ml-2" />
+            <Calendar size={16} color="#EBFF45" className="ml-2" />
             {ranges.map((r, i) => (
               <button
                 key={r.label}
                 onClick={() => setRangeIdx(i)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                   rangeIdx === i
-                    ? "bg-[#4ade80]/20 text-[#4ade80]"
+                    ? "bg-[#EBFF45]/20 text-[#EBFF45]"
                     : "text-white/40 hover:text-white"
                 }`}
               >
@@ -105,20 +105,20 @@ export default function PublisherAnalyticsPage() {
             {
               label: "Total Earnings",
               value: `$${parseFloat(dashboard.totalEarnings).toFixed(2)}`,
-              icon: <DollarCircle size={16} color="#4ade80" />,
-              accent: "#4ade80",
+              icon: <DollarCircle size={16} color="#EBFF45" />,
+              accent: "#EBFF45",
             },
             {
               label: "Impressions",
               value: dashboard.impressions.toLocaleString(),
-              icon: <Eye size={16} color="#a855f7" />,
-              accent: "#a855f7",
+              icon: <Eye size={16} color="#EBFF45" />,
+              accent: "#EBFF45",
             },
             {
               label: "Clicks",
               value: dashboard.clicks.toLocaleString(),
-              icon: <MouseCircle size={16} color="#22d3ee" />,
-              accent: "#22d3ee",
+              icon: <MouseCircle size={16} color="#d4e63c" />,
+              accent: "#d4e63c",
             },
             {
               label: "CTR",
@@ -129,7 +129,7 @@ export default function PublisherAnalyticsPage() {
           ].map((s) => (
             <div
               key={s.label}
-              className="rounded-2xl bg-[#0d0d1a] border border-white/8 p-5"
+              className="rounded-2xl bg-[#0f0f13] border border-white/8 p-5"
             >
               <div className="flex items-center justify-between mb-3">
                 <p className="text-xs font-semibold text-white/40 uppercase tracking-wider">
@@ -156,7 +156,7 @@ export default function PublisherAnalyticsPage() {
         className="glass rounded-2xl p-6 border border-white/8"
       >
         <div className="flex items-center gap-2 mb-1">
-          <TrendUp size={18} color="#4ade80" variant="Bold" />
+          <TrendUp size={18} color="#EBFF45" variant="Bold" />
           <h3 className="text-base font-semibold text-white">
             Earnings Over Time
           </h3>
@@ -174,8 +174,8 @@ export default function PublisherAnalyticsPage() {
           <PerformanceChart
             data={earningsChart}
             lines={[
-              { key: "earnings", color: "#4ade80", label: "Earnings (USDC)" },
-              { key: "clicks", color: "#22d3ee", label: "Clicks" },
+              { key: "earnings", color: "#EBFF45", label: "Earnings (USDC)" },
+              { key: "clicks", color: "#d4e63c", label: "Clicks" },
             ]}
             height={240}
           />
@@ -190,7 +190,7 @@ export default function PublisherAnalyticsPage() {
         className="glass rounded-2xl p-6 border border-white/8"
       >
         <div className="flex items-center gap-2 mb-1">
-          <Flash size={18} color="#22d3ee" variant="Bold" />
+          <Flash size={18} color="#d4e63c" variant="Bold" />
           <h3 className="text-base font-semibold text-white">
             Best Hours for Clicks
           </h3>
@@ -214,10 +214,10 @@ export default function PublisherAnalyticsPage() {
                   intensity === 0
                     ? "bg-white/5"
                     : intensity < 0.33
-                      ? "bg-[#22d3ee]/30"
+                      ? "bg-[#d4e63c]/30"
                       : intensity < 0.66
-                        ? "bg-[#4ade80]/50"
-                        : "bg-[#4ade80]/80";
+                        ? "bg-[#EBFF45]/50"
+                        : "bg-[#EBFF45]/80";
                 return (
                   <div
                     key={hour}
@@ -247,7 +247,7 @@ export default function PublisherAnalyticsPage() {
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/8">
           <div className="flex items-center gap-2">
-            <Flash size={15} color="#4ade80" />
+            <Flash size={15} color="#EBFF45" />
             <h3 className="text-base font-semibold text-white">
               Top Performing Placements
             </h3>
@@ -329,10 +329,10 @@ export default function PublisherAnalyticsPage() {
                     <td className="px-5 py-3.5 text-white/60 tabular-nums">
                       {p.clicks.toLocaleString()}
                     </td>
-                    <td className="px-5 py-3.5 font-bold text-[#22d3ee] tabular-nums">
+                    <td className="px-5 py-3.5 font-bold text-[#d4e63c] tabular-nums">
                       {p.ctr.toFixed(2)}%
                     </td>
-                    <td className="px-5 py-3.5 font-bold text-[#4ade80] tabular-nums">
+                    <td className="px-5 py-3.5 font-bold text-[#EBFF45] tabular-nums">
                       ${p.earnings.toFixed(4)}
                     </td>
                   </tr>

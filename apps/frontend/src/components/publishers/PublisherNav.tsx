@@ -24,24 +24,24 @@ import {
 } from "@/hooks/usePublisher";
 
 const navItems = [
-  { label: "Overview", href: "/publishers", icon: Home2, color: "#4ade80" },
+  { label: "Overview", href: "/publishers", icon: Home2, color: "#EBFF45" },
   {
     label: "Sites & Apps",
     href: "/publishers/sites",
     icon: Global,
-    color: "#a855f7",
+    color: "#EBFF45",
   },
   {
     label: "Ad Placements",
     href: "/publishers/placements",
     icon: Code1,
-    color: "#22d3ee",
+    color: "#d4e63c",
   },
   {
     label: "Earnings",
     href: "/publishers/earnings",
     icon: DollarCircle,
-    color: "#4ade80",
+    color: "#EBFF45",
   },
   {
     label: "Analytics",
@@ -53,13 +53,13 @@ const navItems = [
     label: "Integration",
     href: "/publishers/integrate",
     icon: Book1,
-    color: "#22d3ee",
+    color: "#d4e63c",
   },
   {
     label: "Settings",
     href: "/publishers/settings",
     icon: Setting2,
-    color: "#a855f7",
+    color: "#EBFF45",
   },
 ];
 
@@ -139,7 +139,7 @@ export default function PublisherNav() {
 
     if (breakdown && breakdown.pendingEarnings > 0 && notifPrefs?.payoutAlert) {
       items.push({
-        color: "#4ade80",
+        color: "#EBFF45",
         title: "Earnings ready to claim",
         desc: `$${breakdown.pendingEarnings.toFixed(2)} USDC pending payout`,
       });
@@ -174,7 +174,7 @@ export default function PublisherNav() {
 
   return (
     <>
-      <header className="h-16 border-b border-white/8 bg-[#0d0d1a]/50 flex items-center justify-between px-6 sticky top-0 z-40">
+      <header className="h-16 border-b border-white/8 bg-[#0f0f13]/50 flex items-center justify-between px-6 sticky top-0 z-40">
         {/* Mobile menu + page title */}
         <div className="flex items-center gap-3">
           <button
@@ -182,7 +182,7 @@ export default function PublisherNav() {
             onClick={() => setMobileOpen(true)}
             aria-label="Open menu"
           >
-            <HambergerMenu size={20} color="#4ade80" />
+            <HambergerMenu size={20} color="#EBFF45" />
           </button>
           <h1 className="text-base font-semibold text-white">
             {pageTitles[pathname] ?? "Publisher Dashboard"}
@@ -201,17 +201,17 @@ export default function PublisherNav() {
               className="relative w-9 h-9 rounded-xl border border-white/10 bg-white/5 hover:bg-white/8 flex items-center justify-center transition-colors"
               aria-label="Notifications"
             >
-              <Notification size={16} color="#a855f7" />
+              <Notification size={16} color="#EBFF45" />
               {activeNotifCount > 0 && (
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#4ade80] rounded-full" />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#EBFF45] rounded-full" />
               )}
             </button>
 
             {notifOpen && (
-              <div className="absolute right-0 top-full mt-2 w-72 rounded-2xl bg-[#13131f] border border-white/10 shadow-xl z-50 overflow-hidden">
+              <div className="absolute right-0 top-full mt-2 w-72 rounded-2xl bg-[#0f0f13] border border-white/10 shadow-xl z-50 overflow-hidden">
                 <div className="px-4 py-3 border-b border-white/8 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Notification size={14} color="#a855f7" />
+                    <Notification size={14} color="#EBFF45" />
                     <span className="text-sm font-semibold text-white">
                       Notifications
                     </span>
@@ -219,7 +219,7 @@ export default function PublisherNav() {
                   <Link
                     href="/publishers/settings"
                     onClick={() => setNotifOpen(false)}
-                    className="text-[10px] text-[#a855f7] hover:text-[#c084fc] transition-colors"
+                    className="text-[10px] text-[#EBFF45] hover:text-[#c084fc] transition-colors"
                   >
                     Manage →
                   </Link>
@@ -232,7 +232,7 @@ export default function PublisherNav() {
                       <Link
                         href="/publishers/settings"
                         onClick={() => setNotifOpen(false)}
-                        className="text-xs text-[#4ade80] hover:text-[#4ade80]/80 transition-colors"
+                        className="text-xs text-[#EBFF45] hover:text-[#EBFF45]/80 transition-colors"
                       >
                         Configure alerts →
                       </Link>
@@ -274,7 +274,7 @@ export default function PublisherNav() {
               className="flex items-center gap-2 hover:opacity-80 transition-opacity"
               aria-label="Profile menu"
             >
-              <div className="w-8 h-8 rounded-full bg-linear-to-br from-[#4ade80] to-[#22d3ee] flex items-center justify-center text-xs font-bold text-white">
+              <div className="w-8 h-8 rounded-full bg-linear-to-br from-[#EBFF45] to-[#d4e63c] flex items-center justify-center text-xs font-bold text-white">
                 {user ? getInitial(user.name) : "P"}
               </div>
               <div className="hidden sm:flex flex-col items-start">
@@ -288,11 +288,11 @@ export default function PublisherNav() {
             </button>
 
             {profileOpen && (
-              <div className="absolute right-0 top-full mt-2 w-60 rounded-2xl bg-[#13131f] border border-white/10 shadow-xl shadow-black/40 overflow-hidden z-50">
+              <div className="absolute right-0 top-full mt-2 w-60 rounded-2xl bg-[#0f0f13] border border-white/10 shadow-xl shadow-black/40 overflow-hidden z-50">
                 {/* User info */}
                 <div className="px-4 py-3 border-b border-white/8">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-[#4ade80] to-[#22d3ee] flex items-center justify-center text-sm font-bold text-white shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-linear-to-br from-[#EBFF45] to-[#d4e63c] flex items-center justify-center text-sm font-bold text-white shrink-0">
                       {user ? getInitial(user.name) : "P"}
                     </div>
                     <div className="min-w-0">
@@ -304,7 +304,7 @@ export default function PublisherNav() {
                           {user.email}
                         </p>
                       )}
-                      <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded-md bg-[#4ade80]/15 text-[#4ade80] text-[10px] font-semibold capitalize">
+                      <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded-md bg-[#EBFF45]/15 text-[#EBFF45] text-[10px] font-semibold capitalize">
                         {user?.role}
                       </span>
                     </div>
@@ -319,7 +319,7 @@ export default function PublisherNav() {
                         {truncateWallet(user.walletAddress)}
                       </span>
                       {copied ? (
-                        <TickCircle size={12} color="#4ade80" />
+                        <TickCircle size={12} color="#EBFF45" />
                       ) : (
                         <Copy size={12} color="#ffffff80" />
                       )}
@@ -358,10 +358,10 @@ export default function PublisherNav() {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setMobileOpen(false)}
           />
-          <aside className="absolute left-0 top-0 bottom-0 w-64 bg-[#0d0d1a] border-r border-white/8 flex flex-col">
+          <aside className="absolute left-0 top-0 bottom-0 w-64 bg-[#0f0f13] border-r border-white/8 flex flex-col">
             <div className="px-6 py-5 border-b border-white/8 flex items-center justify-between">
               <Link href="/" className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[#4ade80] to-[#22d3ee] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[#EBFF45] to-[#d4e63c] flex items-center justify-center">
                   <span className="text-white font-bold text-sm">A</span>
                 </div>
                 <div>
@@ -379,14 +379,14 @@ export default function PublisherNav() {
             {/* Mobile user info */}
             {user && (
               <div className="px-4 py-3 border-b border-white/8 flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-linear-to-br from-[#4ade80] to-[#22d3ee] flex items-center justify-center text-sm font-bold text-white shrink-0">
+                <div className="w-9 h-9 rounded-full bg-linear-to-br from-[#EBFF45] to-[#d4e63c] flex items-center justify-center text-sm font-bold text-white shrink-0">
                   {getInitial(user.name)}
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-white truncate">
                     {user.name}
                   </p>
-                  <span className="text-[10px] text-[#4ade80] capitalize">
+                  <span className="text-[10px] text-[#EBFF45] capitalize">
                     {user.role}
                   </span>
                 </div>
@@ -407,13 +407,13 @@ export default function PublisherNav() {
                     onClick={() => setMobileOpen(false)}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                       active
-                        ? "bg-[#4ade80]/15 text-[#4ade80]"
+                        ? "bg-[#EBFF45]/15 text-[#EBFF45]"
                         : "text-white/50 hover:text-white hover:bg-white/5"
                     }`}
                   >
                     <Icon
                       size={20}
-                      color={active ? "#4ade80" : item.color}
+                      color={active ? "#EBFF45" : item.color}
                       variant={active ? "Bold" : "Linear"}
                     />
                     {item.label}

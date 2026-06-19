@@ -36,7 +36,7 @@ export default function PublishersLayout({
 
   if (!hydrated || isLoading) {
     return (
-      <div className="flex min-h-screen bg-[#07070f] items-center justify-center">
+      <div className="flex min-h-screen bg-[#08080a] items-center justify-center">
         <div className="text-white">Loading...</div>
       </div>
     );
@@ -48,7 +48,7 @@ export default function PublishersLayout({
 
   return (
     <WalletProvider>
-      <div className="flex min-h-screen bg-[#07070f]">
+      <div className="flex min-h-screen bg-[#08080a]">
         <PublisherSidebar />
         <div className="flex-1 flex flex-col min-w-0">
           <PublisherNav />

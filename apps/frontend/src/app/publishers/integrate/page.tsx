@@ -133,7 +133,7 @@ export default function IntegratePage() {
             1. Install the SDK
           </h3>
           <div className="relative">
-            <pre className="bg-[#0d0d1a] rounded-xl p-4 text-sm text-white/80 overflow-x-auto border border-white/5">
+            <pre className="bg-[#0f0f13] rounded-xl p-4 text-sm text-white/80 overflow-x-auto border border-white/5">
               <code>
                 {activeTab === "react" && "npm install @adryx/react"}
                 {activeTab === "reactNative" &&
@@ -155,12 +155,12 @@ export default function IntegratePage() {
               onClick={handleCopy}
               className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg bg-white/5 text-white/60 hover:bg-white/8 transition-colors"
             >
-              <Copy size={14} color="#22d3ee" />
+              <Copy size={14} color="#d4e63c" />
               {copied ? "Copied!" : "Copy"}
             </button>
           </div>
           <div className="relative">
-            <pre className="bg-[#0d0d1a] rounded-xl p-4 text-sm text-white/80 overflow-x-auto border border-white/5">
+            <pre className="bg-[#0f0f13] rounded-xl p-4 text-sm text-white/80 overflow-x-auto border border-white/5">
               <code>{codeSnippets[activeTab]}</code>
             </pre>
           </div>
@@ -175,10 +175,10 @@ export default function IntegratePage() {
         className="glass rounded-2xl p-6 border border-white/8"
       >
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-[#a855f7]/10 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-[#EBFF45]/10 flex items-center justify-center">
             <DocumentCode
               size={20}
-              color="#a855f7"
+              color="#EBFF45"
               variant="Bold"
             />
           </div>
@@ -200,17 +200,17 @@ export default function IntegratePage() {
             {
               name: "Native",
               sizes: ["Custom", "Responsive"],
-              color: "#a855f7",
+              color: "#EBFF45",
             },
             {
               name: "Video",
               sizes: ["16:9", "9:16", "1:1"],
-              color: "#22d3ee",
+              color: "#d4e63c",
             },
             {
               name: "Interstitial",
               sizes: ["Fullscreen"],
-              color: "#4ade80",
+              color: "#EBFF45",
             },
           ].map((format) => (
             <div
@@ -242,8 +242,8 @@ export default function IntegratePage() {
         className="glass rounded-2xl p-6 border border-white/8"
       >
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-[#22d3ee]/10 flex items-center justify-center">
-            <Code1 size={20} color="#22d3ee" variant="Bold" />
+          <div className="w-10 h-10 rounded-xl bg-[#d4e63c]/10 flex items-center justify-center">
+            <Code1 size={20} color="#d4e63c" variant="Bold" />
           </div>
           <div>
             <h2 className="text-base font-semibold text-white">Resources</h2>
@@ -268,7 +268,7 @@ export default function IntegratePage() {
               <span className="text-sm text-white/80 group-hover:text-white">
                 {link.label}
               </span>
-              <span className="text-[#22d3ee] group-hover:text-[#4ade80] transition-colors">
+              <span className="text-[#d4e63c] group-hover:text-[#EBFF45] transition-colors">
                 →
               </span>
             </a>

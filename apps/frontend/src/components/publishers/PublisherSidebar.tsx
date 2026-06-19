@@ -14,24 +14,24 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 
 const navItems = [
-  { label: "Overview", href: "/publishers", icon: Home2, color: "#4ade80" },
+  { label: "Overview", href: "/publishers", icon: Home2, color: "#EBFF45" },
   {
     label: "Sites & Apps",
     href: "/publishers/sites",
     icon: Global,
-    color: "#a855f7",
+    color: "#EBFF45",
   },
   {
     label: "Ad Placements",
     href: "/publishers/placements",
     icon: Code1,
-    color: "#22d3ee",
+    color: "#d4e63c",
   },
   {
     label: "Earnings",
     href: "/publishers/earnings",
     icon: DollarCircle,
-    color: "#4ade80",
+    color: "#EBFF45",
   },
   {
     label: "Analytics",
@@ -43,13 +43,13 @@ const navItems = [
     label: "Integration",
     href: "/publishers/integrate",
     icon: Book1,
-    color: "#22d3ee",
+    color: "#d4e63c",
   },
   {
     label: "Settings",
     href: "/publishers/settings",
     icon: Setting2,
-    color: "#a855f7",
+    color: "#EBFF45",
   },
 ];
 
@@ -68,11 +68,11 @@ export default function PublisherSidebar() {
   }
 
   return (
-    <aside className="hidden md:flex flex-col w-60 shrink-0 min-h-screen bg-[#0d0d1a] border-r border-white/8">
+    <aside className="hidden md:flex flex-col w-60 shrink-0 min-h-screen bg-[#0f0f13] border-r border-white/8">
       {/* Logo */}
       <div className="px-6 py-5 border-b border-white/8">
         <Link href="/" className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[#4ade80] to-[#22d3ee] flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[#EBFF45] to-[#d4e63c] flex items-center justify-center">
             <span className="text-white font-bold text-sm">A</span>
           </div>
           <div>
@@ -89,14 +89,14 @@ export default function PublisherSidebar() {
       {/* User info */}
       {user && (
         <div className="px-4 py-3 border-b border-white/8 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-linear-to-br from-[#4ade80] to-[#22d3ee] flex items-center justify-center text-xs font-bold text-white shrink-0">
+          <div className="w-8 h-8 rounded-full bg-linear-to-br from-[#EBFF45] to-[#d4e63c] flex items-center justify-center text-xs font-bold text-white shrink-0">
             {getInitial(user.name)}
           </div>
           <div className="min-w-0">
             <p className="text-sm font-semibold text-white truncate">
               {user.name}
             </p>
-            <span className="text-[10px] text-[#4ade80] capitalize">
+            <span className="text-[10px] text-[#EBFF45] capitalize">
               {user.role}
             </span>
           </div>
@@ -117,18 +117,18 @@ export default function PublisherSidebar() {
               href={item.href}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
                 active
-                  ? "bg-[#4ade80]/15 text-[#4ade80]"
+                  ? "bg-[#EBFF45]/15 text-[#EBFF45]"
                   : "text-white/50 hover:text-white hover:bg-white/5"
               }`}
             >
               <Icon
                 size={20}
-                color={active ? "#4ade80" : item.color}
+                color={active ? "#EBFF45" : item.color}
                 variant={active ? "Bold" : "Linear"}
               />
               {item.label}
               {active && (
-                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[#4ade80]" />
+                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[#EBFF45]" />
               )}
             </Link>
           );

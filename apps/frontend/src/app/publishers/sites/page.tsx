@@ -120,7 +120,7 @@ export default function SitesPage() {
           {[...Array(3)].map((_, i) => (
             <div
               key={i}
-              className="rounded-2xl bg-[#0d0d1a] border border-white/8 p-5 animate-pulse"
+              className="rounded-2xl bg-[#0f0f13] border border-white/8 p-5 animate-pulse"
             >
               <div className="h-4 bg-white/10 rounded w-1/3 mb-2" />
               <div className="h-3 bg-white/5 rounded w-1/2" />
@@ -149,21 +149,21 @@ export default function SitesPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: i * 0.06 }}
-              className="rounded-2xl bg-[#0d0d1a] border border-white/8 p-5 hover:border-white/15 transition-colors"
+              className="rounded-2xl bg-[#0f0f13] border border-white/8 p-5 hover:border-white/15 transition-colors"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-4 flex-1 min-w-0">
                   <div
                     className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                       site.type === "website"
-                        ? "bg-[#a855f7]/15"
-                        : "bg-[#22d3ee]/15"
+                        ? "bg-[#EBFF45]/15"
+                        : "bg-[#d4e63c]/15"
                     }`}
                   >
                     {site.type === "website" ? (
-                      <Global size={20} color="#a855f7" variant="Bold" />
+                      <Global size={20} color="#EBFF45" variant="Bold" />
                     ) : (
-                      <Mobile size={20} color="#22d3ee" variant="Bold" />
+                      <Mobile size={20} color="#d4e63c" variant="Bold" />
                     )}
                   </div>
                   <div className="min-w-0">
@@ -227,7 +227,7 @@ export default function SitesPage() {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setShowAddModal(false)}
           />
-          <div className="relative w-full max-w-md rounded-2xl bg-[#13131f] border border-white/10 shadow-2xl p-6">
+          <div className="relative w-full max-w-md rounded-2xl bg-[#0f0f13] border border-white/10 shadow-2xl p-6">
             <h2 className="text-base font-bold text-white mb-5">
               Add Site or App
             </h2>
@@ -324,17 +324,17 @@ export default function SitesPage() {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setVerifyingSite(null)}
           />
-          <div className="relative w-full max-w-lg rounded-2xl bg-[#13131f] border border-white/10 shadow-2xl p-6">
+          <div className="relative w-full max-w-lg rounded-2xl bg-[#0f0f13] border border-white/10 shadow-2xl p-6">
             <h2 className="text-base font-bold text-white mb-1">
               Verify {verifyingSite.name}
             </h2>
             <p className="text-xs text-white/40 mb-5">
               Add this meta tag to the{" "}
-              <code className="text-[#a855f7]">&lt;head&gt;</code> of your site,
+              <code className="text-[#EBFF45]">&lt;head&gt;</code> of your site,
               then click Verify.
             </p>
             <div className="relative mb-5">
-              <pre className="text-xs text-[#4ade80] bg-white/5 border border-white/10 rounded-xl p-4 overflow-x-auto whitespace-pre-wrap break-all">
+              <pre className="text-xs text-[#EBFF45] bg-white/5 border border-white/10 rounded-xl p-4 overflow-x-auto whitespace-pre-wrap break-all">
                 {`<meta name="adryx:verification" content="${verifyingSite.verificationCode}">`}
               </pre>
               <button
