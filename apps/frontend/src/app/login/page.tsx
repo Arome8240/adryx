@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
 
 /* ── Icons ── */
 function GoogleIcon() {
@@ -132,9 +133,12 @@ function RightPanel() {
   );
 }
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+
 /* ── Login page ── */
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPwd, setShowPwd] = useState(false);
@@ -146,13 +150,17 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      await new Promise(r => setTimeout(r, 600));
-      router.push('/dashboard');
-    } catch {
-      setError('Invalid email or password');
+      const user = await login(email, password);
+      router.push(user.role === 'publisher' ? '/publishers' : '/dashboard');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Invalid email or password');
     } finally {
       setLoading(false);
     }
+  }
+
+  function handleOAuth(provider: 'google' | 'github') {
+    window.location.href = `${API_BASE}/auth/${provider}`;
   }
 
   return (
@@ -168,10 +176,10 @@ export default function LoginPage() {
 
           {/* Social buttons */}
           <div style={{ display:'flex', flexDirection:'column', gap:10, marginBottom:22 }}>
-            <button className="c-btn-ghost" style={{ width:'100%', justifyContent:'center', gap:10 }}>
+            <button className="c-btn-ghost" style={{ width:'100%', justifyContent:'center', gap:10 }} onClick={() => handleOAuth('google')}>
               <GoogleIcon/> Continue with Google
             </button>
-            <button className="c-btn-ghost" style={{ width:'100%', justifyContent:'center', gap:10 }}>
+            <button className="c-btn-ghost" style={{ width:'100%', justifyContent:'center', gap:10 }} onClick={() => handleOAuth('github')}>
               <GitHubIcon/> Continue with GitHub
             </button>
             <button
@@ -179,7 +187,7 @@ export default function LoginPage() {
               style={{ width:'100%', justifyContent:'center', gap:10 }}
               onClick={() => router.push('/auth/wallet')}
             >
-              <WalletIcon/> Connect wallet
+              <WalletIcon/> Connect Stellar wallet
             </button>
           </div>
 

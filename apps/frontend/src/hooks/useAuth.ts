@@ -4,28 +4,34 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { apiClient } from '@/lib/api-client';
 
-interface User {
+export interface AuthUser {
   _id: string;
   email?: string;
   name: string;
   role: 'advertiser' | 'publisher';
   walletAddress?: string;
+  avatar?: string;
+  googleId?: string;
+  githubId?: string;
 }
 
 interface AuthState {
-  user: User | null;
+  user: AuthUser | null;
   token: string | null;
+  refreshToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  walletLogin: (walletAddress: string, signature: string, message: string) => Promise<void>;
+
+  login: (email: string, password: string) => Promise<AuthUser>;
+  walletLogin: (walletAddress: string, signature: string, message: string) => Promise<AuthUser>;
   register: (data: {
     email: string;
     password: string;
     name: string;
     role: 'advertiser' | 'publisher';
     walletAddress?: string;
-  }) => Promise<void>;
+  }) => Promise<AuthUser>;
+  setFromOAuth: (accessToken: string, refreshToken?: string) => Promise<AuthUser>;
   logout: () => void;
   loadUser: () => Promise<void>;
 }
@@ -35,89 +41,103 @@ export const useAuth = create<AuthState>()(
     (set, get) => ({
       user: null,
       token: null,
+      refreshToken: null,
       isAuthenticated: false,
       isLoading: false,
 
-      login: async (email: string, password: string) => {
+      login: async (email, password) => {
         set({ isLoading: true });
         try {
-          const response = await apiClient.login(email, password);
-          apiClient.setToken(response.accessToken);
+          const res = await apiClient.login(email, password);
+          apiClient.setToken(res.accessToken);
           set({
-            user: response.user,
-            token: response.accessToken,
+            user: res.user,
+            token: res.accessToken,
+            refreshToken: res.refreshToken,
             isAuthenticated: true,
             isLoading: false,
           });
-        } catch (error) {
+          return res.user;
+        } catch (err) {
           set({ isLoading: false });
-          throw error;
+          throw err;
         }
       },
 
-      walletLogin: async (walletAddress: string, signature: string, message: string) => {
+      walletLogin: async (walletAddress, signature, message) => {
         set({ isLoading: true });
         try {
-          const response = await apiClient.walletLogin(walletAddress, signature, message);
-          apiClient.setToken(response.accessToken);
+          const res = await apiClient.walletLogin(walletAddress, signature, message);
+          apiClient.setToken(res.accessToken);
           set({
-            user: response.user,
-            token: response.accessToken,
+            user: res.user,
+            token: res.accessToken,
+            refreshToken: res.refreshToken,
             isAuthenticated: true,
             isLoading: false,
           });
-        } catch (error) {
+          return res.user;
+        } catch (err) {
           set({ isLoading: false });
-          throw error;
+          throw err;
         }
       },
 
       register: async (data) => {
         set({ isLoading: true });
         try {
-          const response = await apiClient.register(data);
-          apiClient.setToken(response.accessToken);
+          const res = await apiClient.register(data);
+          apiClient.setToken(res.accessToken);
           set({
-            user: response.user,
-            token: response.accessToken,
+            user: res.user,
+            token: res.accessToken,
+            refreshToken: res.refreshToken,
             isAuthenticated: true,
             isLoading: false,
           });
-        } catch (error) {
+          return res.user;
+        } catch (err) {
           set({ isLoading: false });
-          throw error;
+          throw err;
+        }
+      },
+
+      // Called from /auth/callback after OAuth redirect
+      setFromOAuth: async (accessToken, refreshToken) => {
+        apiClient.setToken(accessToken);
+        try {
+          const user = await apiClient.getProfile();
+          set({
+            user,
+            token: accessToken,
+            refreshToken: refreshToken ?? null,
+            isAuthenticated: true,
+            isLoading: false,
+          });
+          return user;
+        } catch {
+          apiClient.clearToken();
+          set({ user: null, token: null, refreshToken: null, isAuthenticated: false });
+          throw new Error('Failed to load user after OAuth sign-in');
         }
       },
 
       logout: () => {
         apiClient.clearToken();
-        set({
-          user: null,
-          token: null,
-          isAuthenticated: false,
-        });
+        set({ user: null, token: null, refreshToken: null, isAuthenticated: false });
       },
 
       loadUser: async () => {
         const token = get().token;
         if (!token) return;
-
+        apiClient.setToken(token);
         set({ isLoading: true });
         try {
           const user = await apiClient.getProfile();
-          set({
-            user,
-            isAuthenticated: true,
-            isLoading: false,
-          });
-        } catch (error) {
-          set({
-            user: null,
-            token: null,
-            isAuthenticated: false,
-            isLoading: false,
-          });
+          set({ user, isAuthenticated: true, isLoading: false });
+        } catch {
           apiClient.clearToken();
+          set({ user: null, token: null, refreshToken: null, isAuthenticated: false, isLoading: false });
         }
       },
     }),
@@ -126,6 +146,7 @@ export const useAuth = create<AuthState>()(
       partialize: (state) => ({
         user: state.user,
         token: state.token,
+        refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
       }),
     }
