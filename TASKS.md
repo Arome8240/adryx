@@ -75,7 +75,7 @@
 - [x] P35 — Real summary cards from `usePublisherDashboard()`
 - [x] P36 — Real earnings chart
 - [x] P37 — Avg CPC from real data
-- [x] P38 — "Claim Earnings" button wired to `POST /solana/claim-earnings`
+- [x] P38 — "Claim Earnings" button wired to `POST /stellar/claim-earnings`
 - [x] P39 — Pending vs claimed breakdown
 
 ### Settings Page

@@ -1,6 +1,6 @@
 # @adryx/core
 
-> Framework-agnostic core SDK for [Adryx](https://github.com/adryx/adryx-sdk) — decentralized advertising powered by Solana.
+> Framework-agnostic core SDK for [Adryx](https://github.com/adryx/adryx-sdk) — decentralized advertising powered by Stellar.
 
 ## Install
 
@@ -24,8 +24,8 @@ console.log(hello()); // "Hello from Adryx Core"
 
 - `initialize(config)` — set up your Adryx integration
 - `loadAd()` — fetch an ad from the decentralized network
-- `trackImpression(adId)` — record an impression on-chain (Solana)
-- `trackClick(adId)` — record a click on-chain (Solana)
+- `trackImpression(adId)` — record an impression on-chain (Stellar)
+- `trackClick(adId)` — record a click on-chain (Stellar)
 
 ## License
 

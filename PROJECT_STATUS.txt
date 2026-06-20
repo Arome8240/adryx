@@ -1,6 +1,6 @@
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                         ADRYX PROJECT STATUS                                 ║
-║                    Decentralized Ad Network on Solana                        ║
+║                    Decentralized Ad Network on Stellar                        ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
 ┌──────────────────────────────────────────────────────────────────────────────┐
@@ -15,7 +15,7 @@
   ├─ Status: ✅ Running (Port 3001)
   ├─ Health: ✅ Healthy
   ├─ Database: ✅ Connected
-  ├─ Solana: ✅ Integrated
+  ├─ Stellar: ✅ Integrated
   └─ API: ✅ 40+ endpoints working
 
   Frontend (Next.js)
@@ -29,10 +29,10 @@
   ├─ Health: ✅ Healthy
   └─ Collections: ✅ 8 collections
 
-  Smart Contracts (Solana)
-  ├─ Status: ✅ Deployed to Devnet
-  ├─ Program ID: Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS
-  └─ Instructions: ✅ 6 instructions
+  Smart Contracts (Stellar / Soroban)
+  ├─ Status: 🔄 In development (Testnet)
+  ├─ Contract ID: TBD
+  └─ Functions: ✅ 6 contract functions designed
 
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │ 📚 DOCUMENTATION STATUS                                                       │

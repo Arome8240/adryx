@@ -150,7 +150,7 @@ Competitive analysis of Google Ads, X Ads (Twitter), Meta Ads (Facebook/Instagra
 
 **What Adryx needs:**
 
-- [ ] **Budget Forecasting**: "With X SOL, expect Y impressions and Z clicks"
+- [ ] **Budget Forecasting**: "With X XLM, expect Y impressions and Z clicks"
 - [ ] **Pacing Alerts**: "At current spend rate, budget will run out in 3 days"
 - [ ] **Optimization Suggestions**: AI-powered recommendations (e.g., "Increase bid by 15% to improve delivery")
 - [ ] **Seasonality Insights**: Historical performance trends
@@ -249,7 +249,7 @@ Competitive analysis of Google Ads, X Ads (Twitter), Meta Ads (Facebook/Instagra
 - [ ] **Rule Builder**:
   - IF (CTR < 1%) THEN (pause campaign)
   - IF (budget spent > 90%) THEN (send notification)
-  - IF (CPC > 0.01 SOL) THEN (decrease bid by 10%)
+  - IF (CPC > 0.01 XLM) THEN (decrease bid by 10%)
   - IF (conversions > 10/day) THEN (increase budget by 20%)
 - [ ] **Scheduled Actions**: Auto-pause campaigns at end date, auto-resume on specific date
 - [ ] **Performance-Based Automation**: Auto-allocate budget to best performers
@@ -281,8 +281,8 @@ Competitive analysis of Google Ads, X Ads (Twitter), Meta Ads (Facebook/Instagra
 **What Adryx needs:**
 
 - [ ] **Multiple Funding Methods**:
-  - SOL (current)
-  - USDC/USDT stablecoins
+  - XLM (current)
+  - USDC on Stellar
   - Credit card (via Stripe/MoonPay)
   - Crypto on-ramp integration
 - [ ] **Auto-Reload**: Automatically fund wallet when balance < threshold
@@ -300,7 +300,7 @@ Competitive analysis of Google Ads, X Ads (Twitter), Meta Ads (Facebook/Instagra
 
 - [ ] **Cost Breakdown**: Show platform fee, publisher payout, network fee separately
 - [ ] **Auction Insights**: Show how your bids compare to competitors
-- [ ] **Price Estimator**: "To reach 100K impressions, expect to spend X SOL"
+- [ ] **Price Estimator**: "To reach 100K impressions, expect to spend X XLM"
 
 ---
 
@@ -382,7 +382,7 @@ Competitive analysis of Google Ads, X Ads (Twitter), Meta Ads (Facebook/Instagra
 - [ ] **DAO Governance**: Let advertisers vote on platform features, policies
 - [ ] **Transparent Reporting**: All metrics verifiable on-chain
 - [ ] **Smart Contract Escrow**: Funds released only when performance targets met
-- [ ] **Cross-Chain Campaigns**: Target users across Solana, Ethereum, Polygon, etc.
+- [ ] **Cross-Chain Campaigns**: Target users across Stellar, Ethereum, Polygon, etc.
 
 ### 10.2 DeFi Integration
 
