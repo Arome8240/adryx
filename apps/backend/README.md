@@ -65,7 +65,7 @@ The API will be available at:
 ### User
 - Manages both advertisers and publishers
 - Roles: `advertiser`, `publisher`, `admin`
-- Wallet integration for Solana payments
+- Wallet integration for Stellar payments
 
 ### Site
 - Publisher's websites and mobile apps
@@ -80,12 +80,12 @@ The API will be available at:
 ### Campaign
 - Advertiser campaigns
 - Budget tracking and status management
-- Solana transaction integration
+- Stellar transaction integration
 
 ### Interaction
 - Tracks impressions, clicks, conversions
 - Links campaigns to placements
-- Stores Solana transaction hashes for rewards
+- Stores Stellar transaction hashes for rewards
 
 ## API Endpoints
 
@@ -163,7 +163,7 @@ See `.env.example` for all available configuration options.
 Key variables:
 - `DB_*` - Database connection
 - `JWT_SECRET` - JWT signing key
-- `SOLANA_*` - Solana blockchain config
+- `STELLAR_*` - Stellar blockchain config
 - `CORS_ORIGIN` - Frontend URL
 
 ## TODO
@@ -174,7 +174,7 @@ Key variables:
 - [ ] Complete campaigns CRUD
 - [ ] Implement interaction tracking
 - [ ] Add analytics endpoints
-- [ ] Integrate Solana program
+- [ ] Integrate Stellar / Soroban contract
 - [ ] Add rate limiting
 - [ ] Implement caching (Redis)
 - [ ] Add email verification
