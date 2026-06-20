@@ -1,6 +1,6 @@
 # @adryx/react-native
 
-> React Native components for [Adryx](https://github.com/adryx/adryx-sdk) — decentralized advertising powered by Solana.
+> React Native components for [Adryx](https://github.com/adryx/adryx-sdk) — decentralized advertising powered by Stellar.
 
 ## Requirements
 
@@ -31,7 +31,7 @@ export default function App() {
 
 ### `<AdBanner />`
 
-Renders an Adryx ad unit using native `<Text>`. Currently outputs a placeholder — full ad rendering with Solana integration is coming in the next release.
+Renders an Adryx ad unit using native `<Text>`. Currently outputs a placeholder — full ad rendering with Stellar integration is coming in the next release.
 
 ## Coming Soon
 

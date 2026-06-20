@@ -138,7 +138,7 @@
 
   Test Everything
   → Open: TESTING_GUIDE.md
-  → Run: curl http://localhost:3001/api/v1/solana/info
+  → Run: curl http://localhost:3001/api/v1/stellar/info
   → Time: 30 minutes
 
   Production Ready
@@ -169,7 +169,7 @@
   External Resources
   ├─ Render: https://render.com/docs
   ├─ MongoDB: https://docs.atlas.mongodb.com
-  ├─ Solana: https://docs.solana.com
+  ├─ Stellar: https://developers.stellar.org
   └─ Community: https://community.render.com
 
 ┌──────────────────────────────────────────────────────────────────────────────┐

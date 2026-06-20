@@ -1,9 +1,10 @@
-# Campaigns Module - Solana Integration Guide
+# Campaigns Module — Stellar Integration Guide
 
 ## Overview
-This guide shows how to integrate the Solana payment services into the Campaigns module.
 
-## Step 1: Import SolanaModule
+This guide shows how to integrate Stellar / Soroban payment services into the Campaigns module.
+
+## Step 1: Import StellarModule
 
 Update `campaigns.module.ts`:
 
@@ -13,14 +14,14 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { CampaignsController } from './campaigns.controller';
 import { CampaignsService } from './campaigns.service';
 import { Campaign, CampaignSchema } from '../../schemas/campaign.schema';
-import { SolanaModule } from '../solana/solana.module';
+import { StellarModule } from '../stellar/stellar.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Campaign.name, schema: CampaignSchema },
     ]),
-    SolanaModule, // Add this
+    StellarModule,
   ],
   controllers: [CampaignsController],
   providers: [CampaignsService],
@@ -38,55 +39,44 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Campaign, CampaignDocument } from '../../schemas/campaign.schema';
-import { PaymentService } from '../solana/payment.service';
+import { PaymentService } from '../stellar/payment.service';
 import { CampaignStatus } from '../../common/enums';
 
 @Injectable()
 export class CampaignsService {
   constructor(
     @InjectModel(Campaign.name) private campaignModel: Model<CampaignDocument>,
-    private readonly paymentService: PaymentService, // Add this
+    private readonly paymentService: PaymentService,
   ) {}
-
-  // ... existing methods
 
   async fundCampaign(
     campaignId: string,
     advertiserWallet: string,
-    amountSol: number,
+    amountXlm: number,
   ) {
-    // 1. Verify campaign exists and belongs to advertiser
     const campaign = await this.campaignModel.findById(campaignId);
-    if (!campaign) {
-      throw new Error('Campaign not found');
-    }
+    if (!campaign) throw new Error('Campaign not found');
 
-    // 2. Create escrow on-chain
-    const { signature, escrowPda } = await this.paymentService.createCampaignEscrow(
+    // Create escrow via Soroban contract
+    const { txHash, escrowId } = await this.paymentService.createCampaignEscrow(
       campaignId,
       advertiserWallet,
-      amountSol,
+      amountXlm,
     );
 
-    // 3. Update campaign status
     await this.campaignModel.findByIdAndUpdate(campaignId, {
       status: CampaignStatus.ACTIVE,
-      budget: amountSol,
-      solanaTxHash: signature,
+      budget: amountXlm,
+      stellarTxHash: txHash,
     });
 
-    return {
-      campaignId,
-      signature,
-      escrowPda,
-      status: CampaignStatus.ACTIVE,
-    };
+    return { campaignId, txHash, escrowId, status: CampaignStatus.ACTIVE };
   }
 
   async getCampaignBalance(campaignId: string) {
     const onChainBalance = await this.paymentService.syncCampaignBalance(campaignId);
     const campaign = await this.campaignModel.findById(campaignId);
-    
+
     return {
       campaignId,
       budgetTotal: campaign.budget,
@@ -110,107 +100,84 @@ import { CampaignsService } from './campaigns.service';
 export class CampaignsController {
   constructor(private readonly campaignsService: CampaignsService) {}
 
-  // ... existing endpoints
-
   @Post(':id/fund')
   async fundCampaign(
     @Param('id') id: string,
-    @Body() body: { advertiserWallet: string; amountSol: number },
+    @Body() body: { advertiserWallet: string; amountXlm: number },
   ) {
-    return await this.campaignsService.fundCampaign(
-      id,
-      body.advertiserWallet,
-      body.amountSol,
-    );
+    return this.campaignsService.fundCampaign(id, body.advertiserWallet, body.amountXlm);
   }
 
   @Get(':id/balance')
   async getCampaignBalance(@Param('id') id: string) {
-    return await this.campaignsService.getCampaignBalance(id);
+    return this.campaignsService.getCampaignBalance(id);
   }
 }
 ```
 
 ## Step 4: Frontend Integration
 
-Example frontend code to fund a campaign:
-
 ```typescript
-// Fund campaign
-const fundCampaign = async (campaignId: string, amountSol: number) => {
-  // 1. Get user's wallet
-  const wallet = useWallet();
-  
-  // 2. Call backend to create escrow
+const fundCampaign = async (campaignId: string, amountXlm: number) => {
+  const { address } = useStellarWallet();
+
   const response = await fetch(`/api/campaigns/${campaignId}/fund`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      advertiserWallet: wallet.publicKey.toString(),
-      amountSol,
-    }),
+    body: JSON.stringify({ advertiserWallet: address, amountXlm }),
   });
-  
-  const { signature, escrowPda } = await response.json();
-  
-  // 3. Show success message
-  console.log('Campaign funded!', signature);
-  console.log('Escrow PDA:', escrowPda);
+
+  const { txHash, escrowId } = await response.json();
+  console.log('Campaign funded!', txHash);
+  console.log('Escrow ID:', escrowId);
 };
 ```
 
 ## API Endpoints
 
 ### Fund Campaign
+
 ```
 POST /campaigns/:id/fund
 Body: {
-  "advertiserWallet": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
-  "amountSol": 10
+  "advertiserWallet": "GABC...XYZ",
+  "amountXlm": 100
 }
 Response: {
   "campaignId": "507f1f77bcf86cd799439011",
-  "signature": "5j7s...",
-  "escrowPda": "9xKXt...",
+  "txHash": "abc123...",
+  "escrowId": "def456...",
   "status": "active"
 }
 ```
 
 ### Get Campaign Balance
+
 ```
 GET /campaigns/:id/balance
 Response: {
   "campaignId": "507f1f77bcf86cd799439011",
-  "budgetTotal": 10,
-  "spent": 2.5,
-  "remaining": 7.5,
-  "onChainBalance": 7.5
+  "budgetTotal": 100,
+  "spent": 25,
+  "remaining": 75,
+  "onChainBalance": 75
 }
 ```
 
 ## Testing
 
 ```bash
-# 1. Create a campaign (existing endpoint)
+# Create a campaign
 curl -X POST http://localhost:3001/campaigns \
   -H "Content-Type: application/json" \
-  -d '{
-    "name": "Test Campaign",
-    "format": "banner",
-    "budget": 0,
-    "startDate": "2024-01-01",
-    "endDate": "2024-12-31"
-  }'
+  -d '{"name":"Test Campaign","format":"banner","budget":0,"startDate":"2024-01-01","endDate":"2024-12-31"}'
 
-# 2. Fund the campaign
+# Fund the campaign
 curl -X POST http://localhost:3001/campaigns/507f1f77bcf86cd799439011/fund \
   -H "Content-Type: application/json" \
-  -d '{
-    "advertiserWallet": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
-    "amountSol": 10
-  }'
+  -d '{"advertiserWallet":"GABC...XYZ","amountXlm":100}'
 
-# 3. Check balance
+# Check balance
 curl http://localhost:3001/campaigns/507f1f77bcf86cd799439011/balance
 ```
 
@@ -218,5 +185,5 @@ curl http://localhost:3001/campaigns/507f1f77bcf86cd799439011/balance
 
 - Campaign must be in DRAFT status before funding
 - Once funded, campaign status changes to ACTIVE
-- Balance is synced from on-chain escrow account
+- Balance is synced from the on-chain Soroban escrow contract via Horizon API
 - Spent amount is tracked in MongoDB for performance
