@@ -116,18 +116,11 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div
-          style={{
-            borderTop: "1px solid rgba(255,255,255,.06)",
-            paddingTop: 20,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: 12,
-          }}
+          className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+          style={{ borderTop: "1px solid rgba(255,255,255,.06)", paddingTop: 20 }}
         >
           <p className="c-xs c-muted">© 2026 Adryx. All rights reserved.</p>
-          <div className="c-row" style={{ gap: 16 }}>
+          <div className="flex flex-wrap gap-x-5 gap-y-2">
             {[
               { label: "Help",    href: "/contact" },
               { label: "Privacy", href: "/privacy" },
