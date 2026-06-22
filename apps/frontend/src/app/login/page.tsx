@@ -122,7 +122,7 @@ function Quote() {
 /* ── Right panel ── */
 function RightPanel() {
   return (
-    <div style={{ background:'#08080a', display:'flex', flexDirection:'column', justifyContent:'center', padding:'56px 52px', minHeight:'100vh', position:'relative', overflow:'hidden' }}>
+    <div className="hidden lg:flex" style={{ background:'#08080a', flexDirection:'column', justifyContent:'center', padding:'56px 52px', minHeight:'100vh', position:'relative', overflow:'hidden' }}>
       <div style={{ position:'absolute', top:'15%', left:'35%', width:520, height:520, borderRadius:'50%', background:'radial-gradient(ellipse, rgba(235,255,69,.07) 0%, transparent 65%)', pointerEvents:'none' }}/>
       <div style={{ position:'absolute', bottom:'18%', right:'5%', width:240, height:240, borderRadius:'50%', background:'radial-gradient(ellipse, rgba(59,130,246,.05) 0%, transparent 65%)', pointerEvents:'none' }}/>
       <div style={{ position:'relative', zIndex:1 }}>
@@ -164,7 +164,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', minHeight:'100vh', background:'#08080a' }} className="auth-shell">
+    <div className="auth-shell grid grid-cols-1 lg:grid-cols-2" style={{ minHeight:'100vh', background:'#08080a' }}>
       {/* ── Left ── */}
       <div style={{ display:'flex', flexDirection:'column', justifyContent:'center', padding:'56px 64px', background:'#0f0f13', borderRight:'1px solid rgba(255,255,255,.06)', overflowY:'auto' }}>
         <div style={{ maxWidth:400, width:'100%', margin:'0 auto' }}>
