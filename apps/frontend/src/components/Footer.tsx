@@ -34,15 +34,27 @@ export default function Footer() {
       style={{
         borderTop: "1px solid rgba(255,255,255,.07)",
         background: "#0a0a0c",
-        padding: "56px 0 32px",
+        padding: "40px 0 28px",
       }}
     >
       <div className="c-wrap">
-        {/* Main grid — 2 cols on mobile, 3 on sm, 5 on lg */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-[2fr_1fr_1fr_1fr_1fr] gap-x-8 gap-y-10 mb-12">
+        {/* Brand row — always full width above the link grid */}
+        <div className="c-col mb-8 lg:hidden" style={{ gap: 12 }}>
+          <Link href="/" className="c-brand">
+            <span className="c-mark" />
+            Adryx
+          </Link>
+          <p className="c-sm c-muted" style={{ maxWidth: 280 }}>
+            Internet advertising, settled in stablecoins. USDC payouts on
+            Stellar for every verified impression.
+          </p>
+        </div>
 
-          {/* Brand column — full width on mobile/sm, normal on lg */}
-          <div className="col-span-2 sm:col-span-3 lg:col-span-1 c-col" style={{ gap: 14 }}>
+        {/* Main grid — 2 cols on mobile, 5 on lg */}
+        <div className="grid grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr_1fr] gap-x-6 gap-y-8 mb-10">
+
+          {/* Brand column — desktop only (hidden on mobile, shown via row above) */}
+          <div className="hidden lg:flex c-col" style={{ gap: 14 }}>
             <Link href="/" className="c-brand">
               <span className="c-mark" />
               Adryx
