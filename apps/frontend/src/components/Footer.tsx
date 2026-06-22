@@ -38,17 +38,11 @@ export default function Footer() {
       }}
     >
       <div className="c-wrap">
-        {/* Main grid */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr",
-            gap: 32,
-            marginBottom: 48,
-          }}
-        >
-          {/* Brand column */}
-          <div className="c-col" style={{ gap: 14 }}>
+        {/* Main grid — 2 cols on mobile, 3 on sm, 5 on lg */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-[2fr_1fr_1fr_1fr_1fr] gap-x-8 gap-y-10 mb-12">
+
+          {/* Brand column — full width on mobile/sm, normal on lg */}
+          <div className="col-span-2 sm:col-span-3 lg:col-span-1 c-col" style={{ gap: 14 }}>
             <Link href="/" className="c-brand">
               <span className="c-mark" />
               Adryx
@@ -59,7 +53,7 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Link columns */}
+          {/* Link columns — each takes one cell in the responsive grid */}
           {Object.entries(COLS).map(([group, links]) => (
             <div key={group}>
               <p className="c-label" style={{ marginBottom: 16 }}>{group}</p>
