@@ -353,7 +353,6 @@ function LogoBar() {
 
 /* ─── SplitSection ─────────────────────────────────────────────────── */
 function SplitSection() {
-  const router = useRouter();
   const cards = [
     {
       label: 'Publishers',
@@ -368,8 +367,8 @@ function SplitSection() {
       icon: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="4" stroke="currentColor" strokeWidth="1.5" /><circle cx="10" cy="10" r="8.5" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 2" /></svg>,
       headline: 'Reach real humans. Pay only for verified impressions.',
       bullets: ['Transparent on-chain spend', 'Contextual & wallet-based targeting', 'Real-time campaign analytics', 'No minimum budget'],
-      primary: { label: 'See advertiser app', href: '/advertiser' },
-      secondary: { label: 'Launch a campaign', href: '/advertiser/campaigns/new' },
+      primary: { label: 'See advertiser app', href: '/dashboard' },
+      secondary: { label: 'Launch a campaign', href: '/dashboard/campaigns' },
     },
   ];
 

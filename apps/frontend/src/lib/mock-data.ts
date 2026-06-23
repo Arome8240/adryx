@@ -20,13 +20,10 @@ export const ACCT_AD = { name:'Forecast Labs', short:'FL', role:'Advertiser · P
 export const ACCT_PUB = { name:'Tessera Wire', short:'TW', role:'Publisher · Pro', color:'#2563eb' };
 
 export const A_NAV = [
-  { route:'/advertiser', label:'Overview', ico:'home' },
-  { route:'/advertiser/campaigns', label:'Campaigns', ico:'campaign', badge: 4 },
-  { route:'/advertiser/analytics', label:'Analytics', ico:'chart' },
-  { route:'/advertiser/audiences', label:'Audiences', ico:'audience' },
-  { route:'/advertiser/creatives', label:'Creatives', ico:'layers' },
-  { route:'/advertiser/billing', label:'Billing', ico:'card' },
-  { route:'/advertiser/settings', label:'Settings', ico:'settings' },
+  { route:'/dashboard', label:'Overview', ico:'home' },
+  { route:'/dashboard/campaigns', label:'Campaigns', ico:'campaign', badge: 4 },
+  { route:'/dashboard/analytics', label:'Analytics', ico:'chart' },
+  { route:'/dashboard/settings', label:'Settings', ico:'settings' },
 ];
 
 export const P_NAV = [
