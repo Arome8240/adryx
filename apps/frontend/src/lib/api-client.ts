@@ -441,6 +441,85 @@ class ApiClient {
       clicks: number;
     }>(`/interactions/earnings/placement/${placementId}`);
   }
+
+  // Admin
+  async getAdminStats() {
+    return this.request<{
+      totalUsers: number;
+      advertiserCount: number;
+      publisherCount: number;
+      adminCount: number;
+      totalCampaigns: number;
+      activeCampaigns: number;
+      totalImpressions: number;
+      totalSpent: number;
+      totalBudget: number;
+      recentUsers: any[];
+    }>("/admin/stats");
+  }
+
+  async getAdminUsers(params: {
+    page?: number;
+    limit?: number;
+    role?: string;
+    search?: string;
+    status?: string;
+  } = {}) {
+    const q = new URLSearchParams();
+    if (params.page)   q.set("page",   String(params.page));
+    if (params.limit)  q.set("limit",  String(params.limit));
+    if (params.role)   q.set("role",   params.role);
+    if (params.search) q.set("search", params.search);
+    if (params.status) q.set("status", params.status);
+    return this.request<{
+      users: any[];
+      total: number;
+      page: number;
+      limit: number;
+      pages: number;
+    }>(`/admin/users?${q.toString()}`);
+  }
+
+  async updateUserRole(userId: string, role: string) {
+    return this.request<any>(`/admin/users/${userId}/role`, {
+      method: "PATCH",
+      body: JSON.stringify({ role }),
+    });
+  }
+
+  async updateUserStatus(userId: string, isActive: boolean) {
+    return this.request<any>(`/admin/users/${userId}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ isActive }),
+    });
+  }
+
+  async getAdminCampaigns(params: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    search?: string;
+  } = {}) {
+    const q = new URLSearchParams();
+    if (params.page)   q.set("page",   String(params.page));
+    if (params.limit)  q.set("limit",  String(params.limit));
+    if (params.status) q.set("status", params.status);
+    if (params.search) q.set("search", params.search);
+    return this.request<{
+      campaigns: any[];
+      total: number;
+      page: number;
+      limit: number;
+      pages: number;
+    }>(`/admin/campaigns?${q.toString()}`);
+  }
+
+  async updateCampaignStatus(campaignId: string, status: string) {
+    return this.request<any>(`/admin/campaigns/${campaignId}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    });
+  }
 }
 
 export const apiClient = new ApiClient(API_BASE_URL);

@@ -25,7 +25,10 @@ export function ProtectedRoute({
 
   useEffect(() => {
     if (!isLoading && isAuthenticated && requiredRole && user?.role !== requiredRole) {
-      navigateTo(user?.role === 'publisher' ? URLS.publishers : URLS.dashboard);
+      const dest = user?.role === 'publisher' ? URLS.publishers
+                 : user?.role === 'admin'     ? URLS.adminDashboard
+                 : URLS.dashboard;
+      navigateTo(dest);
     }
   }, [isAuthenticated, isLoading, user, requiredRole]);
 

@@ -4,7 +4,7 @@ import type { NextRequest } from "next/server";
 // ── Config ────────────────────────────────────────────────────────────────────
 
 const BASE_DOMAIN = "adryx.xyz";
-const KNOWN_SUBDOMAINS = ["auth", "publisher", "advertiser"] as const;
+const KNOWN_SUBDOMAINS = ["auth", "publisher", "advertiser", "admin"] as const;
 type KnownSubdomain = (typeof KNOWN_SUBDOMAINS)[number];
 
 // Auth subdomain owns these path prefixes (enforce redirect to correct subdomain)
@@ -72,6 +72,23 @@ export function middleware(request: NextRequest) {
     return NextResponse.rewrite(new URL(`/publishers${pathname}`, request.url));
   }
 
+  // ── admin.adryx.xyz ───────────────────────────────────────────────────────
+  // Rewrite clean URLs to the internal /admin/* route tree.
+  if (site === "admin") {
+    if (isAuthPath(pathname)) {
+      const target = new URL(request.url);
+      target.host = `auth.${BASE_DOMAIN}`;
+      return NextResponse.redirect(target);
+    }
+    if (pathname === "/") {
+      return NextResponse.rewrite(new URL("/admin", request.url));
+    }
+    if (pathname.startsWith("/admin")) {
+      return NextResponse.next();
+    }
+    return NextResponse.rewrite(new URL(`/admin${pathname}`, request.url));
+  }
+
   // ── advertiser.adryx.xyz ──────────────────────────────────────────────────
   // Rewrite clean URLs to the internal /dashboard/* route tree.
   if (site === "advertiser") {
@@ -115,6 +132,12 @@ export function middleware(request: NextRequest) {
     const target = new URL(request.url);
     target.host = `advertiser.${BASE_DOMAIN}`;
     target.pathname = pathname.replace(/^\/dashboard/, "") || "/";
+    return NextResponse.redirect(target);
+  }
+  if (pathname.startsWith("/admin")) {
+    const target = new URL(request.url);
+    target.host = `admin.${BASE_DOMAIN}`;
+    target.pathname = pathname.replace(/^\/admin/, "") || "/";
     return NextResponse.redirect(target);
   }
 

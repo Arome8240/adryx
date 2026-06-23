@@ -53,7 +53,9 @@ function CallbackHandler() {
 
     setFromOAuth(token, refreshToken)
       .then((user) => {
-        const dest = user.role === "publisher" ? URLS.publishers : URLS.dashboard;
+        const dest = user.role === "publisher" ? URLS.publishers
+                   : user.role === "admin"     ? URLS.adminDashboard
+                   : URLS.dashboard;
         navigateTo(makeAuthRedirect(dest, token, refreshToken));
       })
       .catch((err: unknown) => {

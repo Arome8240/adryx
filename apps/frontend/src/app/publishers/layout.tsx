@@ -47,7 +47,7 @@ export default function PublishersLayout({
       return;
     }
     if (user?.role !== "publisher") {
-      navigateTo(URLS.dashboard);
+      navigateTo(user?.role === "admin" ? URLS.adminDashboard : URLS.dashboard);
     }
   }, [hydrated, isAuthenticated, isLoading, user]);
 
@@ -60,7 +60,7 @@ export default function PublishersLayout({
     );
   }
 
-  if (!isAuthenticated || user?.role !== "publisher") {
+  if (!isAuthenticated || (user?.role !== "publisher")) {
     return null;
   }
 

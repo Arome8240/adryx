@@ -151,7 +151,9 @@ export default function LoginPage() {
     try {
       const user = await login(email, password);
       const { token, refreshToken } = useAuth.getState();
-      const dest = user.role === 'publisher' ? URLS.publishers : URLS.dashboard;
+      const dest = user.role === 'publisher' ? URLS.publishers
+                 : user.role === 'admin'     ? URLS.adminDashboard
+                 : URLS.dashboard;
       navigateTo(makeAuthRedirect(dest, token!, refreshToken));
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Invalid email or password');

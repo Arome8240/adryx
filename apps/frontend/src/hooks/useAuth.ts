@@ -8,7 +8,7 @@ export interface AuthUser {
   _id: string;
   email?: string;
   name: string;
-  role: 'advertiser' | 'publisher';
+  role: 'advertiser' | 'publisher' | 'admin';
   walletAddress?: string;
   avatar?: string;
   googleId?: string;

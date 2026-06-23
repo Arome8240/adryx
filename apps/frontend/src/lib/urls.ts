@@ -18,12 +18,14 @@ const DOMAIN = {
   auth:       isProd ? "https://auth.adryx.xyz" : "",
   publisher:  isProd ? "https://publisher.adryx.xyz" : "",
   advertiser: isProd ? "https://advertiser.adryx.xyz" : "",
+  admin:      isProd ? "https://admin.adryx.xyz" : "",
 } as const;
 
 // In dev, publisher pages live at /publishers/* and advertiser at /dashboard/*
 // In prod, they live at the clean subdomain path (e.g. /sites, /campaigns)
 const pubPath  = (p: string) => isProd ? `${DOMAIN.publisher}${p}`  : `/publishers${p}`;
 const advPath  = (p: string) => isProd ? `${DOMAIN.advertiser}${p}` : `/dashboard${p}`;
+const admPath  = (p: string) => isProd ? `${DOMAIN.admin}${p}`      : `/admin${p}`;
 
 // ── URL constants ────────────────────────────────────────────────────────────
 
@@ -62,6 +64,11 @@ export const URLS = {
   dashboardAnalytics: advPath("/analytics"),
   dashboardSettings:  advPath("/settings"),
   dashboardWallet:    advPath("/wallet"),
+
+  // ── Admin (admin.adryx.xyz — no /admin prefix in prod) ───────────────────
+  adminDashboard:  admPath(""),               // /admin  | admin.adryx.xyz
+  adminUsers:      admPath("/users"),
+  adminCampaigns:  admPath("/campaigns"),
 } as const;
 
 // ── Navigation helpers ───────────────────────────────────────────────────────
