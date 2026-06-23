@@ -44,8 +44,8 @@ function timeAgo(dateStr: string) {
 }
 
 const ROLE_COLORS: Record<string, string> = {
-  admin:      "#a855f7",
-  advertiser: "#EBFF45",
+  admin:      "#EBFF45",
+  advertiser: "#60a5fa",
   publisher:  "#f7931a",
 };
 
@@ -82,8 +82,8 @@ export default function AdminOverviewPage() {
               label="Total Users"
               value={stats.totalUsers.toLocaleString()}
               sub={`${stats.advertiserCount} advertisers · ${stats.publisherCount} publishers`}
-              icon={<People size={16} color="#a855f7" />}
-              accent="#a855f7"
+              icon={<People size={16} color="#EBFF45" />}
+              accent="#EBFF45"
             />
             <StatCard
               label="Campaigns"
@@ -135,7 +135,7 @@ export default function AdminOverviewPage() {
           {/* Quick nav */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {[
-              { label: "Manage Users",  desc: `${stats.totalUsers} registered users`,  href: URLS.adminUsers,     accent: "#a855f7", icon: <People size={20} color="#a855f7" /> },
+              { label: "Manage Users",  desc: `${stats.totalUsers} registered users`,  href: URLS.adminUsers,     accent: "#EBFF45", icon: <People size={20} color="#EBFF45" /> },
               { label: "All Campaigns", desc: `${stats.totalCampaigns} campaigns`,      href: URLS.adminCampaigns, accent: "#3b82f6", icon: <Chart  size={20} color="#3b82f6" /> },
             ].map((card) => (
               <Link
@@ -160,10 +160,10 @@ export default function AdminOverviewPage() {
             <div className="rounded-2xl bg-[#0f0f13] border border-white/8 overflow-hidden">
               <div className="flex items-center justify-between px-5 py-4 border-b border-white/8">
                 <div className="flex items-center gap-2">
-                  <Flash size={15} color="#a855f7" />
+                  <Flash size={15} color="#EBFF45" />
                   <p className="text-sm font-semibold text-white">Recent Sign-ups</p>
                 </div>
-                <Link href={URLS.adminUsers} className="text-xs text-[#a855f7] hover:text-[#c084fc] transition-colors">
+                <Link href={URLS.adminUsers} className="text-xs text-[#EBFF45] hover:text-[#d4e63c] transition-colors">
                   All users →
                 </Link>
               </div>

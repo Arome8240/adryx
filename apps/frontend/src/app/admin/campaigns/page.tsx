@@ -9,7 +9,7 @@ const STATUS_COLORS: Record<string, string> = {
   active:    "#4ade80",
   paused:    "#f7931a",
   draft:     "#6b7280",
-  completed: "#a855f7",
+  completed: "#EBFF45",
 };
 
 function formatDate(dateStr: string) {
@@ -61,7 +61,7 @@ export default function AdminCampaignsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-white flex items-center gap-2">
-            <Chart size={22} color="#3b82f6" />
+            <Chart size={22} color="#EBFF45" />
             Campaigns
           </h1>
           <p className="text-sm text-white/40 mt-0.5">
@@ -85,7 +85,7 @@ export default function AdminCampaignsPage() {
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Search campaign name…"
-            className="w-full pl-9 pr-4 py-2.5 bg-[#0f0f13] border border-white/10 rounded-xl text-sm text-white placeholder-white/25 outline-none focus:border-[#3b82f6]/40 transition-colors"
+            className="w-full pl-9 pr-4 py-2.5 bg-[#0f0f13] border border-white/10 rounded-xl text-sm text-white placeholder-white/25 outline-none focus:border-[#EBFF45]/40 transition-colors"
           />
         </div>
 
@@ -96,7 +96,7 @@ export default function AdminCampaignsPage() {
               onClick={() => { setStatusFilter(s); setPage(1); }}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all capitalize ${
                 statusFilter === s
-                  ? "bg-[#3b82f6]/15 text-[#3b82f6]"
+                  ? "bg-[#EBFF45]/15 text-[#EBFF45]"
                   : "text-white/40 hover:text-white"
               }`}
             >

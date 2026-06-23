@@ -8,7 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 const navItems = [
   { label: "Overview",  href: URLS.adminDashboard, icon: Home2,  color: "#EBFF45" },
-  { label: "Users",     href: URLS.adminUsers,     icon: People, color: "#a855f7" },
+  { label: "Users",     href: URLS.adminUsers,     icon: People, color: "#EBFF45" },
   { label: "Campaigns", href: URLS.adminCampaigns, icon: Chart,  color: "#3b82f6" },
 ];
 
@@ -42,7 +42,7 @@ export default function AdminNav() {
             onClick={() => setMobileOpen(true)}
             aria-label="Open menu"
           >
-            <HambergerMenu size={20} color="#a855f7" />
+            <HambergerMenu size={20} color="#EBFF45" />
           </button>
           <h1 className="text-base font-semibold text-white">
             {pageTitles[pathname] ?? "Admin"}
@@ -50,11 +50,11 @@ export default function AdminNav() {
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#a855f7]/10 border border-[#a855f7]/20">
-            <Shield size={12} color="#a855f7" variant="Bold" />
-            <span className="text-[11px] font-semibold text-[#a855f7] uppercase tracking-wider">Super Admin</span>
+          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#EBFF45]/10 border border-[#EBFF45]/20">
+            <Shield size={12} color="#EBFF45" variant="Bold" />
+            <span className="text-[11px] font-semibold text-[#EBFF45] uppercase tracking-wider">Super Admin</span>
           </div>
-          <div className="w-8 h-8 rounded-full bg-[#a855f7] flex items-center justify-center text-xs font-bold text-white">
+          <div className="w-8 h-8 rounded-full bg-[#EBFF45] flex items-center justify-center text-xs font-bold text-[#0e0e00]">
             {user ? getInitial(user.name) : "A"}
           </div>
         </div>
@@ -67,8 +67,8 @@ export default function AdminNav() {
           <aside className="absolute left-0 top-0 bottom-0 w-64 bg-[#0a0a0f] border-r border-white/8 flex flex-col">
             <div className="px-6 py-5 border-b border-white/8 flex items-center justify-between">
               <Link href={URLS.adminDashboard} className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-[#a855f7] flex items-center justify-center shrink-0">
-                  <Shield size={16} color="#fff" variant="Bold" />
+                <div className="w-8 h-8 rounded-lg bg-[#EBFF45] flex items-center justify-center shrink-0">
+                  <Shield size={16} color="#0e0e00" variant="Bold" />
                 </div>
                 <span className="font-bold text-base">Adryx Admin</span>
               </Link>
@@ -86,10 +86,10 @@ export default function AdminNav() {
                     href={item.href}
                     onClick={() => setMobileOpen(false)}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                      active ? "bg-[#a855f7]/15 text-[#a855f7]" : "text-white/50 hover:text-white hover:bg-white/5"
+                      active ? "bg-[#EBFF45]/15 text-[#EBFF45]" : "text-white/50 hover:text-white hover:bg-white/5"
                     }`}
                   >
-                    <Icon size={20} color={active ? "#a855f7" : item.color} variant={active ? "Bold" : "Linear"} />
+                    <Icon size={20} color={active ? "#EBFF45" : item.color} variant={active ? "Bold" : "Linear"} />
                     {item.label}
                   </Link>
                 );

@@ -53,7 +53,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (!hydrated || isLoading) {
     return (
       <div className="flex min-h-screen bg-[#08080a] items-center justify-center flex-col gap-4">
-        <div style={{ width: 32, height: 32, borderRadius: "50%", border: "2.5px solid rgba(168,85,247,.15)", borderTopColor: "#a855f7", animation: "spin 0.7s linear infinite" }} />
+        <div style={{ width: 32, height: 32, borderRadius: "50%", border: "2.5px solid rgba(235,255,69,.15)", borderTopColor: "#EBFF45", animation: "spin 0.7s linear infinite" }} />
         <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       </div>
     );

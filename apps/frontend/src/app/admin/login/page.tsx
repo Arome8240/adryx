@@ -61,14 +61,14 @@ export default function AdminLoginPage() {
               width: 52,
               height: 52,
               borderRadius: 14,
-              background: "#a855f7",
+              background: "#EBFF45",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               marginBottom: 16,
             }}
           >
-            <Shield size={26} color="#ffffff" variant="Bold" />
+            <Shield size={26} color="#0e0e00" variant="Bold" />
           </div>
           <h1 style={{ fontSize: 22, fontWeight: 700, color: "#f5f5f5", margin: 0, letterSpacing: "-0.02em" }}>
             Admin Portal
@@ -111,7 +111,7 @@ export default function AdminLoginPage() {
                   fontSize: 14,
                   outline: "none",
                 }}
-                onFocus={(e) => { e.target.style.borderColor = "rgba(168,85,247,.5)"; }}
+                onFocus={(e) => { e.target.style.borderColor = "rgba(235,255,69,.5)"; }}
                 onBlur={(e)  => { e.target.style.borderColor = "rgba(255,255,255,.1)"; }}
               />
             </div>
@@ -140,7 +140,7 @@ export default function AdminLoginPage() {
                     fontSize: 14,
                     outline: "none",
                   }}
-                  onFocus={(e) => { e.target.style.borderColor = "rgba(168,85,247,.5)"; }}
+                  onFocus={(e) => { e.target.style.borderColor = "rgba(235,255,69,.5)"; }}
                   onBlur={(e)  => { e.target.style.borderColor = "rgba(255,255,255,.1)"; }}
                 />
                 <button
@@ -192,10 +192,10 @@ export default function AdminLoginPage() {
                 marginTop: 4,
                 width: "100%",
                 padding: "12px",
-                background: loading ? "rgba(168,85,247,.5)" : "#a855f7",
+                background: loading ? "rgba(235,255,69,.5)" : "#EBFF45",
                 border: "none",
                 borderRadius: 12,
-                color: "#ffffff",
+                color: "#0e0e00",
                 fontSize: 14,
                 fontWeight: 700,
                 cursor: loading ? "not-allowed" : "pointer",
@@ -211,7 +211,7 @@ export default function AdminLoginPage() {
         {/* Footer */}
         <p style={{ textAlign: "center", marginTop: 24, fontSize: 12, color: "rgba(245,245,245,.2)" }}>
           Not an admin?{" "}
-          <a href={URLS.login} style={{ color: "rgba(168,85,247,.6)", textDecoration: "none" }}>
+          <a href={URLS.login} style={{ color: "rgba(235,255,69,.7)", textDecoration: "none" }}>
             Go to regular sign in
           </a>
         </p>

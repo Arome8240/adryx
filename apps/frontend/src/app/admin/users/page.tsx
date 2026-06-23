@@ -4,8 +4,8 @@ import { useAdminUsers } from "@/hooks/useAdmin";
 import { SearchNormal1, People, Refresh } from "iconsax-react";
 
 const ROLE_COLORS: Record<string, string> = {
-  admin:      "#a855f7",
-  advertiser: "#EBFF45",
+  admin:      "#EBFF45",
+  advertiser: "#60a5fa",
   publisher:  "#f7931a",
 };
 
@@ -58,7 +58,7 @@ export default function AdminUsersPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-white flex items-center gap-2">
-            <People size={22} color="#a855f7" />
+            <People size={22} color="#EBFF45" />
             Users
           </h1>
           <p className="text-sm text-white/40 mt-0.5">
@@ -82,14 +82,14 @@ export default function AdminUsersPage() {
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Search name or email…"
-            className="w-full pl-9 pr-4 py-2.5 bg-[#0f0f13] border border-white/10 rounded-xl text-sm text-white placeholder-white/25 outline-none focus:border-[#a855f7]/40 transition-colors"
+            className="w-full pl-9 pr-4 py-2.5 bg-[#0f0f13] border border-white/10 rounded-xl text-sm text-white placeholder-white/25 outline-none focus:border-[#EBFF45]/40 transition-colors"
           />
         </div>
 
         <select
           value={roleFilter}
           onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }}
-          className="px-3 py-2.5 bg-[#0f0f13] border border-white/10 rounded-xl text-sm text-white/70 outline-none focus:border-[#a855f7]/40 transition-colors"
+          className="px-3 py-2.5 bg-[#0f0f13] border border-white/10 rounded-xl text-sm text-white/70 outline-none focus:border-[#EBFF45]/40 transition-colors"
         >
           {["", "advertiser", "publisher", "admin"].map((r) => (
             <option key={r} value={r}>{r ? r.charAt(0).toUpperCase() + r.slice(1) : "All roles"}</option>
@@ -99,7 +99,7 @@ export default function AdminUsersPage() {
         <select
           value={statusFilter}
           onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-          className="px-3 py-2.5 bg-[#0f0f13] border border-white/10 rounded-xl text-sm text-white/70 outline-none focus:border-[#a855f7]/40 transition-colors"
+          className="px-3 py-2.5 bg-[#0f0f13] border border-white/10 rounded-xl text-sm text-white/70 outline-none focus:border-[#EBFF45]/40 transition-colors"
         >
           {["", "active", "suspended"].map((s) => (
             <option key={s} value={s}>{s ? s.charAt(0).toUpperCase() + s.slice(1) : "All statuses"}</option>
