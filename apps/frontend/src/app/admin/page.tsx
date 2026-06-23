@@ -1,9 +1,8 @@
 "use client";
-import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { URLS } from "@/lib/urls";
-import { apiClient } from "@/lib/api-client";
+import { useAdminStats } from "@/hooks/useAdmin";
 import {
   People,
   Chart,
@@ -45,22 +44,13 @@ function timeAgo(dateStr: string) {
 }
 
 const ROLE_COLORS: Record<string, string> = {
-  admin: "#a855f7",
+  admin:      "#a855f7",
   advertiser: "#EBFF45",
-  publisher: "#f7931a",
+  publisher:  "#f7931a",
 };
 
 export default function AdminOverviewPage() {
-  const [stats, setStats] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    apiClient.getAdminStats()
-      .then(setStats)
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
-  }, []);
+  const { stats, isLoading, error } = useAdminStats();
 
   return (
     <div className="flex flex-col gap-6 max-w-7xl mx-auto">
@@ -76,7 +66,7 @@ export default function AdminOverviewPage() {
       )}
 
       {/* Stats grid */}
-      {loading ? (
+      {isLoading ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="rounded-2xl bg-[#0f0f13] border border-white/8 p-5 animate-pulse space-y-3">
@@ -118,7 +108,7 @@ export default function AdminOverviewPage() {
             />
           </div>
 
-          {/* Budget utilisation bar */}
+          {/* Budget utilisation */}
           {stats.totalBudget > 0 && (
             <div className="rounded-2xl bg-[#0f0f13] border border-white/8 p-5">
               <div className="flex items-center justify-between mb-3">
@@ -145,13 +135,13 @@ export default function AdminOverviewPage() {
           {/* Quick nav */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {[
-              { label: "Manage Users", desc: `${stats.totalUsers} registered users`, href: URLS.adminUsers, accent: "#a855f7", icon: <People size={20} color="#a855f7" /> },
-              { label: "All Campaigns", desc: `${stats.totalCampaigns} campaigns`, href: URLS.adminCampaigns, accent: "#3b82f6", icon: <Chart size={20} color="#3b82f6" /> },
+              { label: "Manage Users",  desc: `${stats.totalUsers} registered users`,  href: URLS.adminUsers,     accent: "#a855f7", icon: <People size={20} color="#a855f7" /> },
+              { label: "All Campaigns", desc: `${stats.totalCampaigns} campaigns`,      href: URLS.adminCampaigns, accent: "#3b82f6", icon: <Chart  size={20} color="#3b82f6" /> },
             ].map((card) => (
               <Link
                 key={card.href}
                 href={card.href}
-                className="flex items-center gap-4 px-4 py-4 rounded-2xl bg-[#0f0f13] border border-white/8 hover:border-white/15 transition-colors group"
+                className="flex items-center gap-4 px-4 py-4 rounded-2xl bg-[#0f0f13] border border-white/8 hover:border-white/15 transition-colors"
               >
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${card.accent}15` }}>
                   {card.icon}
@@ -165,7 +155,7 @@ export default function AdminOverviewPage() {
             ))}
           </div>
 
-          {/* Recent users */}
+          {/* Recent sign-ups */}
           {stats.recentUsers?.length > 0 && (
             <div className="rounded-2xl bg-[#0f0f13] border border-white/8 overflow-hidden">
               <div className="flex items-center justify-between px-5 py-4 border-b border-white/8">
@@ -179,10 +169,7 @@ export default function AdminOverviewPage() {
               </div>
               <ul>
                 {stats.recentUsers.map((u: any, i: number) => (
-                  <li
-                    key={u._id}
-                    className={`flex items-center gap-3 px-5 py-3 ${i !== 0 ? "border-t border-white/5" : ""}`}
-                  >
+                  <li key={u._id} className={`flex items-center gap-3 px-5 py-3 ${i !== 0 ? "border-t border-white/5" : ""}`}>
                     <div
                       className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
                       style={{ backgroundColor: `${ROLE_COLORS[u.role] ?? "#6b7280"}20`, color: ROLE_COLORS[u.role] ?? "#6b7280" }}
