@@ -12,11 +12,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { isAuthenticated, isLoading, user, setFromOAuth } = useAuth();
   const [hydrated, setHydrated] = useState(false);
 
-  // The login page lives under /admin/login — render it without auth guard or chrome.
   const isLoginPage = pathname === "/admin/login" || pathname === "/login";
-  if (isLoginPage) return <>{children}</>;
 
+  // All hooks must run unconditionally — effects guard themselves internally.
   useEffect(() => {
+    if (isLoginPage) return;
     async function init() {
       if (typeof window === "undefined") { setHydrated(true); return; }
       const params = new URLSearchParams(window.location.search);
@@ -34,10 +34,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
     init();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isLoginPage]);
 
   useEffect(() => {
-    if (!hydrated || isLoading) return;
+    if (isLoginPage || !hydrated || isLoading) return;
     if (!isAuthenticated) {
       navigateTo(URLS.adminLogin);
       return;
@@ -45,7 +45,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     if (user?.role !== "admin") {
       navigateTo(user?.role === "publisher" ? URLS.publishers : URLS.dashboard);
     }
-  }, [hydrated, isAuthenticated, isLoading, user]);
+  }, [isLoginPage, hydrated, isAuthenticated, isLoading, user]);
+
+  // Login page: render without auth guard or layout chrome.
+  if (isLoginPage) return <>{children}</>;
 
   if (!hydrated || isLoading) {
     return (
