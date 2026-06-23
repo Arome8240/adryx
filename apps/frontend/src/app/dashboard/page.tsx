@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import { URLS, navigateTo } from "@/lib/urls";
 import {
   useAdvertiserDashboard,
   useAdvertiserActivity,
@@ -82,7 +82,6 @@ function timeAgo(dateStr: string) {
 }
 
 export default function OverviewPage() {
-  const router = useRouter();
   const { user } = useAuth();
   const { dashboard, isLoading: dashboardLoading } = useAdvertiserDashboard();
   const { campaigns } = useCampaigns();
@@ -124,7 +123,7 @@ export default function OverviewPage() {
           </p>
         </div>
         <button
-          onClick={() => router.push("/dashboard/create")}
+          onClick={() => navigateTo(URLS.dashboardCreate)}
           className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#EBFF45] hover:bg-[#EBFF45]/90 text-[#0e0e00] text-sm font-bold transition-colors"
         >
           <AddCircle size={16} color="#0e0e00" />
@@ -180,26 +179,26 @@ export default function OverviewPage() {
             desc: "Launch a new ad campaign",
             icon: <AddCircle size={20} color="#EBFF45" />,
             accent: "#EBFF45",
-            href: "/dashboard/create",
+            href: URLS.dashboardCreate,
           },
           {
             label: "Campaigns",
             desc: "Manage existing campaigns",
             icon: <Chart size={20} color="#a855f7" />,
             accent: "#a855f7",
-            href: "/dashboard/campaigns",
+            href: URLS.dashboardCampaigns,
           },
           {
             label: "Analytics",
             desc: "View performance reports",
             icon: <TrendUp size={20} color="#3b82f6" />,
             accent: "#3b82f6",
-            href: "/dashboard/analytics",
+            href: URLS.dashboardAnalytics,
           },
         ].map((action) => (
           <button
             key={action.href}
-            onClick={() => router.push(action.href)}
+            onClick={() => navigateTo(action.href)}
             className="flex items-center gap-4 px-4 py-4 rounded-2xl bg-[#0d0d1a] border border-white/8 hover:border-white/15 transition-colors text-left group"
           >
             <div
@@ -302,7 +301,7 @@ export default function OverviewPage() {
               <p className="text-sm font-semibold text-white">Top Campaigns</p>
             </div>
             <button
-              onClick={() => router.push("/dashboard/analytics")}
+              onClick={() => navigateTo(URLS.dashboardAnalytics)}
               className="text-xs text-[#a855f7] hover:text-[#c084fc] transition-colors"
             >
               Full analytics →

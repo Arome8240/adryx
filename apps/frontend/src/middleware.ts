@@ -4,50 +4,30 @@ import type { NextRequest } from "next/server";
 // ── Config ────────────────────────────────────────────────────────────────────
 
 const BASE_DOMAIN = "adryx.xyz";
-
 const KNOWN_SUBDOMAINS = ["auth", "publisher", "advertiser"] as const;
 type KnownSubdomain = (typeof KNOWN_SUBDOMAINS)[number];
 
-// Paths owned by each subdomain (prefix match)
-const SUBDOMAIN_PATHS: Record<KnownSubdomain, string[]> = {
-  auth: ["/login", "/signup", "/forgot-password", "/reset-password", "/auth"],
-  publisher: ["/publisher", "/publishers"],
-  advertiser: ["/dashboard"],
-};
-
-// Subdomain root redirects when "/" is accessed
-const ROOT_REDIRECT: Record<KnownSubdomain, string> = {
-  auth: "/login",
-  publisher: "/publishers",
-  advertiser: "/dashboard",
-};
+// Auth subdomain owns these path prefixes (enforce redirect to correct subdomain)
+const AUTH_PATHS = ["/login", "/signup", "/forgot-password", "/reset-password", "/auth"];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 /**
  * Returns null for any host that isn't an Adryx domain so the middleware
- * passes through without touching local dev, Vercel preview URLs, etc.
+ * passes through without touching localhost, Vercel preview URLs, etc.
  */
 function parseSite(hostname: string): KnownSubdomain | "marketing" | null {
-  if (hostname === BASE_DOMAIN || hostname === `www.${BASE_DOMAIN}`) {
-    return "marketing";
-  }
+  if (hostname === BASE_DOMAIN || hostname === `www.${BASE_DOMAIN}`) return "marketing";
   for (const sub of KNOWN_SUBDOMAINS) {
     if (hostname === `${sub}.${BASE_DOMAIN}`) return sub;
   }
-  return null; // localhost, preview URLs, unknown hosts
+  return null;
 }
 
-function ownerOf(pathname: string): KnownSubdomain | "marketing" {
-  for (const [sub, prefixes] of Object.entries(SUBDOMAIN_PATHS) as [
-    KnownSubdomain,
-    string[],
-  ][]) {
-    if (prefixes.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
-      return sub;
-    }
-  }
-  return "marketing";
+function isAuthPath(pathname: string): boolean {
+  return AUTH_PATHS.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`),
+  );
 }
 
 // ── Middleware ────────────────────────────────────────────────────────────────
@@ -67,40 +47,74 @@ export function middleware(request: NextRequest) {
 
   const site = parseSite(hostname);
 
-  // Unknown host (localhost, Vercel preview, CI, etc.) — never redirect
-  if (site === null) {
-    return NextResponse.next();
+  // Unknown host (localhost, Vercel preview, CI, etc.) — never redirect/rewrite
+  if (site === null) return NextResponse.next();
+
+  // ── publisher.adryx.xyz ───────────────────────────────────────────────────
+  // Rewrite clean URLs to the internal /publishers/* route tree.
+  // The browser URL stays clean (e.g. /sites); Next.js serves /publishers/sites.
+  if (site === "publisher") {
+    // Auth paths on publisher subdomain → redirect to auth subdomain
+    if (isAuthPath(pathname)) {
+      const target = new URL(request.url);
+      target.host = `auth.${BASE_DOMAIN}`;
+      return NextResponse.redirect(target);
+    }
+    // Root → internal /publishers
+    if (pathname === "/") {
+      return NextResponse.rewrite(new URL("/publishers", request.url));
+    }
+    // Already prefixed (shouldn't normally happen; guard against double-rewrite)
+    if (pathname.startsWith("/publishers") || pathname.startsWith("/publisher/")) {
+      return NextResponse.next();
+    }
+    // All other paths → /publishers{pathname}
+    return NextResponse.rewrite(new URL(`/publishers${pathname}`, request.url));
   }
 
-  // Subdomain root "/" → redirect to its home page (one hop, no loop)
-  if (pathname === "/") {
-    if (site !== "marketing") {
-      return NextResponse.redirect(
-        new URL(ROOT_REDIRECT[site], request.url),
-      );
+  // ── advertiser.adryx.xyz ──────────────────────────────────────────────────
+  // Rewrite clean URLs to the internal /dashboard/* route tree.
+  if (site === "advertiser") {
+    if (isAuthPath(pathname)) {
+      const target = new URL(request.url);
+      target.host = `auth.${BASE_DOMAIN}`;
+      return NextResponse.redirect(target);
+    }
+    if (pathname === "/") {
+      return NextResponse.rewrite(new URL("/dashboard", request.url));
+    }
+    if (pathname.startsWith("/dashboard")) {
+      return NextResponse.next();
+    }
+    return NextResponse.rewrite(new URL(`/dashboard${pathname}`, request.url));
+  }
+
+  // ── auth.adryx.xyz ────────────────────────────────────────────────────────
+  if (site === "auth") {
+    if (pathname === "/") {
+      return NextResponse.redirect(new URL("/login", request.url));
     }
     return NextResponse.next();
   }
 
-  const pathOwner = ownerOf(pathname);
-
-  // Already on the correct site — let Next.js handle it
-  if (pathOwner === site) {
-    return NextResponse.next();
-  }
-
-  // Marketing paths accessed from a subdomain → redirect to main domain
-  if (pathOwner === "marketing" && site !== "marketing") {
+  // ── adryx.xyz (marketing) ─────────────────────────────────────────────────
+  // Redirect any non-marketing paths to the correct subdomain.
+  if (isAuthPath(pathname)) {
     const target = new URL(request.url);
-    target.host = BASE_DOMAIN;
+    target.host = `auth.${BASE_DOMAIN}`;
     return NextResponse.redirect(target);
   }
-
-  // Subdomain paths accessed from wrong subdomain → redirect to correct one
-  // (covers both main-domain → subdomain and wrong-subdomain → right-subdomain)
-  if (pathOwner !== "marketing") {
+  if (pathname.startsWith("/publishers") || pathname.startsWith("/publisher/")) {
     const target = new URL(request.url);
-    target.host = `${pathOwner}.${BASE_DOMAIN}`;
+    target.host = `publisher.${BASE_DOMAIN}`;
+    // Strip the /publishers prefix so the subdomain gets a clean path
+    target.pathname = pathname.replace(/^\/publishers/, "") || "/";
+    return NextResponse.redirect(target);
+  }
+  if (pathname.startsWith("/dashboard")) {
+    const target = new URL(request.url);
+    target.host = `advertiser.${BASE_DOMAIN}`;
+    target.pathname = pathname.replace(/^\/dashboard/, "") || "/";
     return NextResponse.redirect(target);
   }
 
@@ -109,7 +123,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Skip static, image, and well-known files
     "/((?!_next/static|_next/image|favicon\\.ico|sitemap\\.xml|robots\\.txt).*)",
   ],
 };

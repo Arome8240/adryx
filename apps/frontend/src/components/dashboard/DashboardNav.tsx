@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { URLS, navigateTo } from "@/lib/urls";
+import { URLS, navigateTo, isNavActive } from "@/lib/urls";
 import {
   Notification,
   SearchNormal1,
@@ -22,36 +22,20 @@ import SearchPanel from "./SearchPanel";
 import NotificationsPanel from "./NotificationsPanel";
 
 const navItems = [
-  { label: "Overview", href: "/dashboard", icon: <Home2 size={20} /> },
-  {
-    label: "Campaigns",
-    href: "/dashboard/campaigns",
-    icon: <Chart size={20} />,
-  },
-  {
-    label: "Analytics",
-    href: "/dashboard/analytics",
-    icon: <PresentionChart size={20} />,
-  },
-  {
-    label: "Wallet",
-    href: "/dashboard/wallet",
-    icon: <EmptyWallet size={20} />,
-  },
-  {
-    label: "Settings",
-    href: "/dashboard/settings",
-    icon: <Setting2 size={20} />,
-  },
+  { label: "Overview",  href: URLS.dashboard,          icon: <Home2 size={20} /> },
+  { label: "Campaigns", href: URLS.dashboardCampaigns,  icon: <Chart size={20} /> },
+  { label: "Analytics", href: URLS.dashboardAnalytics,  icon: <PresentionChart size={20} /> },
+  { label: "Wallet",    href: URLS.dashboardWallet,     icon: <EmptyWallet size={20} /> },
+  { label: "Settings",  href: URLS.dashboardSettings,   icon: <Setting2 size={20} /> },
 ];
 
-const pageTitles: Record<string, string> = {
-  "/dashboard": "Overview",
-  "/dashboard/campaigns": "Campaigns",
-  "/dashboard/analytics": "Analytics",
-  "/dashboard/wallet": "Wallet",
-  "/dashboard/settings": "Settings",
-};
+// Built dynamically so keys always match usePathname() in both dev and prod.
+const pageTitles = Object.fromEntries(
+  navItems.map(({ href, label }) => {
+    const path = href.startsWith("http") ? new URL(href).pathname : href;
+    return [path || "/", label];
+  }),
+);
 
 function truncateWallet(address: string) {
   return `${address.slice(0, 4)}...${address.slice(-4)}`;
@@ -274,7 +258,7 @@ export default function DashboardNav() {
 
             <nav className="flex-1 px-3 py-4 flex flex-col gap-1">
               {navItems.map((item) => {
-                const active = pathname === item.href;
+                const active = isNavActive(pathname, item.href);
                 return (
                   <Link
                     key={item.href}

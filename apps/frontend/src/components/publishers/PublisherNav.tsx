@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { URLS, navigateTo } from "@/lib/urls";
+import { URLS, navigateTo, isNavActive } from "@/lib/urls";
 import {
   Notification,
   HambergerMenu,
@@ -25,54 +25,22 @@ import {
 } from "@/hooks/usePublisher";
 
 const navItems = [
-  { label: "Overview", href: "/publishers", icon: Home2, color: "#EBFF45" },
-  {
-    label: "Sites & Apps",
-    href: "/publishers/sites",
-    icon: Global,
-    color: "#EBFF45",
-  },
-  {
-    label: "Ad Placements",
-    href: "/publishers/placements",
-    icon: Code1,
-    color: "#d4e63c",
-  },
-  {
-    label: "Earnings",
-    href: "/publishers/earnings",
-    icon: DollarCircle,
-    color: "#EBFF45",
-  },
-  {
-    label: "Analytics",
-    href: "/publishers/analytics",
-    icon: PresentionChart,
-    color: "#f7931a",
-  },
-  {
-    label: "Integration",
-    href: "/publishers/integrate",
-    icon: Book1,
-    color: "#d4e63c",
-  },
-  {
-    label: "Settings",
-    href: "/publishers/settings",
-    icon: Setting2,
-    color: "#EBFF45",
-  },
+  { label: "Overview",      href: URLS.publishers,          icon: Home2,           color: "#EBFF45" },
+  { label: "Sites & Apps",  href: URLS.publisherSites,      icon: Global,          color: "#EBFF45" },
+  { label: "Ad Placements", href: URLS.publisherPlacements, icon: Code1,           color: "#d4e63c" },
+  { label: "Earnings",      href: URLS.publisherEarnings,   icon: DollarCircle,    color: "#EBFF45" },
+  { label: "Analytics",     href: URLS.publisherAnalytics,  icon: PresentionChart, color: "#f7931a" },
+  { label: "Integration",   href: URLS.publisherIntegrate,  icon: Book1,           color: "#d4e63c" },
+  { label: "Settings",      href: URLS.publisherSettings,   icon: Setting2,        color: "#EBFF45" },
 ];
 
-const pageTitles: Record<string, string> = {
-  "/publishers": "Overview",
-  "/publishers/sites": "Sites & Apps",
-  "/publishers/placements": "Ad Placements",
-  "/publishers/earnings": "Earnings",
-  "/publishers/analytics": "Analytics",
-  "/publishers/integrate": "Integration",
-  "/publishers/settings": "Settings",
-};
+// Keys derived from href so they match usePathname() in both dev (/publishers/X) and prod (/X).
+const pageTitles = Object.fromEntries(
+  navItems.map(({ href, label }) => {
+    const path = href.startsWith("http") ? new URL(href).pathname : href;
+    return [path || "/", label];
+  }),
+);
 
 // Publisher-specific notification types derived from localStorage prefs
 const NOTIF_KEY = "adryx_publisher_notifications";
@@ -217,7 +185,7 @@ export default function PublisherNav() {
                     </span>
                   </div>
                   <Link
-                    href="/publishers/settings"
+                    href={URLS.publisherSettings}
                     onClick={() => setNotifOpen(false)}
                     className="text-[10px] text-[#EBFF45] hover:text-[#d4e63c] transition-colors"
                   >
@@ -230,7 +198,7 @@ export default function PublisherNav() {
                       <TickCircle size={24} color="#ffffff20" />
                       <p className="text-xs text-white/30">All caught up</p>
                       <Link
-                        href="/publishers/settings"
+                        href={URLS.publisherSettings}
                         onClick={() => setNotifOpen(false)}
                         className="text-xs text-[#EBFF45] hover:text-[#EBFF45]/80 transition-colors"
                       >
@@ -330,7 +298,7 @@ export default function PublisherNav() {
                 {/* Actions */}
                 <div className="p-2 space-y-0.5">
                   <Link
-                    href="/publishers/settings"
+                    href={URLS.publisherSettings}
                     onClick={() => setProfileOpen(false)}
                     className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-white/60 hover:text-white hover:bg-white/5 transition-all"
                   >
@@ -399,7 +367,7 @@ export default function PublisherNav() {
                 Menu
               </p>
               {navItems.map((item) => {
-                const active = pathname === item.href;
+                const active = isNavActive(pathname, item.href);
                 const Icon = item.icon;
                 return (
                   <Link

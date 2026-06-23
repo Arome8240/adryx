@@ -16,11 +16,17 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
     @InjectModel(User.name) private userModel: Model<UserDocument>,
   ) {
     super({
-      clientID: configService.get<string>('GITHUB_CLIENT_ID', 'placeholder-github-client-id'),
-      clientSecret: configService.get<string>('GITHUB_CLIENT_SECRET', 'placeholder-github-client-secret'),
+      clientID: configService.get<string>(
+        'GITHUB_CLIENT_ID',
+        'placeholder-github-client-id',
+      ),
+      clientSecret: configService.get<string>(
+        'GITHUB_CLIENT_SECRET',
+        'placeholder-github-client-secret',
+      ),
       callbackURL: configService.get<string>(
         'GITHUB_CALLBACK_URL',
-        'http://localhost:3001/api/v1/auth/github/callback',
+        'http://https://adryx-backend.onrender.com/api/v1/auth/github/callback',
       ),
       scope: ['user:email'],
     });
@@ -59,7 +65,9 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
           role: UserRole.PUBLISHER,
           emailVerified: !!email,
         });
-        this.logger.log(`New user via GitHub OAuth: ${user.email ?? user.githubId}`);
+        this.logger.log(
+          `New user via GitHub OAuth: ${user.email ?? user.githubId}`,
+        );
       }
 
       done(null, user);

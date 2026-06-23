@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { URLS, navigateTo } from "@/lib/urls";
+import { URLS, navigateTo, isNavActive } from "@/lib/urls";
 import {
   Home2,
   Global,
@@ -15,43 +15,13 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 
 const navItems = [
-  { label: "Overview", href: "/publishers", icon: Home2, color: "#EBFF45" },
-  {
-    label: "Sites & Apps",
-    href: "/publishers/sites",
-    icon: Global,
-    color: "#EBFF45",
-  },
-  {
-    label: "Ad Placements",
-    href: "/publishers/placements",
-    icon: Code1,
-    color: "#d4e63c",
-  },
-  {
-    label: "Earnings",
-    href: "/publishers/earnings",
-    icon: DollarCircle,
-    color: "#EBFF45",
-  },
-  {
-    label: "Analytics",
-    href: "/publishers/analytics",
-    icon: PresentionChart,
-    color: "#f7931a",
-  },
-  {
-    label: "Integration",
-    href: "/publishers/integrate",
-    icon: Book1,
-    color: "#d4e63c",
-  },
-  {
-    label: "Settings",
-    href: "/publishers/settings",
-    icon: Setting2,
-    color: "#EBFF45",
-  },
+  { label: "Overview",      href: URLS.publishers,          icon: Home2,           color: "#EBFF45" },
+  { label: "Sites & Apps",  href: URLS.publisherSites,      icon: Global,          color: "#EBFF45" },
+  { label: "Ad Placements", href: URLS.publisherPlacements, icon: Code1,           color: "#d4e63c" },
+  { label: "Earnings",      href: URLS.publisherEarnings,   icon: DollarCircle,    color: "#EBFF45" },
+  { label: "Analytics",     href: URLS.publisherAnalytics,  icon: PresentionChart, color: "#f7931a" },
+  { label: "Integration",   href: URLS.publisherIntegrate,  icon: Book1,           color: "#d4e63c" },
+  { label: "Settings",      href: URLS.publisherSettings,   icon: Setting2,        color: "#EBFF45" },
 ];
 
 function getInitial(name: string) {
@@ -110,7 +80,7 @@ export default function PublisherSidebar() {
           Menu
         </p>
         {navItems.map((item) => {
-          const active = pathname === item.href;
+          const active = isNavActive(pathname, item.href);
           const Icon = item.icon;
           return (
             <Link

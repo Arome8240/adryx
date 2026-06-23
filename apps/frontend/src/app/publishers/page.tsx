@@ -1,6 +1,6 @@
 "use client";
-import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { URLS, navigateTo } from "@/lib/urls";
 import {
   DollarCircle,
   Eye,
@@ -64,7 +64,6 @@ function timeAgo(dateStr: string) {
 }
 
 export default function PublishersPage() {
-  const router = useRouter();
   const { dashboard, isLoading: dashLoading } = usePublisherDashboard();
   const { earningsChart, isLoading: chartLoading } = usePublisherEarnings(30);
   const { topPlacements, isLoading: topLoading } = usePublisherTopPlacements(5);
@@ -94,7 +93,7 @@ export default function PublishersPage() {
           </p>
         </div>
         <Link
-          href="/publishers/integrate"
+          href={URLS.publisherIntegrate}
           className="flex items-center gap-2 px-4 py-2 bg-[#f7931a] hover:bg-[#f7931a]/90 text-white text-sm font-semibold rounded-xl transition-colors"
         >
           <Code1 size={16} color="#ffffff" variant="Bold" />
@@ -163,7 +162,7 @@ export default function PublishersPage() {
             <p className="text-xs text-white/40 mt-0.5">Last 30 days</p>
           </div>
           <Link
-            href="/publishers/analytics"
+            href={URLS.publisherAnalytics}
             className="text-xs text-[#EBFF45] hover:text-[#c084fc] transition-colors"
           >
             Full analytics →
@@ -198,7 +197,7 @@ export default function PublishersPage() {
               <p className="text-sm font-semibold text-white">Top Placements</p>
             </div>
             <Link
-              href="/publishers/placements"
+              href={URLS.publisherPlacements}
               className="text-xs text-[#EBFF45] hover:text-[#c084fc] transition-colors"
             >
               All placements →
@@ -221,7 +220,7 @@ export default function PublishersPage() {
             <div className="flex flex-col items-center justify-center py-10 gap-3">
               <p className="text-sm text-white/30">No placements yet</p>
               <Link
-                href="/publishers/placements"
+                href={URLS.publisherPlacements}
                 className="flex items-center gap-1.5 text-xs text-[#f7931a] hover:text-[#f7931a]/80 transition-colors"
               >
                 <AddCircle size={13} color="currentColor" /> Add your first
@@ -233,7 +232,7 @@ export default function PublishersPage() {
               {topPlacements.map((p, i) => (
                 <li
                   key={String(p.placementId)}
-                  onClick={() => router.push("/publishers/placements")}
+                  onClick={() => navigateTo(URLS.publisherPlacements)}
                   className={`flex items-center gap-3 px-5 py-3 cursor-pointer hover:bg-white/3 transition-colors ${i !== 0 ? "border-t border-white/5" : ""}`}
                 >
                   <span className="text-xs font-bold text-white/20 w-4 shrink-0">
@@ -269,7 +268,7 @@ export default function PublishersPage() {
               </p>
             </div>
             <Link
-              href="/publishers/placements"
+              href={URLS.publisherPlacements}
               className="text-xs text-[#EBFF45] hover:text-[#c084fc] transition-colors"
             >
               All placements →
