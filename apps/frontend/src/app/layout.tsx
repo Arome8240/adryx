@@ -40,6 +40,9 @@ export const metadata: Metadata = {
     ],
     apple: "/apple-icon.png",
   },
+  verification: {
+    google: "bq1M2CKa31bFfGP9BrRrsfIr29Za1ZGYOpdtI7g6GZQ",
+  },
   other: {
     "talentapp:project_verification":
       "619fee09dfcfd401865900e9122b0d1b8892a462a15fd3cfc0c21277911676989f175755858b6020b006b710f3c1fc8bda9c703e9f99ed83bd7845d67ccbb046",
