@@ -2,7 +2,7 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { URLS, navigateTo } from "@/lib/urls";
+import { URLS, navigateTo, makeAuthRedirect } from "@/lib/urls";
 
 function Spinner() {
   return (
@@ -53,7 +53,8 @@ function CallbackHandler() {
 
     setFromOAuth(token, refreshToken)
       .then((user) => {
-        navigateTo(user.role === "publisher" ? URLS.publishers : URLS.dashboard);
+        const dest = user.role === "publisher" ? URLS.publishers : URLS.dashboard;
+        navigateTo(makeAuthRedirect(dest, token, refreshToken));
       })
       .catch((err: unknown) => {
         setError(err instanceof Error ? err.message : "Sign-in failed. Please try again.");

@@ -2,9 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { URLS } from '@/lib/urls';
+import { URLS, navigateTo, makeAuthRedirect } from '@/lib/urls';
 
 /* ── Icons ── */
 function GoogleIcon() {
@@ -138,7 +137,6 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v
 
 /* ── Login page ── */
 export default function LoginPage() {
-  const router = useRouter();
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -152,7 +150,9 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const user = await login(email, password);
-      router.push(user.role === 'publisher' ? '/publishers' : '/dashboard');
+      const { token, refreshToken } = useAuth.getState();
+      const dest = user.role === 'publisher' ? URLS.publishers : URLS.dashboard;
+      navigateTo(makeAuthRedirect(dest, token!, refreshToken));
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Invalid email or password');
     } finally {
@@ -186,7 +186,7 @@ export default function LoginPage() {
             <button
               className="c-btn-ghost"
               style={{ width:'100%', justifyContent:'center', gap:10 }}
-              onClick={() => router.push('/auth/wallet')}
+              onClick={() => navigateTo('/auth/wallet')}
             >
               <WalletIcon/> Connect Stellar wallet
             </button>

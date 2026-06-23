@@ -77,6 +77,24 @@ export function navigateTo(url: string): void {
 }
 
 /**
+ * Build a post-auth redirect URL that passes the JWT to the destination
+ * subdomain. In prod, subdomains have separate localStorage so the token
+ * must travel in the URL; the destination layout reads and stores it.
+ * In dev everything is on localhost so no token passthrough is needed.
+ */
+export function makeAuthRedirect(
+  destUrl: string,
+  token: string,
+  refreshToken?: string | null,
+): string {
+  if (!isProd) return destUrl;
+  const url = new URL(destUrl);
+  url.searchParams.set("_t", token);
+  if (refreshToken) url.searchParams.set("_r", refreshToken);
+  return url.toString();
+}
+
+/**
  * Determine whether a nav item href matches the current pathname.
  * Works for both absolute subdomain URLs (prod) and plain paths (dev).
  */

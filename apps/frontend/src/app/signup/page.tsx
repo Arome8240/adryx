@@ -2,9 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { URLS } from '@/lib/urls';
+import { URLS, navigateTo, makeAuthRedirect } from '@/lib/urls';
 
 /* ── Icons ── */
 function GoogleIcon() {
@@ -145,7 +144,6 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v
 
 /* ── Signup page ── */
 export default function SignupPage() {
-  const router = useRouter();
   const { register } = useAuth();
   const [role, setRole] = useState<'publisher' | 'advertiser'>('publisher');
   const [name, setName] = useState('');
@@ -162,7 +160,9 @@ export default function SignupPage() {
     setLoading(true);
     try {
       const user = await register({ email, password, name, role });
-      router.push(user.role === 'publisher' ? '/publishers' : '/dashboard');
+      const { token, refreshToken } = useAuth.getState();
+      const dest = user.role === 'publisher' ? URLS.publishers : URLS.dashboard;
+      navigateTo(makeAuthRedirect(dest, token!, refreshToken));
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
     } finally {

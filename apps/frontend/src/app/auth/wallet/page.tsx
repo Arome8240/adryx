@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { URLS, navigateTo } from '@/lib/urls';
+import { URLS, navigateTo, makeAuthRedirect } from '@/lib/urls';
 
 /* ── Icons ─────────────────────────────────────────────────────────────────── */
 function FreighterIcon() {
@@ -151,7 +151,9 @@ export default function WalletAuthPage() {
       setStatus('loading');
 
       const user = await walletLogin(publicKey, signedMessage, message);
-      navigateTo(user.role === 'publisher' ? URLS.publishers : URLS.dashboard);
+      const { token, refreshToken } = useAuth.getState();
+      const dest = user.role === 'publisher' ? URLS.publishers : URLS.dashboard;
+      navigateTo(makeAuthRedirect(dest, token!, refreshToken));
     } catch (err: unknown) {
       setStatus('idle');
       const msg = err instanceof Error ? err.message : String(err);

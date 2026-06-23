@@ -12,11 +12,27 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const { isAuthenticated, isLoading, user, setFromOAuth } = useAuth();
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    setHydrated(true);
+    async function init() {
+      if (typeof window === "undefined") { setHydrated(true); return; }
+      const params = new URLSearchParams(window.location.search);
+      const urlToken = params.get("_t");
+      if (urlToken) {
+        try {
+          await setFromOAuth(urlToken, params.get("_r") ?? undefined);
+        } catch {}
+        const clean = new URL(window.location.href);
+        clean.searchParams.delete("_t");
+        clean.searchParams.delete("_r");
+        window.history.replaceState({}, "", clean.toString());
+      }
+      setHydrated(true);
+    }
+    init();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

@@ -12,14 +12,32 @@ export default function PublishersLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const { isAuthenticated, isLoading, user, setFromOAuth } = useAuth();
   // Zustand persist rehydrates from localStorage asynchronously.
-  // On the first render user is null even for logged-in publishers,
-  // so we must wait for hydration before checking the role.
+  // On first render user is null even for logged-in publishers,
+  // so we wait for hydration before checking the role.
+  // In production each subdomain has its own localStorage, so we
+  // bootstrap auth from the _t/_r token params passed in the redirect URL.
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    setHydrated(true);
+    async function init() {
+      if (typeof window === "undefined") { setHydrated(true); return; }
+      const params = new URLSearchParams(window.location.search);
+      const urlToken = params.get("_t");
+      if (urlToken) {
+        try {
+          await setFromOAuth(urlToken, params.get("_r") ?? undefined);
+        } catch {}
+        const clean = new URL(window.location.href);
+        clean.searchParams.delete("_t");
+        clean.searchParams.delete("_r");
+        window.history.replaceState({}, "", clean.toString());
+      }
+      setHydrated(true);
+    }
+    init();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
