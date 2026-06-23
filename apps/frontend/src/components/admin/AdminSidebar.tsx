@@ -27,7 +27,7 @@ export default function AdminSidebar() {
 
   function handleLogout() {
     logout();
-    navigateTo(URLS.login);
+    navigateTo(URLS.adminLogin);
   }
 
   return (

@@ -66,6 +66,7 @@ export const URLS = {
   dashboardWallet:    advPath("/wallet"),
 
   // ── Admin (admin.adryx.xyz — no /admin prefix in prod) ───────────────────
+  adminLogin:      admPath("/login"),
   adminDashboard:  admPath(""),               // /admin  | admin.adryx.xyz
   adminUsers:      admPath("/users"),
   adminCampaigns:  admPath("/campaigns"),

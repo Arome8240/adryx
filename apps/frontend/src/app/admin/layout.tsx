@@ -1,14 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminNav from "@/components/admin/AdminNav";
 import { useAuth } from "@/hooks/useAuth";
 import { URLS, navigateTo } from "@/lib/urls";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const { isAuthenticated, isLoading, user, setFromOAuth } = useAuth();
   const [hydrated, setHydrated] = useState(false);
+
+  // The login page lives under /admin/login — render it without auth guard or chrome.
+  const isLoginPage = pathname === "/admin/login" || pathname === "/login";
+  if (isLoginPage) return <>{children}</>;
 
   useEffect(() => {
     async function init() {
@@ -33,7 +39,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     if (!hydrated || isLoading) return;
     if (!isAuthenticated) {
-      navigateTo(URLS.login);
+      navigateTo(URLS.adminLogin);
       return;
     }
     if (user?.role !== "admin") {

@@ -73,16 +73,13 @@ export function middleware(request: NextRequest) {
   }
 
   // ── admin.adryx.xyz ───────────────────────────────────────────────────────
-  // Rewrite clean URLs to the internal /admin/* route tree.
+  // Admin has its own login page — never redirect to auth subdomain.
+  // Rewrite clean paths to the internal /admin/* route tree.
   if (site === "admin") {
-    if (isAuthPath(pathname)) {
-      const target = new URL(request.url);
-      target.host = `auth.${BASE_DOMAIN}`;
-      return NextResponse.redirect(target);
-    }
     if (pathname === "/") {
       return NextResponse.rewrite(new URL("/admin", request.url));
     }
+    // Already prefixed — pass through to avoid double-rewrite
     if (pathname.startsWith("/admin")) {
       return NextResponse.next();
     }
