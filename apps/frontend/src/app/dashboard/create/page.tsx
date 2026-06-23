@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/toast";
 import { useRouter } from "next/navigation";
 import { useCampaigns } from "@/hooks/useCampaigns";
+import { URLS, navigateTo } from "@/lib/urls";
 import {
   ArrowLeft,
   CloseCircle,
@@ -129,7 +130,7 @@ export default function CreateCampaignPage() {
       });
       toast("Campaign created successfully");
       clearDraft();
-      setTimeout(() => router.push("/dashboard/campaigns"), 1000);
+      setTimeout(() => navigateTo(URLS.dashboardCampaigns), 1000);
     } catch (err: any) {
       toast(err.message, 'error');
     } finally {

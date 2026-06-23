@@ -12,6 +12,7 @@ import {
   useNotifications,
   type NotificationType,
 } from "@/hooks/useNotifications";
+import { URLS } from "@/lib/urls";
 
 const TYPE_STYLES: Record<
   NotificationType,
@@ -140,7 +141,7 @@ export default function NotificationsPanel({
       {notifications.length > 0 && (
         <div className="px-4 py-2.5 border-t border-white/8">
           <Link
-            href="/dashboard/campaigns"
+            href={URLS.dashboardCampaigns}
             onClick={onClose}
             className="text-xs text-[#a855f7] hover:text-[#c084fc] transition-colors"
           >

@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useToast } from "@/components/ui/toast";
-import { useRouter } from "next/navigation";
+import { URLS, navigateTo } from "@/lib/urls";
 import { useStellarWallet } from "@/components/providers/WalletProvider";
 import { useCampaigns } from "@/hooks/useCampaigns";
 import { apiClient } from "@/lib/api-client";
@@ -65,7 +65,6 @@ const inputCls =
   "w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm placeholder-white/20 outline-none focus:border-[#EBFF45]/40 transition-colors";
 
 export default function CampaignsPage() {
-  const router = useRouter();
   const { address: publicKey } = useStellarWallet();
   const {
     campaigns,
@@ -282,7 +281,7 @@ export default function CampaignsPage() {
         <div className="flex items-center gap-3">
           <WalletButton />
           <button
-            onClick={() => router.push("/dashboard/create")}
+            onClick={() => navigateTo(URLS.dashboardCreate)}
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#EBFF45] hover:bg-[#EBFF45]/90 text-[#0e0e00] text-sm font-bold transition-colors"
           >
             <AddCircle size={16} color="#0e0e00" />
@@ -404,7 +403,7 @@ export default function CampaignsPage() {
           </p>
           {!search && filterStatus === "all" && (
             <button
-              onClick={() => router.push("/dashboard/create")}
+              onClick={() => navigateTo(URLS.dashboardCreate)}
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#EBFF45] hover:bg-[#EBFF45]/90 text-[#0e0e00] text-sm font-bold transition-colors"
             >
               <AddCircle size={16} color="#0e0e00" />
@@ -524,7 +523,7 @@ export default function CampaignsPage() {
                   )}
                   <button
                     onClick={() =>
-                      router.push(`/dashboard/analytics?campaign=${c._id}`)
+                      navigateTo(`${URLS.dashboardAnalytics}?campaign=${c._id}`)
                     }
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#3b82f6]/10 hover:bg-[#3b82f6]/20 text-[#3b82f6] text-xs font-semibold transition-colors"
                   >
@@ -904,9 +903,7 @@ export default function CampaignsPage() {
               <div className="flex gap-2 pt-2">
                 <button
                   onClick={() => {
-                    router.push(
-                      `/dashboard/analytics?campaign=${detailCampaign._id}`,
-                    );
+                    navigateTo(`${URLS.dashboardAnalytics}?campaign=${detailCampaign._id}`);
                     setDetailCampaign(null);
                   }}
                   className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-[#3b82f6]/10 hover:bg-[#3b82f6]/20 text-[#3b82f6] text-xs font-semibold transition-colors"

@@ -400,7 +400,7 @@ export default function OverviewPage() {
                 return (
                   <li
                     key={String(item.campaignId) + i}
-                    onClick={() => router.push("/dashboard/campaigns")}
+                    onClick={() => navigateTo(URLS.dashboardCampaigns)}
                     className="flex items-start gap-3 px-3 py-2.5 rounded-xl hover:bg-white/3 cursor-pointer transition-colors"
                   >
                     <span

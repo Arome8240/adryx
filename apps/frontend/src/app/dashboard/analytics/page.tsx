@@ -1,6 +1,6 @@
 "use client";
 import { useState, useMemo, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   Calendar,
@@ -47,6 +47,7 @@ function exportCSV(data: any[], filename: string) {
 
 function AnalyticsContent() {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const urlCampaignId = searchParams.get("campaign");
 
@@ -189,8 +190,8 @@ function AnalyticsContent() {
             value={selectedId}
             onChange={(v) => {
               setSelectedId(v);
-              if (v) router.replace(`/dashboard/analytics?campaign=${v}`);
-              else router.replace("/dashboard/analytics");
+              if (v) router.replace(`${pathname}?campaign=${v}`);
+              else router.replace(pathname);
             }}
             placeholder="All campaigns"
             options={[
@@ -600,9 +601,7 @@ function AnalyticsContent() {
                     key={String(c.campaignId)}
                     onClick={() => {
                       setSelectedId(String(c.campaignId));
-                      router.replace(
-                        `/dashboard/analytics?campaign=${c.campaignId}`,
-                      );
+                      router.replace(`${pathname}?campaign=${c.campaignId}`);
                     }}
                     className={`border-b border-white/5 hover:bg-white/3 cursor-pointer transition-colors ${i % 2 !== 0 ? "bg-white/1" : ""}`}
                   >

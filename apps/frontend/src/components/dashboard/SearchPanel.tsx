@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect, useRef, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import { URLS, navigateTo } from "@/lib/urls";
 import {
   SearchNormal1,
@@ -26,7 +25,6 @@ interface SearchPanelProps {
 }
 
 export default function SearchPanel({ open, onClose }: SearchPanelProps) {
-  const router = useRouter();
   const { user } = useAuth();
   const isPublisher = user?.role === "publisher";
 
@@ -145,7 +143,7 @@ export default function SearchPanel({ open, onClose }: SearchPanelProps) {
                     <li key={c._id}>
                       <button
                         onClick={() => {
-                          router.push("/dashboard/campaigns");
+                          navigateTo(URLS.dashboardCampaigns);
                           onClose();
                         }}
                         className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 transition-colors text-left"
