@@ -58,7 +58,7 @@ function CallbackHandler() {
       .catch((err: unknown) => {
         setError(err instanceof Error ? err.message : "Sign-in failed. Please try again.");
       });
-  }, [params, router, setFromOAuth]);
+  }, [params, setFromOAuth]);
 
   if (error) {
     return (

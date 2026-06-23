@@ -1,47 +1,53 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-// ── Subdomain → owned path prefixes ──────────────────────────────────────────
+// ── Config ────────────────────────────────────────────────────────────────────
 
-const SUBDOMAIN_PATHS: Record<string, string[]> = {
+const BASE_DOMAIN = "adryx.xyz";
+
+const KNOWN_SUBDOMAINS = ["auth", "publisher", "advertiser"] as const;
+type KnownSubdomain = (typeof KNOWN_SUBDOMAINS)[number];
+
+// Paths owned by each subdomain (prefix match)
+const SUBDOMAIN_PATHS: Record<KnownSubdomain, string[]> = {
   auth: ["/login", "/signup", "/forgot-password", "/reset-password", "/auth"],
   publisher: ["/publisher", "/publishers"],
   advertiser: ["/dashboard"],
 };
 
-// Paths that belong to the main marketing site (adryx.xyz)
-const MARKETING_PATHS = [
-  "/",
-  "/features",
-  "/pricing",
-  "/about",
-  "/careers",
-  "/contact",
-  "/docs",
-  "/privacy",
-  "/terms",
-];
+// Subdomain root redirects when "/" is accessed
+const ROOT_REDIRECT: Record<KnownSubdomain, string> = {
+  auth: "/login",
+  publisher: "/publishers",
+  advertiser: "/dashboard",
+};
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function getSubdomain(hostname: string): string | null {
-  // e.g. "auth.adryx.xyz" → "auth", "adryx.xyz" → null
-  const parts = hostname.split(".");
-  if (parts.length >= 3) return parts[0];
-  return null;
+/**
+ * Returns null for any host that isn't an Adryx domain so the middleware
+ * passes through without touching local dev, Vercel preview URLs, etc.
+ */
+function parseSite(hostname: string): KnownSubdomain | "marketing" | null {
+  if (hostname === BASE_DOMAIN || hostname === `www.${BASE_DOMAIN}`) {
+    return "marketing";
+  }
+  for (const sub of KNOWN_SUBDOMAINS) {
+    if (hostname === `${sub}.${BASE_DOMAIN}`) return sub;
+  }
+  return null; // localhost, preview URLs, unknown hosts
 }
 
-function ownerOf(pathname: string): string {
-  for (const [subdomain, prefixes] of Object.entries(SUBDOMAIN_PATHS)) {
-    if (prefixes.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
-      return subdomain;
+function ownerOf(pathname: string): KnownSubdomain | "marketing" {
+  for (const [sub, prefixes] of Object.entries(SUBDOMAIN_PATHS) as [
+    KnownSubdomain,
+    string[],
+  ][]) {
+    if (prefixes.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
+      return sub;
     }
   }
   return "marketing";
-}
-
-function subdomainHost(subdomain: string | null, baseDomain: string): string {
-  return subdomain ? `${subdomain}.${baseDomain}` : baseDomain;
 }
 
 // ── Middleware ────────────────────────────────────────────────────────────────
@@ -50,7 +56,7 @@ export function middleware(request: NextRequest) {
   const hostname = request.headers.get("host") ?? "";
   const { pathname } = request.nextUrl;
 
-  // Skip static assets and Next.js internals
+  // Always skip Next.js internals and static files
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
@@ -59,61 +65,51 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // In development (localhost) — allow everything through, no redirect enforcement
-  if (hostname.includes("localhost") || hostname.includes("127.0.0.1")) {
-    // Root path on localhost → serve the marketing home
+  const site = parseSite(hostname);
+
+  // Unknown host (localhost, Vercel preview, CI, etc.) — never redirect
+  if (site === null) {
     return NextResponse.next();
   }
 
-  // ── Production subdomain routing ──────────────────────────────────────────
-
-  const baseDomain = "adryx.xyz";
-  const currentSubdomain = getSubdomain(hostname); // null = main domain
-  const requiredOwner = ownerOf(pathname);
-
-  // Determine expected subdomain for this path
-  const requiredSubdomain =
-    requiredOwner === "marketing" ? null : requiredOwner;
-
-  // Already on the correct subdomain — pass through
-  if (currentSubdomain === requiredSubdomain) {
-    // Redirect subdomain root "/" to its canonical home page
-    if (pathname === "/") {
-      if (currentSubdomain === "advertiser") {
-        return NextResponse.redirect(
-          new URL("/dashboard", request.url)
-        );
-      }
-      if (currentSubdomain === "publisher") {
-        return NextResponse.redirect(
-          new URL("/publishers", request.url)
-        );
-      }
-      if (currentSubdomain === "auth") {
-        return NextResponse.redirect(
-          new URL("/login", request.url)
-        );
-      }
+  // Subdomain root "/" → redirect to its home page (one hop, no loop)
+  if (pathname === "/") {
+    if (site !== "marketing") {
+      return NextResponse.redirect(
+        new URL(ROOT_REDIRECT[site], request.url),
+      );
     }
     return NextResponse.next();
   }
 
-  // Wrong subdomain — redirect to the correct one
-  const targetHost = subdomainHost(requiredSubdomain, baseDomain);
-  const targetUrl = new URL(request.url);
-  targetUrl.host = targetHost;
+  const pathOwner = ownerOf(pathname);
 
-  return NextResponse.redirect(targetUrl);
+  // Already on the correct site — let Next.js handle it
+  if (pathOwner === site) {
+    return NextResponse.next();
+  }
+
+  // Marketing paths accessed from a subdomain → redirect to main domain
+  if (pathOwner === "marketing" && site !== "marketing") {
+    const target = new URL(request.url);
+    target.host = BASE_DOMAIN;
+    return NextResponse.redirect(target);
+  }
+
+  // Subdomain paths accessed from wrong subdomain → redirect to correct one
+  // (covers both main-domain → subdomain and wrong-subdomain → right-subdomain)
+  if (pathOwner !== "marketing") {
+    const target = new URL(request.url);
+    target.host = `${pathOwner}.${BASE_DOMAIN}`;
+    return NextResponse.redirect(target);
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimisation)
-     * - favicon.ico, sitemap.xml, robots.txt
-     */
-    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
+    // Skip static, image, and well-known files
+    "/((?!_next/static|_next/image|favicon\\.ico|sitemap\\.xml|robots\\.txt).*)",
   ],
 };
