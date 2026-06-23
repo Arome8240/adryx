@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono, Space_Grotesk, Manrope } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { AuthInitializer } from "@/components/providers/AuthInitializer";
 import { ToastProvider } from "@/components/ui/toast";
@@ -57,6 +58,18 @@ export default function RootLayout({
           <AuthInitializer />
           {children}
         </ToastProvider>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-BKB0SW399D"
+          strategy="afterInteractive"
+        />
+        <Script id="gtag-init" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-BKB0SW399D');
+          `}
+        </Script>
       </body>
     </html>
   );
