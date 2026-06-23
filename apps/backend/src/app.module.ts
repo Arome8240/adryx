@@ -9,6 +9,7 @@ import { UsersModule } from './modules/users/users.module';
 import { CampaignsModule } from './modules/campaigns/campaigns.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { SeedModule } from './modules/seed/seed.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { AdminModule } from './modules/admin/admin.module';
     CampaignsModule,
     AnalyticsModule,
     AdminModule,
+    SeedModule,
   ],
   controllers: [AppController],
   providers: [AppService],
