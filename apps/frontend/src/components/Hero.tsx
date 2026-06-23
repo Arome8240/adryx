@@ -1,6 +1,7 @@
 "use client";
 import { motion } from "framer-motion";
 import { ArrowRight, Play } from "iconsax-react";
+import { URLS } from "@/lib/urls";
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 20 },
@@ -50,14 +51,14 @@ export default function Hero() {
           className="flex flex-col sm:flex-row gap-3 mt-2"
         >
           <a
-            href="/publishers"
+            href={URLS.publishers}
             className="btn-primary inline-flex items-center justify-center gap-2 px-6 py-3 text-sm hover-lift"
           >
             Start Earning
             <ArrowRight size={16} color="#000000" />
           </a>
           <a
-            href="/dashboard"
+            href={URLS.dashboard}
             className="btn-secondary inline-flex items-center justify-center gap-2 px-6 py-3 text-sm hover-lift"
           >
             <Play size={16} variant="Bold" color="#f0f0f5" />

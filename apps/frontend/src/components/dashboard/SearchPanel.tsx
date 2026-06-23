@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { URLS, navigateTo } from "@/lib/urls";
 import {
   SearchNormal1,
   CloseCircle,
@@ -183,7 +184,7 @@ export default function SearchPanel({ open, onClose }: SearchPanelProps) {
                     <li key={p._id}>
                       <button
                         onClick={() => {
-                          router.push("/publishers/placements");
+                          navigateTo(URLS.publisherPlacements);
                           onClose();
                         }}
                         className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 transition-colors text-left"
@@ -217,7 +218,7 @@ export default function SearchPanel({ open, onClose }: SearchPanelProps) {
                     <li key={s._id}>
                       <button
                         onClick={() => {
-                          router.push("/publishers/sites");
+                          navigateTo(URLS.publisherSites);
                           onClose();
                         }}
                         className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 transition-colors text-left"

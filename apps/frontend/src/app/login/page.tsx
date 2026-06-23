@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import { URLS } from '@/lib/urls';
 
 /* ── Icons ── */
 function GoogleIcon() {
@@ -42,7 +43,7 @@ function EyeIcon({ open }: { open: boolean }) {
 /* ── Brand logo ── */
 function BrandLogo() {
   return (
-    <Link href="/" style={{ display:'inline-flex', alignItems:'center', gap:9, fontWeight:560, letterSpacing:'-0.02em', fontSize:18, color:'#f5f5f5', textDecoration:'none' }}>
+    <Link href={URLS.home} style={{ display:'inline-flex', alignItems:'center', gap:9, fontWeight:560, letterSpacing:'-0.02em', fontSize:18, color:'#f5f5f5', textDecoration:'none' }}>
       <div style={{ width:24, height:24, borderRadius:6, background:'#EBFF45', position:'relative', flexShrink:0 }}>
         <div style={{ position:'absolute', top:4, left:4, width:8, height:8, background:'#08080a', borderRadius:'2px 0 0 0' }}/>
       </div>
@@ -246,7 +247,7 @@ export default function LoginPage() {
           <div style={{ marginTop:48, paddingTop:24, borderTop:'1px solid rgba(255,255,255,.07)', display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:8 }}>
             <span style={{ fontSize:12, color:'rgba(245,245,245,.25)' }}>© 2026 Adryx</span>
             <div style={{ display:'flex', gap:16 }}>
-              {[{ l:'Help', h:'/contact' }, { l:'Privacy', h:'/privacy' }, { l:'Terms', h:'/terms' }].map(i => (
+              {[{ l:'Help', h:URLS.contact }, { l:'Privacy', h:URLS.privacy }, { l:'Terms', h:URLS.terms }].map(i => (
                 <Link key={i.l} href={i.h} style={{ fontSize:12, color:'rgba(245,245,245,.3)' }}>{i.l}</Link>
               ))}
             </div>

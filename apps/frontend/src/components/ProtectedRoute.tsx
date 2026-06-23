@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import { URLS, navigateTo } from '@/lib/urls';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -10,30 +10,24 @@ interface ProtectedRouteProps {
   requiredRole?: 'advertiser' | 'publisher';
 }
 
-export function ProtectedRoute({ 
-  children, 
+export function ProtectedRoute({
+  children,
   requireWallet = false,
-  requiredRole 
+  requiredRole
 }: ProtectedRouteProps) {
-  const router = useRouter();
   const { isAuthenticated, user, isLoading } = useAuth();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.push('/login');
+      navigateTo(URLS.login);
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isLoading]);
 
   useEffect(() => {
     if (!isLoading && isAuthenticated && requiredRole && user?.role !== requiredRole) {
-      // Redirect to appropriate dashboard
-      if (user?.role === 'publisher') {
-        router.push('/publishers');
-      } else {
-        router.push('/dashboard');
-      }
+      navigateTo(user?.role === 'publisher' ? URLS.publishers : URLS.dashboard);
     }
-  }, [isAuthenticated, isLoading, user, requiredRole, router]);
+  }, [isAuthenticated, isLoading, user, requiredRole]);
 
   if (isLoading) {
     return (

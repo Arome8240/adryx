@@ -1,7 +1,8 @@
 "use client";
 import { Suspense, useEffect, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import { URLS, navigateTo } from "@/lib/urls";
 
 function Spinner() {
   return (
@@ -33,7 +34,6 @@ function Spinner() {
 }
 
 function CallbackHandler() {
-  const router = useRouter();
   const params = useSearchParams();
   const { setFromOAuth } = useAuth();
   const [error, setError] = useState<string | null>(null);
@@ -53,7 +53,7 @@ function CallbackHandler() {
 
     setFromOAuth(token, refreshToken)
       .then((user) => {
-        router.replace(user.role === "publisher" ? "/publishers" : "/dashboard");
+        navigateTo(user.role === "publisher" ? URLS.publishers : URLS.dashboard);
       })
       .catch((err: unknown) => {
         setError(err instanceof Error ? err.message : "Sign-in failed. Please try again.");

@@ -1,7 +1,8 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { URLS, navigateTo } from "@/lib/urls";
 import {
   Notification,
   SearchNormal1,
@@ -62,7 +63,6 @@ function getInitial(name: string) {
 
 export default function DashboardNav() {
   const pathname = usePathname();
-  const router = useRouter();
   const { user, logout } = useAuth();
   const { count: notifCount } = useNotifications();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -100,7 +100,7 @@ export default function DashboardNav() {
 
   function handleLogout() {
     logout();
-    router.push("/login");
+    navigateTo(URLS.login);
   }
 
   function handleCopyWallet() {
@@ -245,7 +245,7 @@ export default function DashboardNav() {
           />
           <aside className="absolute left-0 top-0 bottom-0 w-64 bg-[#0d0d1a] border-r border-white/8 flex flex-col">
             <div className="px-6 py-5 border-b border-white/8 flex items-center justify-between">
-              <Link href="/" className="flex items-center gap-2.5">
+              <Link href={URLS.home} className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[#EBFF45] to-[#a0f045] flex items-center justify-center">
                   <span className="text-[#0e0e00] font-bold text-sm">A</span>
                 </div>

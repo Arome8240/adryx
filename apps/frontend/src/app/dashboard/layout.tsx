@@ -1,18 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Sidebar from "@/components/dashboard/Sidebar";
 import DashboardNav from "@/components/dashboard/DashboardNav";
 import { WalletProvider } from "@/components/providers/WalletProvider";
 import { useAuth } from "@/hooks/useAuth";
+import { URLS, navigateTo } from "@/lib/urls";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
   const { isAuthenticated, isLoading, user } = useAuth();
   const [hydrated, setHydrated] = useState(false);
 
@@ -23,13 +22,13 @@ export default function DashboardLayout({
   useEffect(() => {
     if (!hydrated || isLoading) return;
     if (!isAuthenticated) {
-      router.push("/login");
+      navigateTo(URLS.login);
       return;
     }
     if (user?.role === "publisher") {
-      router.push("/publishers");
+      navigateTo(URLS.publishers);
     }
-  }, [hydrated, isAuthenticated, isLoading, user, router]);
+  }, [hydrated, isAuthenticated, isLoading, user]);
 
   if (!hydrated || isLoading) {
     return (

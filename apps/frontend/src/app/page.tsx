@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { HambergerMenu, CloseCircle } from 'iconsax-react';
+import { URLS, navigateTo } from '@/lib/urls';
 
 /* ─── Celina dark-first CSS overrides ────────────────────────────── */
 const STYLES = `
@@ -178,8 +179,8 @@ function TopNav() {
 
         {/* Desktop CTAs */}
         <div className="hidden md:flex items-center" style={{ gap: 10 }}>
-          <Link href="/login" className="c-btn-ghost" style={{ padding: '8px 16px', fontSize: 13 }}>Sign in</Link>
-          <Link href="/signup" className="c-btn-y" style={{ padding: '8px 18px', fontSize: 13 }}>Get started</Link>
+          <Link href={URLS.login} className="c-btn-ghost" style={{ padding: '8px 16px', fontSize: 13 }}>Sign in</Link>
+          <Link href={URLS.signup} className="c-btn-y" style={{ padding: '8px 18px', fontSize: 13 }}>Get started</Link>
         </div>
 
         {/* Mobile hamburger */}
@@ -216,10 +217,10 @@ function TopNav() {
             ))}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <Link href="/login" className="c-btn-ghost" style={{ justifyContent: 'center', fontSize: 13 }} onClick={() => setOpen(false)}>
+            <Link href={URLS.login} className="c-btn-ghost" style={{ justifyContent: 'center', fontSize: 13 }} onClick={() => setOpen(false)}>
               Sign in
             </Link>
-            <Link href="/signup" className="c-btn-y" style={{ justifyContent: 'center', fontSize: 13 }} onClick={() => setOpen(false)}>
+            <Link href={URLS.signup} className="c-btn-y" style={{ justifyContent: 'center', fontSize: 13 }} onClick={() => setOpen(false)}>
               Get started
             </Link>
           </div>
@@ -312,10 +313,10 @@ function Hero() {
 
         {/* CTAs */}
         <div className="c-row gap-3 fade-up-4" style={{ marginBottom: 28 }}>
-          <button onClick={() => router.push('/signup')} className="c-btn-y lg">
+          <button onClick={() => navigateTo(URLS.signup)} className="c-btn-y lg">
             Start earning
           </button>
-          <button onClick={() => router.push('/signup?role=advertiser')} className="c-btn-ghost lg">
+          <button onClick={() => navigateTo(URLS.signupAdvertiser)} className="c-btn-ghost lg">
             Run a campaign
           </button>
         </div>
@@ -359,16 +360,16 @@ function SplitSection() {
       icon: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.5" stroke="currentColor" strokeWidth="1.5" /><ellipse cx="10" cy="10" rx="4" ry="8.5" stroke="currentColor" strokeWidth="1.5" /><path d="M1.5 10h17" stroke="currentColor" strokeWidth="1.5" /></svg>,
       headline: 'Get paid for the attention your site earns',
       bullets: ['Embed one script tag — done', 'Real-time earnings dashboard', 'Weekly USDC payouts, on-chain', 'Human-verified impressions only'],
-      primary: { label: 'See publisher app', href: '/publishers' },
-      secondary: { label: 'Get the snippet', href: '/publishers/integrate' },
+      primary: { label: 'See publisher app', href: URLS.publishers },
+      secondary: { label: 'Get the snippet', href: URLS.publisherIntegrate },
     },
     {
       label: 'Advertisers',
       icon: <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="4" stroke="currentColor" strokeWidth="1.5" /><circle cx="10" cy="10" r="8.5" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 2" /></svg>,
       headline: 'Reach real humans. Pay only for verified impressions.',
       bullets: ['Transparent on-chain spend', 'Contextual & wallet-based targeting', 'Real-time campaign analytics', 'No minimum budget'],
-      primary: { label: 'See advertiser app', href: '/dashboard' },
-      secondary: { label: 'Launch a campaign', href: '/dashboard/campaigns' },
+      primary: { label: 'See advertiser app', href: URLS.dashboard },
+      secondary: { label: 'Launch a campaign', href: URLS.dashboardCampaigns },
     },
   ];
 
@@ -746,7 +747,7 @@ function CTAFinal() {
           Join 12,400 publishers earning in USDC and hundreds of advertisers reaching verified on-chain audiences.
         </p>
         <div className="c-row gap-3">
-          <button onClick={() => router.push('/signup')} className="c-btn-y lg">Create free account</button>
+          <button onClick={() => navigateTo(URLS.signup)} className="c-btn-y lg">Create free account</button>
           <button onClick={() => router.push('/docs')} className="c-btn-ghost lg">Read the docs</button>
         </div>
       </div>

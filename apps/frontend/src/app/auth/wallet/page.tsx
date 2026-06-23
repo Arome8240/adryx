@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import { URLS, navigateTo } from '@/lib/urls';
 
 /* ── Icons ─────────────────────────────────────────────────────────────────── */
 function FreighterIcon() {
@@ -51,7 +52,7 @@ function Spinner() {
 /* ── Brand logo ── */
 function BrandLogo() {
   return (
-    <Link href="/" style={{ display:'inline-flex', alignItems:'center', gap:9, fontWeight:560, letterSpacing:'-0.02em', fontSize:18, color:'#f5f5f5', textDecoration:'none' }}>
+    <Link href={URLS.home} style={{ display:'inline-flex', alignItems:'center', gap:9, fontWeight:560, letterSpacing:'-0.02em', fontSize:18, color:'#f5f5f5', textDecoration:'none' }}>
       <div style={{ width:24, height:24, borderRadius:6, background:'#EBFF45', position:'relative', flexShrink:0 }}>
         <div style={{ position:'absolute', top:4, left:4, width:8, height:8, background:'#08080a', borderRadius:'2px 0 0 0' }}/>
       </div>
@@ -150,7 +151,7 @@ export default function WalletAuthPage() {
       setStatus('loading');
 
       const user = await walletLogin(publicKey, signedMessage, message);
-      router.push(user.role === 'publisher' ? '/publishers' : '/dashboard');
+      navigateTo(user.role === 'publisher' ? URLS.publishers : URLS.dashboard);
     } catch (err: unknown) {
       setStatus('idle');
       const msg = err instanceof Error ? err.message : String(err);

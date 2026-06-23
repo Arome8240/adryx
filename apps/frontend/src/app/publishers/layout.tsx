@@ -1,18 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import PublisherSidebar from "@/components/publishers/PublisherSidebar";
 import PublisherNav from "@/components/publishers/PublisherNav";
 import { WalletProvider } from "@/components/providers/WalletProvider";
 import { useAuth } from "@/hooks/useAuth";
+import { URLS, navigateTo } from "@/lib/urls";
 
 export default function PublishersLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
   const { isAuthenticated, isLoading, user } = useAuth();
   // Zustand persist rehydrates from localStorage asynchronously.
   // On the first render user is null even for logged-in publishers,
@@ -26,13 +25,13 @@ export default function PublishersLayout({
   useEffect(() => {
     if (!hydrated || isLoading) return;
     if (!isAuthenticated) {
-      router.push("/login");
+      navigateTo(URLS.login);
       return;
     }
     if (user?.role !== "publisher") {
-      router.push("/dashboard");
+      navigateTo(URLS.dashboard);
     }
-  }, [hydrated, isAuthenticated, isLoading, user, router]);
+  }, [hydrated, isAuthenticated, isLoading, user]);
 
   if (!hydrated || isLoading) {
     return (

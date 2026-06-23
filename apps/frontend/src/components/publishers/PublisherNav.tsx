@@ -1,7 +1,8 @@
 "use client";
 import { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { URLS, navigateTo } from "@/lib/urls";
 import {
   Notification,
   HambergerMenu,
@@ -86,7 +87,6 @@ function truncateWallet(address: string) {
 
 export default function PublisherNav() {
   const pathname = usePathname();
-  const router = useRouter();
   const { user, logout } = useAuth();
   const { dashboard } = usePublisherDashboard();
   const { earnings: breakdown } = usePublisherEarningsBreakdown();
@@ -113,7 +113,7 @@ export default function PublisherNav() {
 
   function handleLogout() {
     logout();
-    router.push("/login");
+    navigateTo(URLS.login);
   }
 
   function handleCopyWallet() {
@@ -360,7 +360,7 @@ export default function PublisherNav() {
           />
           <aside className="absolute left-0 top-0 bottom-0 w-64 bg-[#0f0f13] border-r border-white/8 flex flex-col">
             <div className="px-6 py-5 border-b border-white/8 flex items-center justify-between">
-              <Link href="/" className="flex items-center gap-2.5">
+              <Link href={URLS.home} className="flex items-center gap-2.5">
                 <div style={{width:32,height:32,borderRadius:8,background:'#EBFF45',position:'relative',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
                   <span style={{fontSize:14,fontWeight:900,color:'#08080a',letterSpacing:'-0.5px'}}>A</span>
                   <span style={{position:'absolute',bottom:3,right:3,width:5,height:5,borderRadius:'50%',background:'#08080a'}} />

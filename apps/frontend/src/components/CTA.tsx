@@ -1,6 +1,7 @@
 "use client";
 import { motion } from "framer-motion";
 import { ArrowRight, DocumentText } from "iconsax-react";
+import { URLS } from "@/lib/urls";
 
 export default function CTA() {
   return (
@@ -28,7 +29,7 @@ export default function CTA() {
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <motion.a
-              href="/publishers"
+              href={URLS.publishers}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               className="btn-primary"
@@ -37,7 +38,7 @@ export default function CTA() {
               <ArrowRight size={16} color="#000000" />
             </motion.a>
             <motion.a
-              href="/dashboard"
+              href={URLS.dashboard}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               className="btn-secondary"

@@ -2,10 +2,11 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { HambergerMenu, CloseCircle } from "iconsax-react";
+import { URLS } from "@/lib/urls";
 
 const NAV_LINKS = [
-  { label: "Publishers",  href: "/publishers" },
-  { label: "Advertisers", href: "/dashboard" },
+  { label: "Publishers",  href: URLS.publishers },
+  { label: "Advertisers", href: URLS.dashboard },
   { label: "Docs",        href: "/docs" },
   { label: "Pricing",     href: "/pricing" },
 ];
@@ -40,10 +41,10 @@ export default function Navbar() {
 
         {/* Desktop CTAs — hidden on mobile */}
         <div className="hidden md:flex items-center" style={{ gap: 10 }}>
-          <Link href="/login" className="c-btn-ghost" style={{ padding: "8px 16px", fontSize: 13 }}>
+          <Link href={URLS.login} className="c-btn-ghost" style={{ padding: "8px 16px", fontSize: 13 }}>
             Sign in
           </Link>
-          <Link href="/signup" className="c-btn-y" style={{ padding: "8px 18px", fontSize: 13 }}>
+          <Link href={URLS.signup} className="c-btn-y" style={{ padding: "8px 18px", fontSize: 13 }}>
             Get started
           </Link>
         </div>
@@ -84,10 +85,10 @@ export default function Navbar() {
             ))}
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <Link href="/login" className="c-btn-ghost" style={{ justifyContent: "center", fontSize: 13 }}>
+            <Link href={URLS.login} className="c-btn-ghost" style={{ justifyContent: "center", fontSize: 13 }}>
               Sign in
             </Link>
-            <Link href="/signup" className="c-btn-y" style={{ justifyContent: "center", fontSize: 13 }}>
+            <Link href={URLS.signup} className="c-btn-y" style={{ justifyContent: "center", fontSize: 13 }}>
               Get started
             </Link>
           </div>

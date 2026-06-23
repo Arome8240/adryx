@@ -2,6 +2,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Link from "next/link";
 import { Global, Code1, Flash, ShieldTick } from "iconsax-react";
+import { URLS } from "@/lib/urls";
 
 const pillars = [
   {
@@ -107,7 +108,7 @@ export default function AboutPage() {
 
           {/* CTA row */}
           <div className="flex flex-wrap gap-4">
-            <Link href="/signup" className="c-btn-y">
+            <Link href={URLS.signup} className="c-btn-y">
               Get started
             </Link>
             <Link

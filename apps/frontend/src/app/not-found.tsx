@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { URLS } from "@/lib/urls";
 
 export default function NotFound() {
   return (
@@ -25,13 +26,13 @@ export default function NotFound() {
 
         <div className="flex gap-3 justify-center">
           <Link
-            href="/"
+            href={URLS.home}
             className="px-5 py-2.5 rounded-xl bg-[#f7931a] hover:bg-[#f7931a]/90 text-black text-sm font-semibold transition-colors"
           >
             Go home
           </Link>
           <Link
-            href="/dashboard"
+            href={URLS.dashboard}
             className="px-5 py-2.5 rounded-xl border border-white/10 text-white/60 hover:text-white text-sm hover:bg-white/5 transition-colors"
           >
             Dashboard

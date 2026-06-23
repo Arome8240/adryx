@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import { URLS } from '@/lib/urls';
 
 /* ── Icons ── */
 function GoogleIcon() {
@@ -238,9 +239,9 @@ export default function SignupPage() {
               />
               <span>
                 I agree to the{' '}
-                <Link href="/terms" style={{ color:'#EBFF45' }}>Terms</Link>
+                <Link href={URLS.terms} style={{ color:'#EBFF45' }}>Terms</Link>
                 {' '}&amp;{' '}
-                <Link href="/privacy" style={{ color:'#EBFF45' }}>Privacy Policy</Link>
+                <Link href={URLS.privacy} style={{ color:'#EBFF45' }}>Privacy Policy</Link>
               </span>
             </label>
             <button
