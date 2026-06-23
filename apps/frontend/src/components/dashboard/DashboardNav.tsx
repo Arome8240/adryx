@@ -96,7 +96,7 @@ export default function DashboardNav() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 flex items-center justify-between px-6 py-4 bg-[#0d0d1a]/80 backdrop-blur-md border-b border-white/8">
+      <header className="sticky top-0 z-40 flex items-center justify-between px-6 py-4 bg-[#0a0a0f]/80 backdrop-blur-md border-b border-white/8">
         <div className="flex items-center gap-3">
           <button
             className="md:hidden text-white/60 hover:text-white"
@@ -169,7 +169,7 @@ export default function DashboardNav() {
             </button>
 
             {profileOpen && (
-              <div className="absolute right-0 top-full mt-2 w-60 rounded-2xl bg-[#13131f] border border-white/10 shadow-xl shadow-black/40 overflow-hidden">
+              <div className="absolute right-0 top-full mt-2 w-60 rounded-2xl bg-[#111115] border border-white/10 shadow-xl shadow-black/40 overflow-hidden">
                 <div className="px-4 py-3 border-b border-white/8">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-linear-to-br from-[#EBFF45] to-[#a0f045] flex items-center justify-center text-sm font-bold text-[#0e0e00] shrink-0">
@@ -227,7 +227,7 @@ export default function DashboardNav() {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setMobileOpen(false)}
           />
-          <aside className="absolute left-0 top-0 bottom-0 w-64 bg-[#0d0d1a] border-r border-white/8 flex flex-col">
+          <aside className="absolute left-0 top-0 bottom-0 w-64 bg-[#0a0a0f] border-r border-white/8 flex flex-col">
             <div className="px-6 py-5 border-b border-white/8 flex items-center justify-between">
               <Link href={URLS.home} className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[#EBFF45] to-[#a0f045] flex items-center justify-center">
