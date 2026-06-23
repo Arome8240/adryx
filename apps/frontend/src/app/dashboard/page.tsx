@@ -331,7 +331,7 @@ export default function OverviewPage() {
                 <li
                   key={String(c.campaignId)}
                   onClick={() =>
-                    router.push(`/dashboard/analytics?campaign=${c.campaignId}`)
+                    navigateTo(`${URLS.dashboardAnalytics}?campaign=${c.campaignId}`)
                   }
                   className={`flex items-center gap-3 px-5 py-3 cursor-pointer hover:bg-white/3 transition-colors ${i !== 0 ? "border-t border-white/5" : ""}`}
                 >
@@ -369,7 +369,7 @@ export default function OverviewPage() {
               </p>
             </div>
             <button
-              onClick={() => router.push("/dashboard/campaigns")}
+              onClick={() => navigateTo(URLS.dashboardCampaigns)}
               className="text-xs text-[#a855f7] hover:text-[#c084fc] transition-colors"
             >
               All campaigns →
