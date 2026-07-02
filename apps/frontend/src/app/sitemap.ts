@@ -50,6 +50,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.6,
     },
+    // ── Publisher landing ─────────────────────────────────────────
+    {
+      url: `${BASE_URL}/publisher`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
     // ── Auth ─────────────────────────────────────────────────────
     {
       url: `${BASE_URL}/login`,
